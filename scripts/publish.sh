@@ -121,7 +121,7 @@ for rid in "${TARGET_RUNTIMES[@]}"; do
 
     # Rendi eseguibile il binario Linux
     if [[ "${rid}" == linux* ]]; then
-        chmod +x "${TARGET_DIST}/ValheimModManager.App" || true
+        chmod +x "${TARGET_DIST}/ValheimModManager" || true
     fi
 
     echo "Target ${rid} generato in: ${TARGET_DIST}"

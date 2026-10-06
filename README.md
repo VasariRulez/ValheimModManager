@@ -127,8 +127,8 @@ chmod +x ./scripts/publish.sh
 
 ### Output Generato
 I file vengono generati nella cartella `dist/` (esclusa da git):
-- `ValheimModManager-<version>-win-x64.zip` (eseguibile autosufficiente `ValheimModManager.App.exe`)
-- `ValheimModManager-<version>-linux-x64.tar.gz` (binario ELF autosufficiente `ValheimModManager.App`)
+- `ValheimModManager-<version>-win-x64.zip` (eseguibile autosufficiente `ValheimModManager.exe`)
+- `ValheimModManager-<version>-linux-x64.tar.gz` (binario ELF autosufficiente `ValheimModManager`)
 - `SHA256SUMS.txt` (checksum crittografici SHA-256 di tutti gli archivi generati)
 
 ---
