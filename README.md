@@ -2,8 +2,9 @@
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![Avalonia UI 12](https://img.shields.io/badge/Avalonia%20UI-12.1.3-8A2BE2?logo=avalonia&logoColor=white)](https://avaloniaui.net/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%28Steam%20Deck%29-blue)](https://github.com/)
-[![Tests](https://img.shields.io/badge/Tests-23%20passed-brightgreen)](https://github.com/)
+[![CI/CD](https://github.com/VasariRulez/ValheimModManager/actions/workflows/release.yml/badge.svg)](https://github.com/VasariRulez/ValheimModManager/actions/workflows/release.yml)
+[![Release](https://img.shields.io/github/v/release/VasariRulez/ValheimModManager?logo=github&color=blue)](https://github.com/VasariRulez/ValheimModManager/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%28Steam%20Deck%29-blue)](https://github.com/VasariRulez/ValheimModManager)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Valheim Mod Manager** è un mod manager moderno, ultra-performante e multipiattaforma per **Valheim**, sviluppato con **.NET 10** e **Avalonia UI 12**.

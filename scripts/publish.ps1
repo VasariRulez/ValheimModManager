@@ -54,7 +54,12 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Evita interruzioni anomale su warning/diagnostica stderr dei comandi nativi in PowerShell 7.4+
+if (Get-Variable -Name "PSNativeCommandUseErrorActionPreference" -ErrorAction SilentlyContinue) {
+    $PSNativeCommandUseErrorActionPreference = $false
+}
+
+$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..")).Path
 $AppProj = Join-Path $RepoRoot "src\ValheimModManager.App\ValheimModManager.App.csproj"
 $Solution = Join-Path $RepoRoot "ValheimModManager.slnx"
