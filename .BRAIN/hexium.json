@@ -1,0 +1,2087 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hexium API",
+    "version": "1.0.0",
+    "description": "Thunderstore-compatible mod repository API."
+  },
+  "servers": [
+    {
+      "url": "https://valheim.hexium.gg"
+    }
+  ],
+  "paths": {
+    "/api/v1/package/": {
+      "get": {
+        "operationId": "v1.package.list",
+        "summary": "List all packages",
+        "tags": [
+          "V1"
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of PackageListing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PackageListing"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/package/guid/{guid}/": {
+      "get": {
+        "operationId": "v1.package.read_by_guid",
+        "summary": "Get a single package by GUID",
+        "description": "Returns the oldest public package when multiple packages declare the same GUID.",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "guid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageListing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageListing"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/package/{uuid4}/": {
+      "get": {
+        "operationId": "v1.package.read",
+        "summary": "Get a single package by UUID",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "uuid4",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageListing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageListing"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/package/{uuid4}/rate/": {
+      "post": {
+        "operationId": "v1.package.rate",
+        "summary": "Star or unstar a package",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "uuid4",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "target_state": {
+                    "type": "string",
+                    "enum": [
+                      "Rated",
+                      "Unrated"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Updated PackageListing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageListing"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      }
+    },
+    "/api/v1/package-listing-index/": {
+      "get": {
+        "operationId": "v1.package-listing-index",
+        "summary": "Redirect to a gzip-encoded JSON list of chunk URLs",
+        "tags": [
+          "V1"
+        ],
+        "responses": {
+          "200": {
+            "description": "Gzip-encoded JSON array of chunk URLs"
+          }
+        }
+      }
+    },
+    "/api/v1/package-listing-chunk/": {
+      "get": {
+        "operationId": "v1.package-listing-chunk",
+        "summary": "Gzip-encoded JSON array of all packages",
+        "tags": [
+          "V1"
+        ],
+        "responses": {
+          "200": {
+            "description": "Gzip-encoded JSON array of PackageListing"
+          }
+        }
+      }
+    },
+    "/api/v1/package-metrics/{namespace}/{name}/": {
+      "get": {
+        "operationId": "v1.package.metrics",
+        "summary": "Get download and rating metrics for a package",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageMetrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageMetrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/package-metrics/{namespace}/{name}/{version}/": {
+      "get": {
+        "operationId": "v1.package.version.metrics",
+        "summary": "Get download count for a specific version",
+        "tags": [
+          "V1"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageVersionMetrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageVersionMetrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package/": {
+      "get": {
+        "operationId": "experimental.package.list",
+        "summary": "Paginated list of all packages",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated PackageExperimental",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PackageExperimental"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package/{namespace}/{name}/": {
+      "get": {
+        "operationId": "experimental.package.read",
+        "summary": "Get a package",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageExperimental",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageExperimental"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package/{namespace}/{name}/{version}/": {
+      "get": {
+        "operationId": "experimental.package.version.read",
+        "summary": "Get a specific package version",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageVersionExperimental",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageVersionExperimental"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package/{namespace}/{name}/{version}/readme/": {
+      "get": {
+        "operationId": "experimental.package.version.readme",
+        "summary": "Get README.md for a version",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MarkdownResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkdownResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package/{namespace}/{name}/{version}/changelog/": {
+      "get": {
+        "operationId": "experimental.package.version.changelog",
+        "summary": "Get CHANGELOG.md for a version",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MarkdownResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkdownResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/package-index/": {
+      "get": {
+        "operationId": "experimental.package-index",
+        "summary": "Newline-delimited JSON stream of all packages (latest version per mod)",
+        "tags": [
+          "Experimental"
+        ],
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of PackageIndexEntry",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageIndexEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/usermedia/initiate-upload/": {
+      "post": {
+        "operationId": "experimental.usermedia.initiate-upload",
+        "summary": "Initiate a chunked file upload",
+        "tags": [
+          "usermedia"
+        ],
+        "responses": {
+          "201": {
+            "description": "UserMediaInitiateUploadResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMediaInitiateUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/usermedia/{uuid}/upload-chunk/": {
+      "put": {
+        "operationId": "experimental.usermedia.upload-chunk",
+        "summary": "Upload file data for a usermedia entry",
+        "tags": [
+          "usermedia"
+        ],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ETag header set"
+          }
+        }
+      }
+    },
+    "/api/experimental/usermedia/{uuid}/finish-upload/": {
+      "post": {
+        "operationId": "experimental.usermedia.finish-upload",
+        "summary": "Finalize a chunked upload",
+        "tags": [
+          "usermedia"
+        ],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UserMedia",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMedia"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/usermedia/{uuid}/abort-upload/": {
+      "post": {
+        "operationId": "experimental.usermedia.abort-upload",
+        "summary": "Abort an in-progress upload",
+        "tags": [
+          "usermedia"
+        ],
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UserMedia",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMedia"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/submission/upload/": {
+      "get": {
+        "operationId": "api_experimental_submission_upload_list",
+        "summary": "Direct multipart package upload (deprecated)",
+        "tags": [
+          "Experimental"
+        ],
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "operationId": "api_experimental_submission_upload_create",
+        "summary": "Direct multipart package upload (deprecated)",
+        "tags": [
+          "Experimental"
+        ],
+        "deprecated": true,
+        "responses": {
+          "201": {
+            "description": "PackageSubmissionResult",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSubmissionResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/submission/submit/": {
+      "post": {
+        "operationId": "experimental.package.submit",
+        "summary": "Submit a pre-uploaded package",
+        "tags": [
+          "Experimental"
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageSubmissionResult",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSubmissionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Package submission error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSubmissionError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/submission/submit-async/": {
+      "post": {
+        "operationId": "experimental.package.submit-async",
+        "summary": "Submit a pre-uploaded package asynchronously",
+        "tags": [
+          "Experimental"
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageSubmissionStatus",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSubmissionStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/submission/poll-async/{id}/": {
+      "get": {
+        "operationId": "experimental.package.submit-async.poll",
+        "summary": "Poll an async submission",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed submission result or error status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/PackageSubmissionResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PackageSubmissionStatus"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mod/{namespace}/{name}/set-metadata": {
+      "post": {
+        "operationId": "mod.set-metadata",
+        "summary": "Update a package install location and categories",
+        "description": "Requires a session belonging to the owning team or that team's API token. Omitted properties are left unchanged. Supplying an empty categories array clears editable categories; protected categories are always preserved.",
+        "tags": [
+          "Package management"
+        ],
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageMetadataUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated package metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageMetadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Not allowed to modify this package"
+          },
+          "404": {
+            "description": "Package or category not found"
+          }
+        }
+      }
+    },
+    "/api/experimental/community/": {
+      "get": {
+        "operationId": "experimental.community.list",
+        "summary": "List communities",
+        "tags": [
+          "Experimental"
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated Community",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Community"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/community/{community}/category/": {
+      "get": {
+        "operationId": "experimental.community.categories",
+        "summary": "List categories (tags) for a community",
+        "tags": [
+          "Experimental"
+        ],
+        "parameters": [
+          {
+            "name": "community",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated PackageCategory",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PackageCategory"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/current-community/": {
+      "get": {
+        "operationId": "experimental.community.current",
+        "summary": "Get the current community",
+        "tags": [
+          "Experimental"
+        ],
+        "responses": {
+          "200": {
+            "description": "Community",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Community"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cyberstorm/community/{community_id}/": {
+      "get": {
+        "operationId": "cyberstorm.community.read",
+        "summary": "Get extended community info",
+        "tags": [
+          "Cyberstorm"
+        ],
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CyberstormCommunity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CyberstormCommunity"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/frontend/frontpage/": {
+      "get": {
+        "operationId": "experimental.frontend.frontpage",
+        "summary": "Front page stats and community list",
+        "tags": [
+          "Frontend"
+        ],
+        "responses": {
+          "200": {
+            "description": "FrontPageContent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontPageContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/frontend/packages/": {
+      "get": {
+        "operationId": "experimental.frontend.community.packages",
+        "summary": "Paginated package list for frontend rendering",
+        "tags": [
+          "Frontend"
+        ],
+        "parameters": [
+          {
+            "name": "community_identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CommunityPackageList",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommunityPackageList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/frontend/p/{package_namespace}/{package_name}/": {
+      "get": {
+        "operationId": "experimental.frontend.community.package",
+        "summary": "Full package detail for frontend rendering",
+        "tags": [
+          "Frontend"
+        ],
+        "parameters": [
+          {
+            "name": "community_identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "package_namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackageDetailViewContent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDetailViewContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/frontend/render-markdown/": {
+      "post": {
+        "operationId": "experimental.frontend.render-markdown",
+        "summary": "Render Markdown to HTML",
+        "tags": [
+          "Frontend"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "markdown"
+                ],
+                "properties": {
+                  "markdown": {
+                    "type": "string",
+                    "maxLength": 100000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RenderMarkdownResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderMarkdownResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimental/frontend/p/{package_namespace}/{package_name}/threads/": {
+      "get": {
+        "operationId": "experimental.frontend.community.package.threads",
+        "summary": "Public threads and posts for a package (same content visible to a logged-out visitor)",
+        "tags": [
+          "Frontend"
+        ],
+        "parameters": [
+          {
+            "name": "community_identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "package_namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of public threads with posts"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/experimental/legacyprofile/create/": {
+      "post": {
+        "operationId": "experimental.legacyprofile.create",
+        "summary": "Store a profile file and return a retrieval key",
+        "description": "The request body is limited to 20 MiB.",
+        "tags": [
+          "LegacyProfile"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "maxLength": 20971520
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "LegacyProfileCreateResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyProfileCreateResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large"
+          }
+        }
+      }
+    },
+    "/api/experimental/legacyprofile/get/{key}/": {
+      "get": {
+        "operationId": "experimental.legacyprofile.get",
+        "summary": "Retrieve a stored profile file by key",
+        "tags": [
+          "LegacyProfile"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile file",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Key not found"
+          }
+        }
+      }
+    },
+    "/api/report-downloads": {
+      "post": {
+        "operationId": "report-downloads",
+        "summary": "Report external install/update counts",
+        "description": "Bearer-token-authenticated. Lets an external mod mirror report install/update counts for packages also hosted here, so they count toward each version's downloads. Reach out to the Hexium admins to get a token if you're a mod mirror and want to report accurate download statistics back to us.",
+        "tags": [
+          "Downloads"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing report updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadReportResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New report created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadReportResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PackageMetadataUpdate": {
+        "type": "object",
+        "properties": {
+          "install_location": {
+            "type": "string",
+            "enum": [
+              "client",
+              "server",
+              "both",
+              "client_opt_server"
+            ]
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "_xsrf": {
+            "type": "string"
+          }
+        },
+        "minProperties": 1
+      },
+      "PackageMetadata": {
+        "type": "object",
+        "required": [
+          "namespace",
+          "name",
+          "install_location",
+          "categories"
+        ],
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "install_location": {
+            "type": "string",
+            "enum": [
+              "client",
+              "server",
+              "both",
+              "client_opt_server"
+            ]
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UserMedia": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "filename",
+          "size",
+          "datetime_created",
+          "expiry",
+          "status"
+        ],
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "datetime_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiry": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "upload_created",
+              "upload_complete",
+              "upload_aborted"
+            ]
+          }
+        }
+      },
+      "UserMediaUploadUrl": {
+        "type": "object",
+        "required": [
+          "part_number",
+          "url",
+          "offset",
+          "length"
+        ],
+        "properties": {
+          "part_number": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      },
+      "UserMediaInitiateUploadResponse": {
+        "type": "object",
+        "required": [
+          "user_media",
+          "upload_urls"
+        ],
+        "properties": {
+          "user_media": {
+            "$ref": "#/components/schemas/UserMedia"
+          },
+          "upload_urls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserMediaUploadUrl"
+            }
+          }
+        }
+      },
+      "PackageSubmissionResult": {
+        "type": "object",
+        "required": [
+          "package_version",
+          "available_communities",
+          "hidden"
+        ],
+        "properties": {
+          "package_version": {
+            "$ref": "#/components/schemas/PackageVersionExperimental"
+          },
+          "available_communities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "community",
+                "categories",
+                "url"
+              ],
+              "properties": {
+                "community": {
+                  "$ref": "#/components/schemas/Community"
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "hidden": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PackageSubmissionStatus": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "task_error",
+          "form_errors"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "error"
+            ]
+          },
+          "task_error": {
+            "type": "boolean"
+          },
+          "form_errors": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PackageSubmissionError": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "file": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PackageListing": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "package_url": {
+            "type": "string"
+          },
+          "donation_link": {
+            "type": "string",
+            "nullable": true
+          },
+          "date_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "date_updated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uuid4": {
+            "type": "string"
+          },
+          "rating_score": {
+            "type": "integer"
+          },
+          "is_pinned": {
+            "type": "boolean"
+          },
+          "is_deprecated": {
+            "type": "boolean"
+          },
+          "has_nsfw_content": {
+            "type": "boolean"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "full_name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "version_number": {
+                  "type": "string",
+                  "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-(?:alpha|beta|rc)\\.(?:0|[1-9][0-9]*))?$",
+                  "example": "1.0.0"
+                },
+                "dependencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "suggestions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "download_url": {
+                  "type": "string"
+                },
+                "downloads": {
+                  "type": "integer"
+                },
+                "date_created": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "website_url": {
+                  "type": "string"
+                },
+                "is_active": {
+                  "type": "boolean"
+                },
+                "uuid4": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PackageVersionExperimental": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version_number": {
+            "type": "string",
+            "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-(?:alpha|beta|rc)\\.(?:0|[1-9][0-9]*))?$",
+            "example": "1.0.0"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "downloads": {
+            "type": "integer"
+          },
+          "date_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "website_url": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PackageExperimental": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "package_url": {
+            "type": "string"
+          },
+          "date_created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "date_updated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rating_score": {
+            "type": "integer"
+          },
+          "is_pinned": {
+            "type": "boolean"
+          },
+          "is_deprecated": {
+            "type": "boolean"
+          },
+          "total_downloads": {
+            "type": "integer"
+          },
+          "latest": {
+            "$ref": "#/components/schemas/PackageVersionExperimental"
+          },
+          "community_listings": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "PackageMetrics": {
+        "type": "object",
+        "properties": {
+          "downloads": {
+            "type": "integer"
+          },
+          "rating_score": {
+            "type": "integer"
+          },
+          "latest_version": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PackageVersionMetrics": {
+        "type": "object",
+        "properties": {
+          "downloads": {
+            "type": "integer"
+          }
+        }
+      },
+      "PackageIndexEntry": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version_number": {
+            "type": "string",
+            "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-(?:alpha|beta|rc)\\.(?:0|[1-9][0-9]*))?$",
+            "example": "1.0.0"
+          },
+          "file_format": {
+            "type": "string"
+          },
+          "file_size": {
+            "type": "integer"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Community": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "discord_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "wiki_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "require_package_listing_approval": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PackageCategory": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "CyberstormCommunity": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "datetime_created": {
+            "type": "string",
+            "nullable": true
+          },
+          "short_description": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "discord_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "wiki_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "background_image_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "hero_image_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "cover_image_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "community_icon_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "total_download_count": {
+            "type": "integer"
+          },
+          "total_package_count": {
+            "type": "integer"
+          },
+          "has_mod_manager_support": {
+            "type": "boolean"
+          },
+          "is_listed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FrontPageContent": {
+        "type": "object",
+        "properties": {
+          "communities": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "download_count": {
+            "type": "integer"
+          },
+          "package_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "CommunityPackageList": {
+        "type": "object",
+        "properties": {
+          "bg_image_src": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "community_name": {
+            "type": "string"
+          },
+          "has_more_pages": {
+            "type": "boolean"
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "PackageDetailViewContent": {
+        "type": "object",
+        "properties": {
+          "bg_image_src": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "community_identifier": {
+            "type": "string"
+          },
+          "community_name": {
+            "type": "string"
+          },
+          "dependant_count": {
+            "type": "integer"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "dependency_string": {
+            "type": "string",
+            "nullable": true
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "download_count": {
+            "type": "integer"
+          },
+          "download_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "image_src": {
+            "type": "string"
+          },
+          "install_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_updated": {
+            "type": "string",
+            "nullable": true
+          },
+          "markdown": {
+            "type": "string",
+            "nullable": true
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "package_name": {
+            "type": "string"
+          },
+          "rating_score": {
+            "type": "integer"
+          },
+          "team_name": {
+            "type": "string"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "website": {
+            "type": "string"
+          }
+        }
+      },
+      "MarkdownResponse": {
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RenderMarkdownResponse": {
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string"
+          }
+        }
+      },
+      "LegacyProfileCreateResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        }
+      },
+      "DownloadReportEntry": {
+        "type": "object",
+        "required": [
+          "namespace",
+          "name",
+          "version",
+          "installs",
+          "updates"
+        ],
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "installs": {
+            "type": "integer"
+          },
+          "updates": {
+            "type": "integer"
+          }
+        }
+      },
+      "DownloadReport": {
+        "type": "object",
+        "required": [
+          "report_id",
+          "start",
+          "end",
+          "entries"
+        ],
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique id for this report — posting the same report_id again updates the existing entry instead of creating a duplicate."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC3339 start of the reporting period."
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "RFC3339 end of the reporting period."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DownloadReportEntry"
+            }
+          }
+        }
+      },
+      "DownloadReportResult": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "updated"
+            ]
+          },
+          "entries": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
