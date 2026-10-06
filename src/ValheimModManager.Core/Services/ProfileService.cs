@@ -3,6 +3,7 @@ namespace ValheimModManager.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -146,6 +147,92 @@ public sealed class ProfileService
         {
             SetActiveProfile("Default");
         }
+    }
+
+    public void ExportProfile(string profileName, string destinationZipPath)
+    {
+        var profileDir = GetProfileDirectory(profileName);
+        if (!Directory.Exists(profileDir))
+        {
+            throw new DirectoryNotFoundException($"Profile {profileName} not found.");
+        }
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "VMM_Export_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+
+            // Copy profile.json
+            var profileJson = Path.Combine(profileDir, "profile.json");
+            if (File.Exists(profileJson))
+            {
+                File.Copy(profileJson, Path.Combine(tempDir, "profile.json"));
+            }
+
+            // Copy BepInEx/config
+            var configDir = Path.Combine(profileDir, "BepInEx", "config");
+            if (Directory.Exists(configDir))
+            {
+                var targetConfig = Path.Combine(tempDir, "BepInEx", "config");
+                CopyDirectory(configDir, targetConfig);
+            }
+
+            if (File.Exists(destinationZipPath)) File.Delete(destinationZipPath);
+            System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, destinationZipPath);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir)) Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    public Profile ImportProfile(string sourceZipPath, string? targetProfileName = null)
+    {
+        using var archive = System.IO.Compression.ZipFile.OpenRead(sourceZipPath);
+        var profileEntry = archive.GetEntry("profile.json");
+        if (profileEntry == null)
+        {
+            throw new InvalidOperationException("Invalid .vmmprofile: missing profile.json entry.");
+        }
+
+        Profile imported;
+        using (var stream = profileEntry.Open())
+        {
+            imported = JsonSerializer.Deserialize<Profile>(stream)
+                       ?? throw new InvalidOperationException("Failed to parse profile.json from archive.");
+        }
+
+        var finalName = string.IsNullOrWhiteSpace(targetProfileName) ? imported.Name : targetProfileName;
+        finalName = SanitizeFolderName(finalName);
+
+        // If profile already exists, generate a unique name
+        var existingNames = ListProfileNames();
+        var uniqueName = finalName;
+        int counter = 2;
+        while (existingNames.Contains(uniqueName, StringComparer.OrdinalIgnoreCase))
+        {
+            uniqueName = $"{finalName} ({counter++})";
+        }
+
+        var newProfile = CreateProfile(uniqueName, imported.Target);
+        var targetDir = GetProfileDirectory(uniqueName);
+
+        // Extract configs if present
+        foreach (var entry in archive.Entries)
+        {
+            if (entry.FullName.StartsWith("BepInEx/config/", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(entry.Name))
+            {
+                var rel = entry.FullName["BepInEx/config/".Length..];
+                var dest = Path.Combine(targetDir, "BepInEx", "config", rel.Replace('/', Path.DirectorySeparatorChar));
+                var dir = Path.GetDirectoryName(dest);
+                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                entry.ExtractToFile(dest, overwrite: true);
+            }
+        }
+
+        var updated = newProfile with { Mods = imported.Mods };
+        SaveProfile(updated);
+        return updated;
     }
 
     public string GetActiveProfileName()
