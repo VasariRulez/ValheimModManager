@@ -1,9 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>Valheim Mod Manager</AssemblyTitle>
+    <Product>Valheim Mod Manager</Product>
+    <Description>Multi-source Mod Manager for Valheim supporting Thunderstore, Hexium, and profiles.</Description>
   </PropertyGroup>
 
   <ItemGroup>

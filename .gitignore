@@ -35,3 +35,7 @@ bld/
 
 ## Antigravity / Scratch / Brain
 scratch/
+
+## Distribution & Publish output
+dist/
+artifacts/publish/
