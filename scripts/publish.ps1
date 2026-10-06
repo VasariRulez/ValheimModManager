@@ -51,7 +51,6 @@ param (
     [switch]$Clean
 )
 
-Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # Evita interruzioni anomale su warning/diagnostica stderr dei comandi nativi in PowerShell 7.4+
@@ -193,7 +192,7 @@ foreach ($rid in $targetRuntimes) {
 }
 
 # 7. Calcolo Checksum SHA-256
-$allArchiveFiles = Get-ChildItem -Path $DistPath -File | Where-Object { $_.Name -like "*.zip" -or $_.Name -like "*.tar.gz" }
+$allArchiveFiles = @(Get-ChildItem -Path $DistPath -File | Where-Object { $_.Name -like "*.zip" -or $_.Name -like "*.tar.gz" })
 if ($allArchiveFiles.Count -gt 0) {
     Write-Host "`n[4/4] Calcolo Checksum SHA-256..." -ForegroundColor Green
     $checksumFile = Join-Path $DistPath "SHA256SUMS.txt"
