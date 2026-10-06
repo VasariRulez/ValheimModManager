@@ -2,7 +2,7 @@ namespace ValheimModManager.Tests;
 
 using System;
 using System.IO;
-using ValheimModManager.Platform.Windows;
+using ValheimModManager.Core.Common;
 using Xunit;
 
 public class VdfParserTests : IDisposable

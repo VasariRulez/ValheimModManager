@@ -1,4 +1,4 @@
-namespace ValheimModManager.Platform.Windows;
+namespace ValheimModManager.Core.Common;
 
 using System;
 using System.Collections.Generic;

@@ -16,6 +16,7 @@ using ValheimModManager.Core.Models;
 using ValheimModManager.Core.Providers.Thunderstore;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Platform.Windows;
+using ValheimModManager.Platform.Linux;
 
 public partial class MainViewModel : ViewModelBase
 {
@@ -99,6 +100,11 @@ public partial class MainViewModel : ViewModelBase
         {
             _steamLocator = new WindowsSteamLocator();
             _processMonitor = new WindowsProcessMonitor();
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            _steamLocator = new LinuxSteamLocator();
+            _processMonitor = new LinuxProcessMonitor();
         }
         else
         {

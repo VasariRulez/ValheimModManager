@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
 using System.Runtime.Versioning;
 using ValheimModManager.Core.Abstractions;
+using ValheimModManager.Core.Common;
 using ValheimModManager.Core.Models;
 
 [SupportedOSPlatform("windows")]

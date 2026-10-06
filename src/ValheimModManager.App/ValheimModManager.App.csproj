@@ -26,5 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ValheimModManager.Core\ValheimModManager.Core.csproj" />
     <ProjectReference Include="..\ValheimModManager.Platform.Windows\ValheimModManager.Platform.Windows.csproj" />
+    <ProjectReference Include="..\ValheimModManager.Platform.Linux\ValheimModManager.Platform.Linux.csproj" />
   </ItemGroup>
 </Project>
