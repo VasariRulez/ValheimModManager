@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
         x:Class="ValheimModManager.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/icon.ico"
         Title="Valheim Mod Manager"
         Width="1140" Height="740"
         MinWidth="950" MinHeight="620"
@@ -23,9 +23,12 @@
                     
                     <!-- Title & Profile Selector with Management Toolbar -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="17" Foreground="#e4e4e7" LetterSpacing="2" />
-                            <TextBlock Text="MOD MANAGER" FontSize="10" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="1" />
+                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                            <Image Source="/Assets/icon.png" Width="34" Height="34" VerticalAlignment="Center" />
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="17" Foreground="#e4e4e7" LetterSpacing="2" />
+                                <TextBlock Text="MOD MANAGER" FontSize="10" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="1" />
+                            </StackPanel>
                         </StackPanel>
                         
                         <Rectangle Width="1" Height="28" Fill="#3f3f46" Margin="4,0" />
