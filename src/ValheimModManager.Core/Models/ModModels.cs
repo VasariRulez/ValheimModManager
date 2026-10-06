@@ -59,6 +59,35 @@ public sealed record ModSummary(
     IReadOnlyList<ModVersion> Versions
 );
 
+public sealed record ModSourceRelease(
+    string ProviderId,
+    string DisplayName,
+    ModSummary Summary,
+    string LatestVersion,
+    bool IsNewestOverall
+)
+{
+    public override string ToString() =>
+        IsNewestOverall
+            ? $"{DisplayName} (v{LatestVersion} - Più recente ⭐)"
+            : $"{DisplayName} (v{LatestVersion})";
+}
+
+public sealed record GroupedModSummary(
+    CanonicalModId CanonicalId,
+    string Name,
+    string Owner,
+    string Description,
+    string IconUrl,
+    string HighestVersionOverall,
+    long TotalDownloadsOverall,
+    int HighestRatingOverall,
+    bool IsPinned,
+    bool IsDeprecated,
+    IReadOnlyList<string> Categories,
+    IReadOnlyList<ModSourceRelease> AvailableSources
+);
+
 public sealed record ModDetails(
     ModKey Key,
     CanonicalModId CanonicalId,

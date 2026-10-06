@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ValheimModManager.Core.Abstractions;
+using ValheimModManager.Core.Import;
 using ValheimModManager.Core.Install;
 using ValheimModManager.Core.Models;
 using ValheimModManager.Core.Providers.Thunderstore;
@@ -27,12 +28,19 @@ public partial class MainViewModel : ViewModelBase
     private readonly InstallService _installService;
     private readonly DependencyResolver _dependencyResolver;
     private readonly UpdateService _updateService;
+    private readonly R2ModmanImporter _r2Importer;
     private readonly GameLauncher _gameLauncher;
     private readonly ISteamLocator _steamLocator;
     private readonly IProcessMonitor _processMonitor;
 
+    private CancellationTokenSource? _catalogSearchCts;
+    private CancellationTokenSource? _installedSearchCts;
+
     [ObservableProperty]
     private string _gamePath = "";
+
+    [ObservableProperty]
+    private string _customGamePathInput = "";
 
     [ObservableProperty]
     private bool _isGameFound;
@@ -77,7 +85,20 @@ public partial class MainViewModel : ViewModelBase
     private bool _isBusy;
 
     [ObservableProperty]
-    private int _selectedTab = 0; // 0=Installed, 1=Browse, 2=Settings
+    private int _selectedTab = 0;
+
+    // Modals / Overlays
+    [ObservableProperty]
+    private bool _isNewProfileDialogVisible;
+
+    [ObservableProperty]
+    private string _newProfileNameInput = "";
+
+    [ObservableProperty]
+    private bool _isImportR2CodeDialogVisible;
+
+    [ObservableProperty]
+    private string _r2CodeInput = "";
 
     public IReadOnlyList<string> SourceFilterOptions { get; } =
         ["Tutte le fonti", "Thunderstore", "Hexium"];
@@ -95,6 +116,7 @@ public partial class MainViewModel : ViewModelBase
         _installService = new InstallService(_httpClient);
         _dependencyResolver = new DependencyResolver(_catalogService);
         _updateService = new UpdateService(_catalogService);
+        _r2Importer = new R2ModmanImporter(_httpClient, _profileService, _catalogService);
 
         if (OperatingSystem.IsWindows())
         {
@@ -130,6 +152,7 @@ public partial class MainViewModel : ViewModelBase
             {
                 CurrentInstall = new GameInstall(GameTarget.Client, state.CustomGamePath, exe);
                 GamePath = state.CustomGamePath;
+                CustomGamePathInput = state.CustomGamePath;
                 IsGameFound = true;
                 UpdateBepInExStatus();
                 return;
@@ -143,16 +166,51 @@ public partial class MainViewModel : ViewModelBase
         {
             CurrentInstall = clientInstall;
             GamePath = clientInstall.GameDirectory;
+            CustomGamePathInput = clientInstall.GameDirectory;
             IsGameFound = true;
         }
         else
         {
             CurrentInstall = null;
             GamePath = "Valheim non rilevato automaticamente.";
+            CustomGamePathInput = "";
             IsGameFound = false;
         }
 
         UpdateBepInExStatus();
+    }
+
+    [RelayCommand]
+    public void ApplyCustomGamePath()
+    {
+        if (string.IsNullOrWhiteSpace(CustomGamePathInput)) return;
+        SetCustomGamePath(CustomGamePathInput.Trim());
+    }
+
+    public void SetCustomGamePath(string folderPath)
+    {
+        if (!Directory.Exists(folderPath))
+        {
+            StatusMessage = "La cartella specificata non esiste.";
+            return;
+        }
+
+        var exe = Path.Combine(folderPath, "valheim.exe");
+        if (!File.Exists(exe))
+        {
+            StatusMessage = "Attenzione: 'valheim.exe' non trovato nella cartella selezionata.";
+            return;
+        }
+
+        var state = _profileService.LoadState();
+        _profileService.SaveState(state with { CustomGamePath = folderPath });
+
+        CurrentInstall = new GameInstall(GameTarget.Client, folderPath, exe);
+        GamePath = folderPath;
+        CustomGamePathInput = folderPath;
+        IsGameFound = true;
+        UpdateBepInExStatus();
+        StatusMessage = "Cartella di Valheim configurata con successo!";
     }
 
     public void UpdateBepInExStatus()
@@ -168,7 +226,7 @@ public partial class MainViewModel : ViewModelBase
         }
         else if (status.IsInstalledInProfile)
         {
-            BepInExStatusText = "BepInEx: Installato nel profilo, ma ganci di gioco da configurare";
+            BepInExStatusText = "BepInEx: Installato nel profilo, ganci di gioco da applicare";
         }
         else
         {
@@ -201,6 +259,48 @@ public partial class MainViewModel : ViewModelBase
         _profileService.SetActiveProfile(value);
         UpdateBepInExStatus();
         LoadInstalledMods();
+    }
+
+    // DEBOUNCE RICERCA MOD CATALOGO
+    partial void OnCatalogSearchTextChanged(string value)
+    {
+        _catalogSearchCts?.Cancel();
+        _catalogSearchCts = new CancellationTokenSource();
+        var token = _catalogSearchCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(300, token);
+                Avalonia.Threading.Dispatcher.UIThread.Post(ApplyCatalogSearch);
+            }
+            catch (OperationCanceledException) { }
+        });
+    }
+
+    // DEBOUNCE RICERCA MOD INSTALLATE
+    partial void OnInstalledSearchTextChanged(string value)
+    {
+        _installedSearchCts?.Cancel();
+        _installedSearchCts = new CancellationTokenSource();
+        var token = _installedSearchCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(200, token);
+                Avalonia.Threading.Dispatcher.UIThread.Post(LoadInstalledMods);
+            }
+            catch (OperationCanceledException) { }
+        });
+    }
+
+    // FIX TRIGGER FILTRO SORGENTE
+    partial void OnSelectedSourceFilterChanged(string value)
+    {
+        ApplyCatalogSearch();
     }
 
     [RelayCommand]
@@ -287,7 +387,7 @@ public partial class MainViewModel : ViewModelBase
             PageSize: 100
         );
 
-        var results = _catalogService.Search(query);
+        var results = _catalogService.SearchGrouped(query);
         CatalogMods.Clear();
         foreach (var mod in results)
         {
@@ -302,7 +402,11 @@ public partial class MainViewModel : ViewModelBase
 
         item.IsInstalling = true;
         IsBusy = true;
-        StatusMessage = $"Download e installazione di {item.Name} v{item.SelectedVersion}...";
+        var chosenSource = item.SelectedSource;
+        var chosenSummary = chosenSource.Summary;
+        var chosenVersion = item.SelectedVersion;
+
+        StatusMessage = $"Download e installazione di {item.Name} v{chosenVersion} da {chosenSource.DisplayName}...";
 
         try
         {
@@ -310,7 +414,7 @@ public partial class MainViewModel : ViewModelBase
             var profileBepDir = _profileService.GetProfileBepInExDirectory(SelectedProfile);
 
             // 1. Resolve and install dependencies first
-            var dependencies = _dependencyResolver.ResolveDependencies(item.Summary, item.SelectedVersion, profile);
+            var dependencies = _dependencyResolver.ResolveDependencies(chosenSummary, chosenVersion, profile);
             foreach (var dep in dependencies)
             {
                 if (dep.AlreadyInstalled) continue;
@@ -335,19 +439,19 @@ public partial class MainViewModel : ViewModelBase
                 ));
             }
 
-            // 2. Install root mod
-            var versionObj = item.Summary.Versions.FirstOrDefault(v => v.VersionNumber == item.SelectedVersion)
-                             ?? item.Summary.Versions.First();
+            // 2. Install root mod from selected source & version
+            var versionObj = chosenSummary.Versions.FirstOrDefault(v => v.VersionNumber == chosenVersion)
+                             ?? chosenSummary.Versions.First();
 
-            var ticket = new DownloadTicket(new Uri(versionObj.DownloadUrl), $"{item.Name}-{item.SelectedVersion}.zip");
-            var zipPath = await _installService.DownloadPackageAsync(ticket, item.ProviderId, item.Name, item.SelectedVersion);
-            var files = _installService.InstallZipToProfile(zipPath, profileBepDir, item.Summary.CanonicalId);
+            var ticket = new DownloadTicket(new Uri(versionObj.DownloadUrl), $"{item.Name}-{chosenVersion}.zip");
+            var zipPath = await _installService.DownloadPackageAsync(ticket, chosenSource.ProviderId, item.Name, chosenVersion);
+            var files = _installService.InstallZipToProfile(zipPath, profileBepDir, chosenSummary.CanonicalId);
 
-            profile.Mods.RemoveAll(m => m.CanonicalId == item.Summary.CanonicalId);
+            profile.Mods.RemoveAll(m => m.CanonicalId == chosenSummary.CanonicalId);
             profile.Mods.Add(new InstalledMod(
-                Key: item.Summary.Key,
-                CanonicalId: item.Summary.CanonicalId,
-                InstalledVersion: item.SelectedVersion,
+                Key: chosenSummary.Key,
+                CanonicalId: chosenSummary.CanonicalId,
+                InstalledVersion: chosenVersion,
                 IsEnabled: true,
                 InstalledAt: DateTime.UtcNow,
                 InstalledFiles: files,
@@ -356,7 +460,7 @@ public partial class MainViewModel : ViewModelBase
 
             _profileService.SaveProfile(profile);
             LoadInstalledMods();
-            StatusMessage = $"{item.Name} v{item.SelectedVersion} installata con successo nel profilo {SelectedProfile}!";
+            StatusMessage = $"{item.Name} v{chosenVersion} installata da {chosenSource.DisplayName} nel profilo [{SelectedProfile}]!";
         }
         catch (Exception ex)
         {
@@ -458,7 +562,6 @@ public partial class MainViewModel : ViewModelBase
             }
             else
             {
-                // Direct fallback
                 version = "5.4.2351";
                 downloadUrl = $"https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/{version}/";
             }
@@ -537,7 +640,28 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    // GESTIONE PROFILI: MODALI E COMANDI
     [RelayCommand]
+    public void ShowNewProfileDialog()
+    {
+        NewProfileNameInput = "";
+        IsNewProfileDialogVisible = true;
+    }
+
+    [RelayCommand]
+    public void ConfirmNewProfile()
+    {
+        if (string.IsNullOrWhiteSpace(NewProfileNameInput)) return;
+        CreateNewProfile(NewProfileNameInput.Trim());
+        IsNewProfileDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public void CancelNewProfileDialog()
+    {
+        IsNewProfileDialogVisible = false;
+    }
+
     public void CreateNewProfile(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
@@ -551,6 +675,31 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Errore creazione profilo: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void CloneActiveProfile()
+    {
+        var baseName = SelectedProfile;
+        var newName = $"{baseName} (Copia)";
+        int counter = 2;
+        var existing = _profileService.ListProfileNames();
+        while (existing.Contains(newName, StringComparer.OrdinalIgnoreCase))
+        {
+            newName = $"{baseName} (Copia {counter++})";
+        }
+
+        try
+        {
+            _profileService.CloneProfile(baseName, newName);
+            LoadProfilesList();
+            SelectedProfile = newName;
+            StatusMessage = $"Profilo [{newName}] clonato con successo.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore clonazione profilo: {ex.Message}";
         }
     }
 
@@ -577,7 +726,79 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void ExportCurrentProfile(string targetZip)
+    public void ShowImportR2CodeDialog()
+    {
+        R2CodeInput = "";
+        IsImportR2CodeDialogVisible = true;
+    }
+
+    [RelayCommand]
+    public async Task ConfirmImportR2CodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(R2CodeInput)) return;
+        IsBusy = true;
+        StatusMessage = "Download e importazione profilo da codice r2modman in corso...";
+        try
+        {
+            var res = await _r2Importer.ImportFromCodeAsync(R2CodeInput.Trim());
+            LoadProfilesList();
+            SelectedProfile = res.CreatedProfile.Name;
+            IsImportR2CodeDialogVisible = false;
+            StatusMessage = $"Profilo [{res.CreatedProfile.Name}] importato con successo ({res.ResolvedCatalogMods.Count} mod risolte)!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore importazione codice: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public void CancelImportR2CodeDialog()
+    {
+        IsImportR2CodeDialogVisible = false;
+    }
+
+    public async Task ImportR2zFileAsync(string filePath)
+    {
+        IsBusy = true;
+        StatusMessage = $"Importazione profilo r2modman da file {Path.GetFileName(filePath)}...";
+        try
+        {
+            var res = await _r2Importer.ImportFromR2zAsync(filePath);
+            LoadProfilesList();
+            SelectedProfile = res.CreatedProfile.Name;
+            StatusMessage = $"Profilo [{res.CreatedProfile.Name}] importato con successo!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore importazione .r2z: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public void ImportVmmProfileFile(string filePath)
+    {
+        try
+        {
+            var imported = _profileService.ImportProfile(filePath);
+            LoadProfilesList();
+            SelectedProfile = imported.Name;
+            StatusMessage = $"Profilo [{imported.Name}] importato con successo!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore importazione: {ex.Message}";
+        }
+    }
+
+    public void ExportActiveProfile(string targetZip)
     {
         try
         {
@@ -587,22 +808,6 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Errore esportazione: {ex.Message}";
-        }
-    }
-
-    [RelayCommand]
-    public void ImportProfile(string sourceZip)
-    {
-        try
-        {
-            var imported = _profileService.ImportProfile(sourceZip);
-            LoadProfilesList();
-            SelectedProfile = imported.Name;
-            StatusMessage = $"Profilo [{imported.Name}] importato con successo!";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Errore importazione: {ex.Message}";
         }
     }
 

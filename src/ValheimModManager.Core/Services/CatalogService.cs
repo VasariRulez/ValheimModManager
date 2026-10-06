@@ -168,6 +168,113 @@ public sealed class CatalogService : ICatalogSink
         return deduplicated;
     }
 
+    public IReadOnlyList<GroupedModSummary> SearchGrouped(ModQuery query)
+    {
+        IEnumerable<ModSummary> allMods;
+
+        if (!string.IsNullOrWhiteSpace(query.ProviderId) && _catalog.TryGetValue(query.ProviderId, out var dict))
+        {
+            allMods = dict.Values;
+        }
+        else
+        {
+            allMods = _catalog.Values.SelectMany(d => d.Values);
+        }
+
+        if (!query.IncludeDeprecated)
+        {
+            allMods = allMods.Where(m => !m.IsDeprecated);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.SearchText))
+        {
+            var search = query.SearchText.Trim();
+            allMods = allMods.Where(m =>
+                m.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                m.Owner.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Author))
+        {
+            allMods = allMods.Where(m => m.Owner.Equals(query.Author, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Category))
+        {
+            allMods = allMods.Where(m => m.Categories.Any(c => c.Equals(query.Category, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        var grouped = allMods
+            .GroupBy(m => m.CanonicalId)
+            .Select(g =>
+            {
+                var summaries = g.ToList();
+
+                string highestVersion = "0.0.0";
+                foreach (var s in summaries)
+                {
+                    if (ModVersionComparer.IsNewer(s.LatestVersionNumber, highestVersion))
+                    {
+                        highestVersion = s.LatestVersionNumber;
+                    }
+                }
+
+                var sources = summaries.Select(s =>
+                {
+                    var displayName = s.Key.ProviderId.Equals("hexium", StringComparison.OrdinalIgnoreCase)
+                        ? "Hexium"
+                        : s.Key.ProviderId.Equals("thunderstore", StringComparison.OrdinalIgnoreCase)
+                            ? "Thunderstore"
+                            : s.Key.ProviderId;
+
+                    var isNewest = s.LatestVersionNumber == highestVersion ||
+                                   !ModVersionComparer.IsNewer(highestVersion, s.LatestVersionNumber);
+
+                    return new ModSourceRelease(
+                        ProviderId: s.Key.ProviderId,
+                        DisplayName: displayName,
+                        Summary: s,
+                        LatestVersion: s.LatestVersionNumber,
+                        IsNewestOverall: isNewest
+                    );
+                })
+                .OrderByDescending(s => s.IsNewestOverall)
+                .ThenByDescending(s => s.ProviderId == "thunderstore" ? 1 : 0)
+                .ToList();
+
+                var primary = sources[0].Summary;
+
+                return new GroupedModSummary(
+                    CanonicalId: g.Key,
+                    Name: primary.Name,
+                    Owner: primary.Owner,
+                    Description: primary.Description,
+                    IconUrl: primary.IconUrl,
+                    HighestVersionOverall: highestVersion,
+                    TotalDownloadsOverall: summaries.Sum(s => s.TotalDownloads),
+                    HighestRatingOverall: summaries.Max(s => s.RatingScore),
+                    IsPinned: summaries.Any(s => s.IsPinned),
+                    IsDeprecated: summaries.All(s => s.IsDeprecated),
+                    Categories: summaries.SelectMany(s => s.Categories).Distinct().ToList(),
+                    AvailableSources: sources
+                );
+            })
+            .OrderByDescending(m => m.IsPinned)
+            .ThenByDescending(m => m.TotalDownloadsOverall)
+            .ToList();
+
+        if (query.PageSize > 0)
+        {
+            return grouped
+                .Skip(query.PageIndex * query.PageSize)
+                .Take(query.PageSize)
+                .ToList();
+        }
+
+        return grouped;
+    }
+
     public ModSummary? FindByCanonicalId(CanonicalModId canonicalId, string? preferredProvider = "thunderstore")
     {
         if (preferredProvider != null &&

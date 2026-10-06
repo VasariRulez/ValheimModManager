@@ -1,280 +1,386 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ValheimModManager.App.ViewModels"
+        xmlns:m="using:ValheimModManager.Core.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
         x:Class="ValheimModManager.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Valheim Mod Manager"
-        Width="1100" Height="720"
-        MinWidth="900" MinHeight="600"
+        Width="1140" Height="740"
+        MinWidth="950" MinHeight="620"
         WindowStartupLocation="CenterScreen">
 
-    <Grid RowDefinitions="Auto,*,Auto" Background="#18181b">
-        
-        <!-- HEADER & TOOLBAR -->
-        <Border Grid.Row="0" Background="#27272a" Padding="16,12" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+    <Grid Background="#18181b">
+        <!-- BASE APP LAYOUT -->
+        <Grid RowDefinitions="Auto,*,Auto">
+            
+            <!-- HEADER & TOOLBAR -->
+            <Border Grid.Row="0" Background="#27272a" Padding="14,10" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    
+                    <!-- Title & Profile Selector with Management Toolbar -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="17" Foreground="#e4e4e7" LetterSpacing="2" />
+                            <TextBlock Text="MOD MANAGER" FontSize="10" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="1" />
+                        </StackPanel>
+                        
+                        <Rectangle Width="1" Height="28" Fill="#3f3f46" Margin="4,0" />
+                        
+                        <!-- Profile Selection & Actions -->
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="Profilo:" VerticalAlignment="Center" Foreground="#a1a1aa" FontSize="12" FontWeight="Medium" />
+                            <ComboBox ItemsSource="{Binding Profiles}"
+                                      SelectedItem="{Binding SelectedProfile}"
+                                      Width="140" />
+
+                            <!-- Profile Action Buttons -->
+                            <Button Content="➕" 
+                                    Command="{Binding ShowNewProfileDialogCommand}"
+                                    ToolTip.Tip="Crea nuovo profilo"
+                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
+                            
+                            <Button Content="📋" 
+                                    Command="{Binding CloneActiveProfileCommand}"
+                                    ToolTip.Tip="Clona profilo attivo"
+                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
+                            
+                            <Button Content="🗑️" 
+                                    Command="{Binding DeleteCurrentProfileCommand}"
+                                    ToolTip.Tip="Elimina profilo attivo"
+                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
+
+                            <Button Content="📤" 
+                                    Click="OnExportProfileClicked"
+                                    ToolTip.Tip="Esporta profilo (.vmmprofile)"
+                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
+
+                            <!-- Import Dropdown Menu -->
+                            <Button Content="📥" ToolTip.Tip="Opzioni di importazione profilo"
+                                    Background="#3f3f46" Padding="8,6" CornerRadius="4">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                        <MenuItem Header="Importa Profilo (.vmmprofile)" Click="OnImportVmmProfileClicked" />
+                                        <MenuItem Header="Importa da archivio r2modman (.r2z)" Click="OnImportR2zClicked" />
+                                        <MenuItem Header="Importa da Codice r2modman..." Command="{Binding ShowImportR2CodeDialogCommand}" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- BepInEx Banner -->
+                    <Border Grid.Column="2" 
+                            Background="#18181b"
+                            BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="6"
+                            Padding="10,5" Margin="12,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{Binding IsBepInExInstalled, Converter={x:Null}}" />
+                            <TextBlock Text="{Binding BepInExStatusText}" 
+                                       Foreground="#e4e4e7" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                            <Button Content="Installa BepInEx 1-Click" 
+                                    Command="{Binding InstallBepInExCommand}"
+                                    IsVisible="{Binding !IsBepInExInstalled}"
+                                    Background="#d97706" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" />
+                            <Button Content="Ripristina Vanilla" 
+                                    Command="{Binding RestoreVanillaCommand}"
+                                    IsVisible="{Binding IsBepInExInstalled}"
+                                    Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" Padding="8,4" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Play Actions -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="▶  AVVIA VALHEIM" 
+                                Command="{Binding LaunchGameCommand}"
+                                Background="#16a34a" Foreground="White" 
+                                FontWeight="Bold" FontSize="13"
+                                Padding="16,10" CornerRadius="6" />
+                        
+                        <Button Content="🛡️  Server" 
+                                Command="{Binding LaunchServerCommand}"
+                                Background="#27272a" Foreground="#d4d4d8" 
+                                FontWeight="SemiBold" FontSize="12"
+                                Padding="12,10" CornerRadius="6"
+                                ToolTip.Tip="Avvia Valheim Dedicated Server con il profilo selezionato" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- MAIN TABS CONTENT -->
+            <TabControl Grid.Row="1" Margin="12,8,12,8">
                 
-                <!-- Title & Profile Selector -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="18" Foreground="#e4e4e7" LetterSpacing="2" />
-                        <TextBlock Text="MOD MANAGER" FontSize="10" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="1" />
-                    </StackPanel>
-                    
-                    <Rectangle Width="1" Height="28" Fill="#3f3f46" Margin="4,0" />
-                    
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <TextBlock Text="Profilo:" VerticalAlignment="Center" Foreground="#a1a1aa" FontWeight="Medium" />
-                        <ComboBox ItemsSource="{Binding Profiles}"
-                                  SelectedItem="{Binding SelectedProfile}"
-                                  Width="160" />
+                <!-- TAB 1: MOD INSTALLATE -->
+                <TabItem Header="📦  Mod Installate">
+                    <Grid RowDefinitions="Auto,*" Margin="8">
+                        <!-- Actions bar with Debounced Search -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                            <TextBox Grid.Column="0" 
+                                     PlaceholderText="Cerca tra le mod installate (filtro automatico)..." 
+                                     Text="{Binding InstalledSearchText}"
+                                     Width="350" HorizontalAlignment="Left" />
+                            
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Content="Verifica Aggiornamenti" 
+                                        Command="{Binding CheckUpdatesCommand}"
+                                        Background="#27272a" />
+                                <Button Content="Aggiorna Tutte le Mod" 
+                                        Command="{Binding UpdateAllModsCommand}"
+                                        Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Installed Mods List -->
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding InstalledMods}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:InstalledModItemViewModel">
+                                        <Border Background="#27272a" CornerRadius="6" Padding="14,10" Margin="0,0,0,6"
+                                                BorderBrush="#3f3f46" BorderThickness="1">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                                                
+                                                <!-- Toggle Switch -->
+                                                <ToggleSwitch Grid.Column="0" 
+                                                              IsChecked="{Binding IsEnabled}"
+                                                              Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).ToggleModCommand}"
+                                                              CommandParameter="{Binding .}"
+                                                              OnContent="" OffContent="" Margin="0,0,12,0" />
+
+                                                <!-- Mod info -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Foreground="#f4f4f5" />
+                                                        <Border Background="#3f3f46" CornerRadius="4" Padding="6,1">
+                                                            <TextBlock Text="{Binding ProviderId}" FontSize="10" Foreground="#d4d4d8" />
+                                                        </Border>
+                                                        <Border Background="#3f3f46" CornerRadius="4" Padding="6,1">
+                                                            <TextBlock Text="{Binding InstalledVersion, StringFormat='v{0}'}" FontSize="10" Foreground="#d4d4d8" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Owner, StringFormat='Autore: {0}'}" FontSize="11" Foreground="#a1a1aa" Margin="0,2,0,0" />
+                                                </StackPanel>
+
+                                                <!-- Update badge -->
+                                                <Border Grid.Column="2" 
+                                                        IsVisible="{Binding HasUpdate}"
+                                                        Background="#d97706" CornerRadius="4" Padding="8,4" Margin="12,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding LatestVersion, StringFormat='Aggiornamento v{0} disp.'}" 
+                                                               Foreground="White" FontSize="11" FontWeight="SemiBold" />
+                                                </Border>
+
+                                                <!-- Update Button -->
+                                                <Button Grid.Column="3" 
+                                                        Content="Aggiorna" 
+                                                        IsVisible="{Binding HasUpdate}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UpdateModCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Background="#2563eb" Foreground="White" Margin="0,0,8,0" />
+
+                                                <!-- Uninstall Button -->
+                                                <Button Grid.Column="4" 
+                                                        Content="Disinstalla" 
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UninstallModCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Background="#7f1d1d" Foreground="#fca5a5" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 2: ESPLORA ONLINE (CON DEBOUNCE E MULTI-FONTE) -->
+                <TabItem Header="🌐  Esplora Mod Online">
+                    <Grid RowDefinitions="Auto,*" Margin="8">
+                        <!-- Filters bar with Debounce and Source Dropdown -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+                            <TextBox Grid.Column="0" 
+                                     PlaceholderText="Cerca per nome, autore o descrizione (digitazione automatica)..." 
+                                     Text="{Binding CatalogSearchText}"
+                                     Margin="0,0,8,0" />
+                            
+                            <ComboBox Grid.Column="1" 
+                                      ItemsSource="{Binding SourceFilterOptions}"
+                                      SelectedItem="{Binding SelectedSourceFilter}"
+                                      Margin="0,0,8,0" Width="170" />
+                            
+                            <Button Grid.Column="2" 
+                                    Content="🔄  Aggiorna Catalogo" 
+                                    Command="{Binding RefreshOnlineCatalogCommand}"
+                                    Background="#27272a" />
+                        </Grid>
+
+                        <!-- Catalog Items List with Multi-Source Grouping -->
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding CatalogMods}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CatalogModItemViewModel">
+                                        <Border Background="#27272a" CornerRadius="6" Padding="14,12" Margin="0,0,0,8"
+                                                BorderBrush="#3f3f46" BorderThickness="1">
+                                            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                                                
+                                                <!-- Details -->
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <!-- Title & Multi-Source Badges -->
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#f4f4f5" />
+                                                        <TextBlock Text="{Binding Owner, StringFormat='di {0}'}" FontSize="12" Foreground="#a1a1aa" VerticalAlignment="Center" />
+                                                        
+                                                        <!-- Sources Badges List -->
+                                                        <ItemsControl ItemsSource="{Binding AvailableSources}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="m:ModSourceRelease">
+                                                                    <Border Background="{Binding IsNewestOverall, Converter={x:Null}}"
+                                                                            CornerRadius="4" Padding="6,2"
+                                                                            BorderBrush="#3b82f6" BorderThickness="1">
+                                                                        <TextBlock Text="{Binding .}" FontSize="10" Foreground="#93c5fd" FontWeight="Medium" />
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+
+                                                    <TextBlock Text="{Binding Description}" 
+                                                               Foreground="#d4d4d8" FontSize="12" Margin="0,4,0,6"
+                                                               TextWrapping="Wrap" MaxLines="2" />
+
+                                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                                        <TextBlock Text="{Binding TotalDownloads, StringFormat='📥 {0:N0} download'}" FontSize="11" Foreground="#a1a1aa" />
+                                                        <TextBlock Text="{Binding RatingScore, StringFormat='⭐ {0} voti'}" FontSize="11" Foreground="#a1a1aa" />
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <!-- Source Selector (se disponibile su più fonti) -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0" IsVisible="{Binding HasMultipleSources}">
+                                                    <TextBlock Text="Fonte:" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
+                                                    <ComboBox ItemsSource="{Binding AvailableSources}"
+                                                              SelectedItem="{Binding SelectedSource}"
+                                                              Width="160" />
+                                                </StackPanel>
+
+                                                <!-- Version Selector -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
+                                                    <TextBlock Text="Versione:" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
+                                                    <ComboBox ItemsSource="{Binding AvailableVersions}"
+                                                              SelectedItem="{Binding SelectedVersion}"
+                                                              Width="105" />
+                                                </StackPanel>
+
+                                                <!-- Install Button -->
+                                                <Button Grid.Column="3" 
+                                                        Content="Installa" 
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).InstallModCommand}"
+                                                        CommandParameter="{Binding .}"
+                                                        Background="#16a34a" Foreground="White" FontWeight="Bold"
+                                                        Padding="16,10" CornerRadius="6" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 3: IMPOSTAZIONI & SELEZIONE MANUALE CARTELLA -->
+                <TabItem Header="⚙️  Impostazioni &amp; Gioco">
+                    <ScrollViewer Margin="8">
+                        <StackPanel Spacing="20" MaxWidth="750" HorizontalAlignment="Left">
+                            
+                            <TextBlock Text="CONFIGURAZIONE CARTELLA VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+                            
+                            <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Percorso cartella Valheim (deve contenere valheim.exe):" Foreground="#a1a1aa" FontSize="12" />
+                                    
+                                    <!-- Manual input + Browse button -->
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <TextBox Grid.Column="0" Text="{Binding CustomGamePathInput}" Margin="0,0,8,0" PlaceholderText="es. C:\Program Files (x86)\Steam\steamapps\common\Valheim" />
+                                        <Button Grid.Column="1" Content="📂 Sfoglia..." Click="OnBrowseGameFolderClicked" Background="#3f3f46" Margin="0,0,8,0" />
+                                        <Button Grid.Column="2" Content="Salva" Command="{Binding ApplyCustomGamePathCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                                    </Grid>
+
+                                    <Button Content="Rileva automaticamente da librerie Steam" 
+                                            Command="{Binding DetectGame}" 
+                                            Background="#27272a" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="SORGENTI MOD DISPONIBILI" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
+                            
+                            <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="✅ Thunderstore" FontWeight="Bold" Foreground="#4ade80" />
+                                        <TextBlock Text="(API v1 Valheim Community attiva)" Foreground="#a1a1aa" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="✅ Hexium" FontWeight="Bold" Foreground="#4ade80" />
+                                        <TextBlock Text="(API OpenAPI compatibile Thunderstore attiva)" Foreground="#a1a1aa" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
+                                        <TextBlock Text="(Architettura pianificata, supporto previsto nelle future versioni)" Foreground="#a1a1aa" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+            </TabControl>
+
+            <!-- STATUS BAR -->
+            <Border Grid.Row="2" Background="#18181b" Padding="12,6" BorderBrush="#27272a" BorderThickness="0,1,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="#a1a1aa" FontSize="12" VerticalAlignment="Center" />
+                    <ProgressBar Grid.Column="1" IsIndeterminate="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Width="150" Height="4" Margin="12,0,0,0" />
+                </Grid>
+            </Border>
+
+        </Grid>
+
+        <!-- MODAL OVERLAY: NUOVO PROFILO -->
+        <Border Background="#80000000" IsVisible="{Binding IsNewProfileDialogVisible}" ZIndex="100">
+            <Border Background="#27272a" CornerRadius="8" Padding="20" Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="#3f3f46" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Crea Nuovo Profilo" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
+                    <TextBlock Text="Inserisci il nome per il nuovo set di mod:" FontSize="12" Foreground="#a1a1aa" />
+                    <TextBox Text="{Binding NewProfileNameInput}" PlaceholderText="es. Server Amici, Vanilla+, Hardcore" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                        <Button Content="Annulla" Command="{Binding CancelNewProfileDialogCommand}" Background="#3f3f46" />
+                        <Button Content="Crea Profilo" Command="{Binding ConfirmNewProfileCommand}" Background="#16a34a" Foreground="White" FontWeight="Bold" />
                     </StackPanel>
                 </StackPanel>
-
-                <!-- BepInEx Banner -->
-                <Border Grid.Column="2" 
-                        Background="{Binding IsBepInExInstalled, Converter={x:Null}}" 
-                        BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="6"
-                        Padding="12,6" Margin="16,0" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding IsBepInExInstalled, Converter={x:Null}}" />
-                        <TextBlock Text="{Binding BepInExStatusText}" 
-                                   Foreground="#e4e4e7" FontWeight="Medium" VerticalAlignment="Center" />
-                        <Button Content="Installa 1-Click" 
-                                Command="{Binding InstallBepInExCommand}"
-                                IsVisible="{Binding !IsBepInExInstalled}"
-                                Background="#d97706" Foreground="White" FontWeight="SemiBold" />
-                        <Button Content="Ripristina Vanilla" 
-                                Command="{Binding RestoreVanillaCommand}"
-                                IsVisible="{Binding IsBepInExInstalled}"
-                                Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Play Actions -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Content="▶  AVVIA VALHEIM" 
-                            Command="{Binding LaunchGameCommand}"
-                            Background="#16a34a" Foreground="White" 
-                            FontWeight="Bold" FontSize="13"
-                            Padding="16,10" CornerRadius="6" />
-                    
-                    <Button Content="🛡️  Server" 
-                            Command="{Binding LaunchServerCommand}"
-                            Background="#27272a" Foreground="#d4d4d8" 
-                            FontWeight="SemiBold" FontSize="12"
-                            Padding="12,10" CornerRadius="6"
-                            ToolTip.Tip="Avvia Valheim Dedicated Server con il profilo selezionato" />
-                </StackPanel>
-            </Grid>
+            </Border>
         </Border>
 
-        <!-- MAIN TABS CONTENT -->
-        <TabControl Grid.Row="1" Margin="12,8,12,8">
-            
-            <!-- TAB 1: MOD INSTALLATE -->
-            <TabItem Header="📦  Mod Installate">
-                <Grid RowDefinitions="Auto,*" Margin="8">
-                    <!-- Actions bar -->
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-                        <TextBox Grid.Column="0" 
-                                 PlaceholderText="Cerca tra le mod installate..." 
-                                 Text="{Binding InstalledSearchText}"
-                                 Width="300" HorizontalAlignment="Left" />
-                        
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                            <Button Content="Verifica Aggiornamenti" 
-                                    Command="{Binding CheckUpdatesCommand}"
-                                    Background="#27272a" />
-                            <Button Content="Aggiorna Tutte" 
-                                    Command="{Binding UpdateAllModsCommand}"
-                                    Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Installed Mods List -->
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding InstalledMods}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:InstalledModItemViewModel">
-                                    <Border Background="#27272a" CornerRadius="6" Padding="14,10" Margin="0,0,0,6"
-                                            BorderBrush="#3f3f46" BorderThickness="1">
-                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                                            
-                                            <!-- Toggle Switch -->
-                                            <ToggleSwitch Grid.Column="0" 
-                                                          IsChecked="{Binding IsEnabled}"
-                                                          Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).ToggleModCommand}"
-                                                          CommandParameter="{Binding .}"
-                                                          OnContent="" OffContent="" Margin="0,0,12,0" />
-
-                                            <!-- Mod info -->
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Foreground="#f4f4f5" />
-                                                    <Border Background="#3f3f46" CornerRadius="4" Padding="6,1">
-                                                        <TextBlock Text="{Binding ProviderId}" FontSize="10" Foreground="#d4d4d8" />
-                                                    </Border>
-                                                    <Border Background="#3f3f46" CornerRadius="4" Padding="6,1">
-                                                        <TextBlock Text="{Binding InstalledVersion, StringFormat='v{0}'}" FontSize="10" Foreground="#d4d4d8" />
-                                                    </Border>
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding Owner, StringFormat='Autore: {0}'}" FontSize="11" Foreground="#a1a1aa" Margin="0,2,0,0" />
-                                            </StackPanel>
-
-                                            <!-- Update badge -->
-                                            <Border Grid.Column="2" 
-                                                    IsVisible="{Binding HasUpdate}"
-                                                    Background="#d97706" CornerRadius="4" Padding="8,4" Margin="12,0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding LatestVersion, StringFormat='Aggiornamento v{0} disp.'}" 
-                                                           Foreground="White" FontSize="11" FontWeight="SemiBold" />
-                                            </Border>
-
-                                            <!-- Update Button -->
-                                            <Button Grid.Column="3" 
-                                                    Content="Aggiorna" 
-                                                    IsVisible="{Binding HasUpdate}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UpdateModCommand}"
-                                                    CommandParameter="{Binding .}"
-                                                    Background="#2563eb" Foreground="White" Margin="0,0,8,0" />
-
-                                            <!-- Uninstall Button -->
-                                            <Button Grid.Column="4" 
-                                                    Content="Disinstalla" 
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UninstallModCommand}"
-                                                    CommandParameter="{Binding .}"
-                                                    Background="#7f1d1d" Foreground="#fca5a5" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- TAB 2: ESPLORA ONLINE -->
-            <TabItem Header="🌐  Esplora Mod Online">
-                <Grid RowDefinitions="Auto,*" Margin="8">
-                    <!-- Filters bar -->
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
-                        <TextBox Grid.Column="0" 
-                                 PlaceholderText="Cerca per nome, autore o descrizione..." 
-                                 Text="{Binding CatalogSearchText}"
-                                 Margin="0,0,8,0" />
-                        
-                        <ComboBox Grid.Column="1" 
-                                  ItemsSource="{Binding SourceFilterOptions}"
-                                  SelectedItem="{Binding SelectedSourceFilter}"
-                                  Margin="0,0,8,0" Width="160" />
-                        
-                        <Button Grid.Column="2" 
-                                Content="🔄  Aggiorna Catalogo" 
-                                Command="{Binding RefreshOnlineCatalogCommand}"
-                                Background="#27272a" />
-                    </Grid>
-
-                    <!-- Catalog Items List -->
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding CatalogMods}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:CatalogModItemViewModel">
-                                    <Border Background="#27272a" CornerRadius="6" Padding="14,12" Margin="0,0,0,8"
-                                            BorderBrush="#3f3f46" BorderThickness="1">
-                                        <Grid ColumnDefinitions="*,Auto,Auto">
-                                            
-                                            <!-- Details -->
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#f4f4f5" />
-                                                    <Border Background="#3f3f46" CornerRadius="4" Padding="6,1">
-                                                        <TextBlock Text="{Binding ProviderId}" FontSize="10" Foreground="#d4d4d8" />
-                                                    </Border>
-                                                    <TextBlock Text="{Binding Owner, StringFormat='di {0}'}" FontSize="12" Foreground="#a1a1aa" VerticalAlignment="Center" />
-                                                </StackPanel>
-
-                                                <TextBlock Text="{Binding Description}" 
-                                                           Foreground="#d4d4d8" FontSize="12" Margin="0,4,0,6"
-                                                           TextWrapping="Wrap" MaxLines="2" />
-
-                                                <StackPanel Orientation="Horizontal" Spacing="16">
-                                                    <TextBlock Text="{Binding TotalDownloads, StringFormat='📥 {0:N0} download'}" FontSize="11" Foreground="#a1a1aa" />
-                                                    <TextBlock Text="{Binding RatingScore, StringFormat='⭐ {0} voti'}" FontSize="11" Foreground="#a1a1aa" />
-                                                </StackPanel>
-                                            </StackPanel>
-
-                                            <!-- Version ComboBox -->
-                                            <ComboBox Grid.Column="1" 
-                                                      ItemsSource="{Binding AvailableVersions}"
-                                                      SelectedItem="{Binding SelectedVersion}"
-                                                      Width="110" Margin="12,0" VerticalAlignment="Center" />
-
-                                            <!-- Install Button -->
-                                            <Button Grid.Column="2" 
-                                                    Content="Installa" 
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).InstallModCommand}"
-                                                    CommandParameter="{Binding .}"
-                                                    Background="#16a34a" Foreground="White" FontWeight="Bold"
-                                                    Padding="16,8" VerticalAlignment="Center" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- TAB 3: IMPOSTAZIONI & INFORMAZIONI -->
-            <TabItem Header="⚙️  Impostazioni &amp; Gioco">
-                <ScrollViewer Margin="8">
-                    <StackPanel Spacing="20" MaxWidth="700" HorizontalAlignment="Left">
-                        
-                        <TextBlock Text="CONFIGURAZIONE GIOCO VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
-                        
-                        <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
-                            <StackPanel Spacing="10">
-                                <TextBlock Text="Cartella di installazione:" Foreground="#a1a1aa" FontSize="12" />
-                                <TextBlock Text="{Binding GamePath}" Foreground="#f4f4f5" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <Button Content="Rileva di nuovo da Steam" Command="{Binding DetectGame}" Background="#3f3f46" HorizontalAlignment="Left" />
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Text="SORGENTI MOD DISPONIBILI" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
-                        
-                        <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
-                            <StackPanel Spacing="12">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="✅ Thunderstore" FontWeight="Bold" Foreground="#4ade80" />
-                                    <TextBlock Text="(API v1 Valheim Community attiva)" Foreground="#a1a1aa" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="✅ Hexium" FontWeight="Bold" Foreground="#4ade80" />
-                                    <TextBlock Text="(API OpenAPI compatibile Thunderstore attiva)" Foreground="#a1a1aa" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
-                                    <TextBlock Text="(Architettura pianificata, supporto previsto nelle future versioni)" Foreground="#a1a1aa" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
+        <!-- MODAL OVERLAY: IMPORTA DA CODICE R2MODMAN -->
+        <Border Background="#80000000" IsVisible="{Binding IsImportR2CodeDialogVisible}" ZIndex="100">
+            <Border Background="#27272a" CornerRadius="8" Padding="20" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="#3f3f46" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Importa da Codice r2modman / Thunderstore" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
+                    <TextBlock Text="Incolla il codice alfanumerico di esportazione (es. 018f...):" FontSize="12" Foreground="#a1a1aa" />
+                    <TextBox Text="{Binding R2CodeInput}" PlaceholderText="Incolla codice di condivisione..." />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                        <Button Content="Annulla" Command="{Binding CancelImportR2CodeDialogCommand}" Background="#3f3f46" />
+                        <Button Content="Scarica &amp; Importa" Command="{Binding ConfirmImportR2CodeCommand}" Background="#2563eb" Foreground="White" FontWeight="Bold" />
                     </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-
-        </TabControl>
-
-        <!-- STATUS BAR -->
-        <Border Grid.Row="2" Background="#18181b" Padding="12,6" BorderBrush="#27272a" BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="#a1a1aa" FontSize="12" VerticalAlignment="Center" />
-                <ProgressBar Grid.Column="1" IsIndeterminate="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Width="150" Height="4" Margin="12,0,0,0" />
-            </Grid>
+                </StackPanel>
+            </Border>
         </Border>
 
     </Grid>
