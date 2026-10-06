@@ -1,6 +1,7 @@
 namespace ValheimModManager.Core.Services;
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -57,11 +58,18 @@ public sealed class BepInExService
                 }
             }
 
+            if (isInstalledInProfile)
+            {
+                version = FileVersionInfo.GetVersionInfo(profilePreloader).FileVersion;
+            }
+
+            /*
             var versionFile = Path.Combine(game.GameDirectory, ".doorstop_version");
-            if (File.Exists(versionFile))
+            if (version is null && File.Exists(versionFile))
             {
                 version = File.ReadAllText(versionFile).Trim();
             }
+            */
         }
 
         return new BepInExStatus(

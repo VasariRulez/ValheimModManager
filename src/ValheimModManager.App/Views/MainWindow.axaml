@@ -296,7 +296,8 @@
 
                 <!-- TAB 3: IMPOSTAZIONI & SELEZIONE MANUALE CARTELLA -->
                 <TabItem Header="⚙️  Impostazioni &amp; Gioco">
-                    <ScrollViewer Margin="8">
+                  <Grid RowDefinitions="Auto,*" Margin="8">
+                    <ScrollViewer Grid.Column="0" Margin="8">
                         <StackPanel Spacing="20" MaxWidth="750" HorizontalAlignment="Left">
                             
                             <TextBlock Text="CONFIGURAZIONE CARTELLA VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
@@ -338,6 +339,23 @@
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
+                    <ScrollViewer Grid.Column="1" Margin="8">
+                      <StackPanel Spacing="20" MinWidth="300" MaxWidth="300" HorizontalAlignment="Right">
+
+                        <TextBlock Text="CONFIGURAZIONE OPZIONI DI AVVIO" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+
+                        <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                          <StackPanel Spacing="12">
+                            <TextBlock Text="Opzioni di avvio:" Foreground="#a1a1aa" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                              <TextBox Grid.Column="0" Text="{Binding CustomLaunchArgsInput}" Margin="0,0,8,0" PlaceholderText="es. -console" />
+                              <Button Grid.Column="1" Content="Salva" Command="{Binding ApplyCustomLaunchArgsCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                            </Grid>
+                          </StackPanel>
+                        </Border>
+                      </StackPanel>
+                    </ScrollViewer>
+                  </Grid>
                 </TabItem>
 
             </TabControl>

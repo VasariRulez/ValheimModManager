@@ -43,6 +43,9 @@ public partial class MainViewModel : ViewModelBase
     private string _customGamePathInput = "";
 
     [ObservableProperty]
+    private string _customLaunchArgsInput = "";
+
+    [ObservableProperty]
     private bool _isGameFound;
 
     [ObservableProperty]
@@ -138,6 +141,7 @@ public partial class MainViewModel : ViewModelBase
 
         // Initial setup
         DetectGame();
+        LoadCustomArgs();
         LoadProfilesList();
         _ = InitializeCatalogAsync();
     }
@@ -186,7 +190,7 @@ public partial class MainViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(CustomGamePathInput)) return;
         SetCustomGamePath(CustomGamePathInput.Trim());
     }
-
+    
     public void SetCustomGamePath(string folderPath)
     {
         if (!Directory.Exists(folderPath))
@@ -211,6 +215,26 @@ public partial class MainViewModel : ViewModelBase
         IsGameFound = true;
         UpdateBepInExStatus();
         StatusMessage = "Cartella di Valheim configurata con successo!";
+    }
+
+    [RelayCommand]
+    public void ApplyCustomLaunchArgs()
+    {
+        SetCustomLaunchArgs(CustomLaunchArgsInput.Trim());
+    }
+
+    public void SetCustomLaunchArgs(string? launchArgs)
+    {
+        if (launchArgs == null) launchArgs = string.Empty;
+        launchArgs = launchArgs?.Trim();
+
+        var state = _profileService.LoadState();
+        _profileService.SaveState(state with { CustomLaunchArgs = launchArgs });
+
+        CustomLaunchArgsInput = launchArgs!;
+        StatusMessage = string.IsNullOrEmpty(launchArgs)
+            ? "Argomenti di avvio personalizzati rimossi."
+            : "Argomenti di avvio personalizzati impostati.";
     }
 
     public void UpdateBepInExStatus()
@@ -251,6 +275,12 @@ public partial class MainViewModel : ViewModelBase
         }
 
         LoadInstalledMods();
+    }
+
+    private void LoadCustomArgs()
+    {
+        var state = _profileService.LoadState();
+        CustomLaunchArgsInput = state.CustomLaunchArgs ?? "";
     }
 
     partial void OnSelectedProfileChanged(string value)
@@ -620,9 +650,10 @@ public partial class MainViewModel : ViewModelBase
         }
 
         var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
+        var profileArgs = _profileService.LoadState().CustomLaunchArgs;
         try
         {
-            _gameLauncher.LaunchGame(CurrentInstall, profileDir);
+            _gameLauncher.LaunchGame(CurrentInstall, profileDir, profileArgs);
             StatusMessage = $"Valheim avviato con il profilo [{SelectedProfile}]!";
         }
         catch (Exception ex)

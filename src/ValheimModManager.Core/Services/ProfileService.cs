@@ -12,7 +12,8 @@ using ValheimModManager.Core.Models;
 
 public sealed record AppState(
     string ActiveProfile = "Default",
-    string? CustomGamePath = null
+    string? CustomGamePath = null,
+    string? CustomLaunchArgs = null
 );
 
 public sealed class ProfileService
