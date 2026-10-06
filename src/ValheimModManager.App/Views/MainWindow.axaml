@@ -56,14 +56,21 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Play Button -->
-                <Button Grid.Column="3" 
-                        Content="▶  AVVIA VALHEIM" 
-                        Command="{Binding LaunchGameCommand}"
-                        Background="#16a34a" Foreground="White" 
-                        FontWeight="Bold" FontSize="14"
-                        Padding="20,10" CornerRadius="6"
-                        VerticalAlignment="Center" />
+                <!-- Play Actions -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Content="▶  AVVIA VALHEIM" 
+                            Command="{Binding LaunchGameCommand}"
+                            Background="#16a34a" Foreground="White" 
+                            FontWeight="Bold" FontSize="13"
+                            Padding="16,10" CornerRadius="6" />
+                    
+                    <Button Content="🛡️  Server" 
+                            Command="{Binding LaunchServerCommand}"
+                            Background="#27272a" Foreground="#d4d4d8" 
+                            FontWeight="SemiBold" FontSize="12"
+                            Padding="12,10" CornerRadius="6"
+                            ToolTip.Tip="Avvia Valheim Dedicated Server con il profilo selezionato" />
+                </StackPanel>
             </Grid>
         </Border>
 

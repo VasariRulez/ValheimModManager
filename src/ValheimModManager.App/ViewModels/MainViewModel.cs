@@ -508,6 +508,30 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void LaunchServer()
+    {
+        var installs = _steamLocator.FindInstalls();
+        var serverInstall = installs.FirstOrDefault(i => i.Target == GameTarget.DedicatedServer);
+
+        if (serverInstall == null)
+        {
+            StatusMessage = "Valheim Dedicated Server non rilevato nella libreria Steam (App ID 896660).";
+            return;
+        }
+
+        var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
+        try
+        {
+            _gameLauncher.LaunchGame(serverInstall, profileDir, "-nographics -batchmode");
+            StatusMessage = $"Valheim Dedicated Server avviato con il profilo [{SelectedProfile}]!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore avvio server: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     public void CreateNewProfile(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
