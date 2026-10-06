@@ -146,8 +146,6 @@
                                                 <!-- Toggle Switch -->
                                                 <ToggleSwitch Grid.Column="0" 
                                                               IsChecked="{Binding IsEnabled}"
-                                                              Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).ToggleModCommand}"
-                                                              CommandParameter="{Binding .}"
                                                               OnContent="" OffContent="" Margin="0,0,12,0" />
 
                                                 <!-- Mod info -->

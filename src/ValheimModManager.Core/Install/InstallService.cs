@@ -113,11 +113,9 @@ public sealed class InstallService
             try
             {
                 var normalFile = file.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
-                    ? file
-                    : file;
-                var disabledFile = file.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase)
                     ? file[..^".disabled".Length]
-                    : file + ".disabled";
+                    : file;
+                var disabledFile = normalFile + ".disabled";
 
                 if (File.Exists(normalFile)) File.Delete(normalFile);
                 if (File.Exists(disabledFile)) File.Delete(disabledFile);
@@ -135,8 +133,9 @@ public sealed class InstallService
         }
     }
 
-    public void ToggleMod(IReadOnlyList<string> installedFiles, bool enable)
+    public IReadOnlyList<string> ToggleMod(IReadOnlyList<string> installedFiles, bool enable)
     {
+        var result = new List<string>(installedFiles.Count);
         foreach (var file in installedFiles)
         {
             try
@@ -150,9 +149,22 @@ public sealed class InstallService
                         ? file[..^".disabled".Length]
                         : file;
 
-                    if (File.Exists(disabledPath) && !File.Exists(enabledPath))
+                    if (File.Exists(disabledPath))
                     {
+                        if (File.Exists(enabledPath) && !string.Equals(disabledPath, enabledPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            File.Delete(enabledPath);
+                        }
                         File.Move(disabledPath, enabledPath);
+                        result.Add(enabledPath);
+                    }
+                    else if (File.Exists(enabledPath))
+                    {
+                        result.Add(enabledPath);
+                    }
+                    else
+                    {
+                        result.Add(file);
                     }
                 }
                 else
@@ -162,16 +174,32 @@ public sealed class InstallService
                         : file;
                     var disabledPath = enabledPath + ".disabled";
 
-                    if (File.Exists(enabledPath) && !File.Exists(disabledPath))
+                    if (File.Exists(enabledPath))
                     {
+                        if (File.Exists(disabledPath) && !string.Equals(enabledPath, disabledPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            File.Delete(disabledPath);
+                        }
                         File.Move(enabledPath, disabledPath);
+                        result.Add(disabledPath);
+                    }
+                    else if (File.Exists(disabledPath))
+                    {
+                        result.Add(disabledPath);
+                    }
+                    else
+                    {
+                        result.Add(file);
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to toggle file {File} to enabled={Enable}", file, enable);
+                result.Add(file);
             }
         }
+
+        return result;
     }
 }

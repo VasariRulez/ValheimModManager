@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using ValheimModManager.Core.Models;
 using ValheimModManager.Core.Services;
+using ValheimModManager.Core.Install;
 using Xunit;
 
 public class Phase2CoreTests : IDisposable
@@ -179,5 +180,49 @@ public class Phase2CoreTests : IDisposable
         var importedCfg = Path.Combine(importedDir, "BepInEx", "config", "test.cfg");
         Assert.True(File.Exists(importedCfg));
         Assert.Equal("test=123", File.ReadAllText(importedCfg));
+    }
+
+    [Fact]
+    public void InstallService_ToggleMod_RenamesFilesAndReturnsNewPaths()
+    {
+        var cacheDir = Path.Combine(_testDir, "cache");
+        var service = new InstallService(new System.Net.Http.HttpClient(), cacheDir);
+
+        var pluginDir = Path.Combine(_testDir, "profile", "BepInEx", "plugins", "TestAuthor-TestMod");
+        Directory.CreateDirectory(pluginDir);
+        var dllPath = Path.Combine(pluginDir, "TestMod.dll");
+        File.WriteAllText(dllPath, "dummy binary content");
+
+        // 1. Disable mod
+        var disabledPaths = service.ToggleMod([dllPath], enable: false);
+        Assert.Single(disabledPaths);
+        Assert.EndsWith(".disabled", disabledPaths[0], StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(dllPath));
+        Assert.True(File.Exists(disabledPaths[0]));
+
+        // 2. Re-enable mod
+        var enabledPaths = service.ToggleMod(disabledPaths, enable: true);
+        Assert.Single(enabledPaths);
+        Assert.False(enabledPaths[0].EndsWith(".disabled", StringComparison.OrdinalIgnoreCase));
+        Assert.True(File.Exists(dllPath));
+        Assert.False(File.Exists(disabledPaths[0]));
+    }
+
+    [Fact]
+    public void InstallService_UninstallMod_CleansUpDisabledFiles()
+    {
+        var cacheDir = Path.Combine(_testDir, "cache");
+        var service = new InstallService(new System.Net.Http.HttpClient(), cacheDir);
+
+        var pluginDir = Path.Combine(_testDir, "profile", "BepInEx", "plugins", "TestAuthor-DeleteMod");
+        Directory.CreateDirectory(pluginDir);
+        var disabledDll = Path.Combine(pluginDir, "DeleteMod.dll.disabled");
+        File.WriteAllText(disabledDll, "dummy binary content");
+
+        // Uninstall with the disabled file path
+        service.UninstallMod([disabledDll]);
+
+        Assert.False(File.Exists(disabledDll));
+        Assert.False(Directory.Exists(pluginDir)); // clean up empty directory
     }
 }

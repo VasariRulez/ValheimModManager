@@ -324,7 +324,7 @@ public partial class MainViewModel : ViewModelBase
             var hasUpd = updateMap.TryGetValue(mod.Key, out var upd) && upd.HasUpdate;
             var latest = upd?.LatestVersion ?? mod.InstalledVersion;
 
-            InstalledMods.Add(new InstalledModItemViewModel(mod, latest, hasUpd));
+            InstalledMods.Add(new InstalledModItemViewModel(mod, latest, hasUpd, (vm, isEnabled) => OnModToggleChanged(vm, isEnabled)));
         }
     }
 
@@ -473,23 +473,38 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    public void ToggleMod(InstalledModItemViewModel item)
+    private void OnModToggleChanged(InstalledModItemViewModel item, bool enabled)
     {
-        if (item == null) return;
         var profile = _profileService.GetProfile(SelectedProfile);
         var targetMod = profile.Mods.FirstOrDefault(m => m.Key == item.Model.Key);
         if (targetMod == null) return;
 
-        var newState = !item.IsEnabled;
-        _installService.ToggleMod(targetMod.InstalledFiles, newState);
+        try
+        {
+            var updatedFiles = _installService.ToggleMod(targetMod.InstalledFiles, enabled);
 
-        var idx = profile.Mods.IndexOf(targetMod);
-        profile.Mods[idx] = targetMod with { IsEnabled = newState };
-        _profileService.SaveProfile(profile);
+            var idx = profile.Mods.IndexOf(targetMod);
+            profile.Mods[idx] = targetMod with 
+            { 
+                IsEnabled = enabled,
+                InstalledFiles = updatedFiles
+            };
+            _profileService.SaveProfile(profile);
 
-        item.IsEnabled = newState;
-        StatusMessage = $"{item.Name} {(newState ? "attivata" : "disattivata")}.";
+            StatusMessage = $"{item.Name} {(enabled ? "attivata" : "disattivata")}.";
+        }
+        catch (Exception ex)
+        {
+            item.SetIsEnabledSilently(!enabled);
+            StatusMessage = $"Errore durante la modifica di {item.Name}: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleMod(InstalledModItemViewModel item)
+    {
+        if (item == null) return;
+        item.IsEnabled = !item.IsEnabled;
     }
 
     [RelayCommand]
