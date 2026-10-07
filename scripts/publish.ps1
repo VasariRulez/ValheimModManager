@@ -150,7 +150,7 @@ foreach ($rid in $targetRuntimes) {
         "--no-restore",
         "-p:PublishSingleFile=true",
         "-p:IncludeNativeLibrariesForSelfExtract=true",
-        "-p:PublishReadyToRun=true",
+        "-p:PublishReadyToRun=false",
         "-p:PublishTrimmed=false",
         "-p:EnableCompressionInSingleFile=true",
         "-p:Version=$Version",
