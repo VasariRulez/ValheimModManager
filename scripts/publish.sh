@@ -124,6 +124,9 @@ for rid in "${TARGET_RUNTIMES[@]}"; do
         -p:PublishTrimmed=false \
         -p:EnableCompressionInSingleFile=true \
         -p:Version="${VERSION}" \
+        -p:AssemblyVersion="${VERSION}" \
+        -p:FileVersion="${VERSION}" \
+        -p:InformationalVersion="${VERSION}" \
         -o "${TARGET_DIST}" \
         --nologo
 

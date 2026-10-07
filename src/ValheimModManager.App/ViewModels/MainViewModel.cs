@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -1103,17 +1104,41 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             var asm = typeof(MainViewModel).Assembly;
+
+            // 1. Priorità: AssemblyInformationalVersionAttribute (versione semantica iniettata dal tag Git / -p:Version)
+            var infoVer = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            if (!string.IsNullOrWhiteSpace(infoVer))
+            {
+                var plusIdx = infoVer.IndexOf('+');
+                var clean = plusIdx >= 0 ? infoVer[..plusIdx].Trim() : infoVer.Trim();
+                if (!string.IsNullOrWhiteSpace(clean))
+                {
+                    return clean;
+                }
+            }
+
+            // 2. Seconda priorità: AssemblyFileVersionAttribute
+            var fileVer = asm.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+            if (!string.IsNullOrWhiteSpace(fileVer))
+            {
+                return fileVer.Trim();
+            }
+
+            // 3. Terza priorità: AssemblyName.Version (gestendo sia 3 che 4 componenti numerici)
             var ver = asm.GetName().Version;
             if (ver != null)
             {
-                return $"{ver.Major}.{ver.Minor}.{ver.Build}";
+                return ver.Revision > 0
+                    ? $"{ver.Major}.{ver.Minor}.{ver.Build}.{ver.Revision}"
+                    : $"{ver.Major}.{ver.Minor}.{ver.Build}";
             }
         }
         catch
         {
             // fallback
         }
-        return "1.0.4";
+
+        return "1.0.0";
     }
 
     private class DummySteamLocator : ISteamLocator

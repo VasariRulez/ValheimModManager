@@ -154,6 +154,9 @@ foreach ($rid in $targetRuntimes) {
         "-p:PublishTrimmed=false",
         "-p:EnableCompressionInSingleFile=true",
         "-p:Version=$Version",
+        "-p:AssemblyVersion=$Version",
+        "-p:FileVersion=$Version",
+        "-p:InformationalVersion=$Version",
         "-o", $targetDist,
         "--nologo"
     )

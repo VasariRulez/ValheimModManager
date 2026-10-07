@@ -57,6 +57,8 @@ public class AppUpdateServiceTests
     [InlineData("1.0.3", true)]
     [InlineData("1.0.4", false)]
     [InlineData("1.0.5", false)]
+    [InlineData("1.0.4.1", false)]
+    [InlineData("1.0.5.3", false)]
     public void CheckVersionComparison_DetectsNewer(string currentVersion, bool shouldHaveUpdate)
     {
         var release = AppUpdateService.ParseReleaseJson(SampleGitHubReleaseJson);
