@@ -57,19 +57,19 @@ public sealed class BepInExService
                     }
                 }
             }
+        }
 
-            if (isInstalledInProfile)
+        if (isInstalledInProfile)
+        {
+            try
             {
-                version = FileVersionInfo.GetVersionInfo(profilePreloader).FileVersion;
+                var info = FileVersionInfo.GetVersionInfo(profilePreloader);
+                version = info.ProductVersion ?? info.FileVersion;
             }
-
-            /*
-            var versionFile = Path.Combine(game.GameDirectory, ".doorstop_version");
-            if (version is null && File.Exists(versionFile))
+            catch (Exception ex)
             {
-                version = File.ReadAllText(versionFile).Trim();
+                _logger.LogWarning(ex, "Impossibile leggere le informazioni di versione da {Preloader}", profilePreloader);
             }
-            */
         }
 
         return new BepInExStatus(

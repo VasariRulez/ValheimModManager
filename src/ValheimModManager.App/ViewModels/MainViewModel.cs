@@ -220,21 +220,39 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ApplyCustomLaunchArgs()
     {
-        SetCustomLaunchArgs(CustomLaunchArgsInput.Trim());
+        SetCustomLaunchArgs(CustomLaunchArgsInput);
     }
 
     public void SetCustomLaunchArgs(string? launchArgs)
     {
-        if (launchArgs == null) launchArgs = string.Empty;
-        launchArgs = launchArgs?.Trim();
+        var trimmed = string.IsNullOrWhiteSpace(launchArgs) ? null : launchArgs.Trim();
 
         var state = _profileService.LoadState();
-        _profileService.SaveState(state with { CustomLaunchArgs = launchArgs });
+        _profileService.SaveState(state with { CustomLaunchArgs = trimmed });
 
-        CustomLaunchArgsInput = launchArgs!;
-        StatusMessage = string.IsNullOrEmpty(launchArgs)
-            ? "Argomenti di avvio personalizzati rimossi."
-            : "Argomenti di avvio personalizzati impostati.";
+        CustomLaunchArgsInput = trimmed ?? "";
+        StatusMessage = trimmed == null
+            ? "Opzioni di avvio personalizzate rimosse."
+            : "Opzioni di avvio personalizzate impostate con successo!";
+    }
+
+    [RelayCommand]
+    public void AppendLaunchArg(string arg)
+    {
+        if (string.IsNullOrWhiteSpace(arg)) return;
+        var current = CustomLaunchArgsInput?.Trim() ?? "";
+        if (!current.Contains(arg, StringComparison.OrdinalIgnoreCase))
+        {
+            CustomLaunchArgsInput = string.IsNullOrEmpty(current) ? arg : $"{current} {arg}";
+            ApplyCustomLaunchArgs();
+        }
+    }
+
+    [RelayCommand]
+    public void ClearLaunchArgs()
+    {
+        CustomLaunchArgsInput = "";
+        ApplyCustomLaunchArgs();
     }
 
     public void UpdateBepInExStatus()
@@ -650,7 +668,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
-        var profileArgs = _profileService.LoadState().CustomLaunchArgs;
+        var profileArgs = string.IsNullOrWhiteSpace(CustomLaunchArgsInput) ? null : CustomLaunchArgsInput.Trim();
         try
         {
             _gameLauncher.LaunchGame(CurrentInstall, profileDir, profileArgs);

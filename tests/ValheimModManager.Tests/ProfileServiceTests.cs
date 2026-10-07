@@ -51,4 +51,26 @@ public class ProfileServiceTests : IDisposable
         service.DeleteProfile("Hardcore-Backup");
         Assert.DoesNotContain("Hardcore-Backup", service.ListProfileNames());
     }
+
+    [Fact]
+    public void ProfileService_SavesAndRetrievesCustomLaunchArgs()
+    {
+        var service = new ProfileService(_testDir);
+
+        // Initially null
+        var state = service.LoadState();
+        Assert.Null(state.CustomLaunchArgs);
+
+        // Save custom launch args
+        service.SaveState(state with { CustomLaunchArgs = "-console -window-mode exclusive" });
+
+        // Reload and verify
+        var reloaded = service.LoadState();
+        Assert.Equal("-console -window-mode exclusive", reloaded.CustomLaunchArgs);
+
+        // Set to null
+        service.SaveState(reloaded with { CustomLaunchArgs = null });
+        var cleared = service.LoadState();
+        Assert.Null(cleared.CustomLaunchArgs);
+    }
 }

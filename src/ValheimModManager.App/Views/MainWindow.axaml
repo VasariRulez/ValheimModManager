@@ -296,66 +296,96 @@
 
                 <!-- TAB 3: IMPOSTAZIONI & SELEZIONE MANUALE CARTELLA -->
                 <TabItem Header="⚙️  Impostazioni &amp; Gioco">
-                  <Grid RowDefinitions="Auto,*" Margin="8">
-                    <ScrollViewer Grid.Column="0" Margin="8">
-                        <StackPanel Spacing="20" MaxWidth="750" HorizontalAlignment="Left">
+                    <ScrollViewer Margin="8">
+                        <Grid ColumnDefinitions="*,360" Margin="4">
                             
-                            <TextBlock Text="CONFIGURAZIONE CARTELLA VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
-                            
-                            <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
-                                <StackPanel Spacing="12">
-                                    <TextBlock Text="Percorso cartella Valheim (deve contenere valheim.exe):" Foreground="#a1a1aa" FontSize="12" />
-                                    
-                                    <!-- Manual input + Browse button -->
-                                    <Grid ColumnDefinitions="*,Auto,Auto">
-                                        <TextBox Grid.Column="0" Text="{Binding CustomGamePathInput}" Margin="0,0,8,0" PlaceholderText="es. C:\Program Files (x86)\Steam\steamapps\common\Valheim" />
-                                        <Button Grid.Column="1" Content="📂 Sfoglia..." Click="OnBrowseGameFolderClicked" Background="#3f3f46" Margin="0,0,8,0" />
-                                        <Button Grid.Column="2" Content="Salva" Command="{Binding ApplyCustomGamePathCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
-                                    </Grid>
+                            <!-- COLONNA SINISTRA: AMBIENTE, CARTELLA & SORGENTI -->
+                            <StackPanel Grid.Column="0" Spacing="20" Margin="0,0,16,0">
+                                
+                                <TextBlock Text="CONFIGURAZIONE CARTELLA VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+                                
+                                <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Percorso cartella Valheim (deve contenere valheim.exe):" Foreground="#a1a1aa" FontSize="12" />
+                                        
+                                        <!-- Manual input + Browse button -->
+                                        <Grid ColumnDefinitions="*,Auto,Auto">
+                                            <TextBox Grid.Column="0" Text="{Binding CustomGamePathInput}" Margin="0,0,8,0" PlaceholderText="es. C:\Program Files (x86)\Steam\steamapps\common\Valheim" />
+                                            <Button Grid.Column="1" Content="📂 Sfoglia..." Click="OnBrowseGameFolderClicked" Background="#3f3f46" Margin="0,0,8,0" />
+                                            <Button Grid.Column="2" Content="Salva" Command="{Binding ApplyCustomGamePathCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                                        </Grid>
 
-                                    <Button Content="Rileva automaticamente da librerie Steam" 
-                                            Command="{Binding DetectGame}" 
-                                            Background="#27272a" HorizontalAlignment="Left" />
-                                </StackPanel>
-                            </Border>
+                                        <Button Content="Rileva automaticamente da librerie Steam" 
+                                                Command="{Binding DetectGame}" 
+                                                Background="#27272a" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
 
-                            <TextBlock Text="SORGENTI MOD DISPONIBILI" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
-                            
-                            <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
-                                <StackPanel Spacing="12">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="✅ Thunderstore" FontWeight="Bold" Foreground="#4ade80" />
-                                        <TextBlock Text="(API v1 Valheim Community attiva)" Foreground="#a1a1aa" />
+                                <TextBlock Text="SORGENTI MOD DISPONIBILI" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
+                                
+                                <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                    <StackPanel Spacing="12">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="✅ Thunderstore" FontWeight="Bold" Foreground="#4ade80" />
+                                            <TextBlock Text="(API v1 Valheim Community attiva)" Foreground="#a1a1aa" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="✅ Hexium" FontWeight="Bold" Foreground="#4ade80" />
+                                            <TextBlock Text="(API OpenAPI compatibile Thunderstore attiva)" Foreground="#a1a1aa" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
+                                            <TextBlock Text="(Architettura pianificata, supporto previsto nelle future versioni)" Foreground="#a1a1aa" />
+                                        </StackPanel>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="✅ Hexium" FontWeight="Bold" Foreground="#4ade80" />
-                                        <TextBlock Text="(API OpenAPI compatibile Thunderstore attiva)" Foreground="#a1a1aa" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- COLONNA DESTRA: OPZIONI DI AVVIO & PRESET RAPIDI -->
+                            <StackPanel Grid.Column="1" Spacing="20">
+                                <TextBlock Text="CONFIGURAZIONE OPZIONI DI AVVIO" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+
+                                <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                    <StackPanel Spacing="14">
+                                        <TextBlock Text="Parametri da passare a Valheim all'avvio:" Foreground="#a1a1aa" FontSize="12" />
+                                        
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Text="{Binding CustomLaunchArgsInput}" Margin="0,0,8,0" PlaceholderText="es. -console" />
+                                            <Button Grid.Column="1" Content="Salva" Command="{Binding ApplyCustomLaunchArgsCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                                        </Grid>
+
+                                        <Separator Background="#3f3f46" Margin="0,2" />
+
+                                        <!-- Quick Presets -->
+                                        <TextBlock Text="Preset rapidi:" FontWeight="SemiBold" Foreground="#d4d4d8" FontSize="12" />
+                                        
+                                        <WrapPanel Orientation="Horizontal" Margin="0,-2,0,0">
+                                            <Button Content="+ -console" 
+                                                    Command="{Binding AppendLaunchArgCommand}" 
+                                                    CommandParameter="-console" 
+                                                    Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
+                                                    ToolTip.Tip="Abilita la console comandi in-game (tasto F5)" />
+                                            <Button Content="+ -window-mode exclusive" 
+                                                    Command="{Binding AppendLaunchArgCommand}" 
+                                                    CommandParameter="-window-mode exclusive" 
+                                                    Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
+                                                    ToolTip.Tip="Forza la modalità schermo intero esclusivo" />
+                                            <Button Content="+ -force-vulkan" 
+                                                    Command="{Binding AppendLaunchArgCommand}" 
+                                                    CommandParameter="-force-vulkan" 
+                                                    Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
+                                                    ToolTip.Tip="Avvia il gioco con le API grafiche Vulkan" />
+                                        </WrapPanel>
+
+                                        <Button Content="Svuota opzioni" 
+                                                Command="{Binding ClearLaunchArgsCommand}" 
+                                                Background="#27272a" Foreground="#ef4444" FontSize="11" Padding="8,4" HorizontalAlignment="Left"
+                                                ToolTip.Tip="Rimuove tutti gli argomenti di avvio personalizzati" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
-                                        <TextBlock Text="(Architettura pianificata, supporto previsto nelle future versioni)" Foreground="#a1a1aa" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
                     </ScrollViewer>
-                    <ScrollViewer Grid.Column="1" Margin="8">
-                      <StackPanel Spacing="20" MinWidth="300" MaxWidth="300" HorizontalAlignment="Right">
-
-                        <TextBlock Text="CONFIGURAZIONE OPZIONI DI AVVIO" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
-
-                        <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
-                          <StackPanel Spacing="12">
-                            <TextBlock Text="Opzioni di avvio:" Foreground="#a1a1aa" FontSize="12" />
-                            <Grid ColumnDefinitions="*,Auto,Auto">
-                              <TextBox Grid.Column="0" Text="{Binding CustomLaunchArgsInput}" Margin="0,0,8,0" PlaceholderText="es. -console" />
-                              <Button Grid.Column="1" Content="Salva" Command="{Binding ApplyCustomLaunchArgsCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
-                            </Grid>
-                          </StackPanel>
-                        </Border>
-                      </StackPanel>
-                    </ScrollViewer>
-                  </Grid>
                 </TabItem>
 
             </TabControl>
