@@ -102,7 +102,8 @@ fi
 
 GENERATED_PACKAGES=()
 
-echo -e "\n[2/4] Compilazione e Pubblicazione pacchetti..."
+echo -e "\n[2/4] Ripristino dipendenze e Pubblicazione pacchetti..."
+dotnet restore "${SOLUTION}" --verbosity normal
 
 for rid in "${TARGET_RUNTIMES[@]}"; do
     echo -e "\n--> Pubblicazione target: ${rid} (SelfContained=${SELF_CONTAINED}, SingleFile=True)..."

@@ -31,6 +31,9 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Restore Dependencies
+        run: dotnet restore ValheimModManager.slnx --verbosity normal
+
       - name: Publish (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

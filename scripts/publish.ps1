@@ -124,7 +124,8 @@ $selfContained = -not $FrameworkDependent
 $generatedPackages = @()
 
 # 5. Esecuzione Publish per ciascun runtime
-Write-Host "`n[2/4] Compilazione e Pubblicazione pacchetti..." -ForegroundColor Green
+Write-Host "`n[2/4] Ripristino dipendenze e Pubblicazione pacchetti..." -ForegroundColor Green
+dotnet restore $Solution --verbosity normal
 
 foreach ($rid in $targetRuntimes) {
     Write-Host "`n--> Pubblicazione target: $rid (SelfContained=$selfContained, SingleFile=True)..." -ForegroundColor Magenta
