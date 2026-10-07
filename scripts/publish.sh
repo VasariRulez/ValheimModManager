@@ -103,9 +103,11 @@ fi
 GENERATED_PACKAGES=()
 
 echo -e "\n[2/4] Ripristino dipendenze e Pubblicazione pacchetti..."
-dotnet restore "${SOLUTION}" --verbosity normal
 
 for rid in "${TARGET_RUNTIMES[@]}"; do
+    echo -e "\n--> Ripristino dipendenze per runtime: ${rid}..."
+    dotnet restore "${SOLUTION}" -r "${rid}" --verbosity normal
+
     echo -e "\n--> Pubblicazione target: ${rid} (SelfContained=${SELF_CONTAINED}, SingleFile=True)..."
     TARGET_DIST="${DIST_PATH}/${rid}"
     rm -rf "${TARGET_DIST}"
@@ -115,6 +117,7 @@ for rid in "${TARGET_RUNTIMES[@]}"; do
         -c "${CONFIG}" \
         -r "${rid}" \
         --self-contained "${SELF_CONTAINED}" \
+        --no-restore \
         -p:PublishSingleFile=true \
         -p:IncludeNativeLibrariesForSelfExtract=true \
         -p:PublishReadyToRun=true \

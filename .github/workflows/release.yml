@@ -32,15 +32,18 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore Dependencies
-        run: dotnet restore ValheimModManager.slnx --verbosity normal
+        run: dotnet restore ValheimModManager.slnx -r ${{ matrix.runtime }} --verbosity normal
 
       - name: Publish (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-          $versionArg = if ($env:GITHUB_REF_NAME) { @("-Version", $env:GITHUB_REF_NAME) } else { @() }
-          ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }} -Configuration Release @versionArg
+          if ($env:GITHUB_REF_NAME) {
+            ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }} -Configuration Release -Version $env:GITHUB_REF_NAME
+          } else {
+            ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }} -Configuration Release
+          }
 
       - name: Publish (Linux)
         if: runner.os == 'Linux'

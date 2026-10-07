@@ -125,9 +125,15 @@ $generatedPackages = @()
 
 # 5. Esecuzione Publish per ciascun runtime
 Write-Host "`n[2/4] Ripristino dipendenze e Pubblicazione pacchetti..." -ForegroundColor Green
-dotnet restore $Solution --verbosity normal
 
 foreach ($rid in $targetRuntimes) {
+    Write-Host "`n--> Ripristino dipendenze per runtime: $rid..." -ForegroundColor Cyan
+    dotnet restore $Solution -r $rid --verbosity normal
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Ripristino dipendenze fallito per il runtime $rid."
+        exit 1
+    }
+
     Write-Host "`n--> Pubblicazione target: $rid (SelfContained=$selfContained, SingleFile=True)..." -ForegroundColor Magenta
     $targetDist = Join-Path $DistPath $rid
 
@@ -141,6 +147,7 @@ foreach ($rid in $targetRuntimes) {
         "-c", $Configuration,
         "-r", $rid,
         "--self-contained", $selfContained.ToString().ToLower(),
+        "--no-restore",
         "-p:PublishSingleFile=true",
         "-p:IncludeNativeLibrariesForSelfExtract=true",
         "-p:PublishReadyToRun=true",
