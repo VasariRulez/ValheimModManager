@@ -55,7 +55,14 @@ echo "Repo Root:      ${REPO_ROOT}"
 echo "Configurazione: ${CONFIG}"
 
 # 1. Recupero Versione
-if [ -z "${VERSION}" ]; then
+if [ -z "${VERSION}" ] && [ -n "${GITHUB_REF_NAME:-}" ]; then
+    VERSION="${GITHUB_REF_NAME}"
+fi
+
+if [ -n "${VERSION}" ]; then
+    # Rimuovi eventuale prefisso 'v' o 'V' (es. v1.0.3 -> 1.0.3)
+    VERSION="${VERSION#[vV]}"
+else
     if [ -f "${APP_PROJ}" ]; then
         VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "${APP_PROJ}" || echo "1.0.0")
     else

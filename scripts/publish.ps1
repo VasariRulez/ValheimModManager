@@ -71,7 +71,14 @@ Write-Host "Repo Root:     $RepoRoot"
 Write-Host "Configurazione: $Configuration"
 
 # 1. Recupero Versione
-if ([string]::IsNullOrWhiteSpace($Version)) {
+if ([string]::IsNullOrWhiteSpace($Version) -and $env:GITHUB_REF_NAME) {
+    $Version = $env:GITHUB_REF_NAME
+}
+
+if (-not [string]::IsNullOrWhiteSpace($Version)) {
+    # Rimuovi eventuale prefisso 'v' o 'V' (es. v1.0.3 -> 1.0.3)
+    $Version = $Version -replace '^[vV]', ''
+} else {
     if (Test-Path $AppProj) {
         $projContent = [xml](Get-Content $AppProj)
         $Version = $projContent.Project.PropertyGroup.Version | Select-Object -First 1

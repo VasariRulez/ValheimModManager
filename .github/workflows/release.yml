@@ -36,14 +36,19 @@ jobs:
         shell: pwsh
         run: |
           Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-          ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }} -Configuration Release
+          $versionArg = if ($env:GITHUB_REF_NAME) { @("-Version", $env:GITHUB_REF_NAME) } else { @() }
+          ./scripts/publish.ps1 -Runtime ${{ matrix.runtime }} -Configuration Release @versionArg
 
       - name: Publish (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           chmod +x ./scripts/publish.sh
-          ./scripts/publish.sh -r ${{ matrix.runtime }} -c Release
+          if [ -n "${GITHUB_REF_NAME:-}" ]; then
+            ./scripts/publish.sh -r ${{ matrix.runtime }} -c Release -v "${GITHUB_REF_NAME}"
+          else
+            ./scripts/publish.sh -r ${{ matrix.runtime }} -c Release
+          fi
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
