@@ -28,6 +28,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly InstallService _installService;
     private readonly DependencyResolver _dependencyResolver;
     private readonly UpdateService _updateService;
+    private readonly AppUpdateService _appUpdateService;
     private readonly R2ModmanImporter _r2Importer;
     private readonly GameLauncher _gameLauncher;
     private readonly ISteamLocator _steamLocator;
@@ -35,6 +36,45 @@ public partial class MainViewModel : ViewModelBase
 
     private CancellationTokenSource? _catalogSearchCts;
     private CancellationTokenSource? _installedSearchCts;
+
+    [ObservableProperty]
+    private string _currentAppVersion = "1.0.4";
+
+    [ObservableProperty]
+    private bool _isAppUpdateAvailable;
+
+    [ObservableProperty]
+    private bool _isAppUpdateChecking;
+
+    [ObservableProperty]
+    private string _latestAppVersion = "";
+
+    [ObservableProperty]
+    private string _latestAppReleaseTitle = "";
+
+    [ObservableProperty]
+    private string _latestAppReleaseNotes = "";
+
+    [ObservableProperty]
+    private string _latestAppReleaseUrl = "";
+
+    [ObservableProperty]
+    private string _appUpdateStatusText = "Valheim Mod Manager è aggiornato";
+
+    [ObservableProperty]
+    private bool _isAppUpdateDialogVisible;
+
+    [ObservableProperty]
+    private bool _isAppUpdateDownloading;
+
+    [ObservableProperty]
+    private double _appUpdateDownloadProgress;
+
+    [ObservableProperty]
+    private string? _downloadedAppPackagePath;
+
+    [ObservableProperty]
+    private AppReleaseInfo? _latestAppRelease;
 
     [ObservableProperty]
     private string _gamePath = "";
@@ -119,6 +159,7 @@ public partial class MainViewModel : ViewModelBase
         _installService = new InstallService(_httpClient);
         _dependencyResolver = new DependencyResolver(_catalogService);
         _updateService = new UpdateService(_catalogService);
+        _appUpdateService = new AppUpdateService(_httpClient);
         _r2Importer = new R2ModmanImporter(_httpClient, _profileService, _catalogService);
 
         if (OperatingSystem.IsWindows())
@@ -139,11 +180,15 @@ public partial class MainViewModel : ViewModelBase
 
         _gameLauncher = new GameLauncher(_bepInExService, _processMonitor);
 
+        // Determine current app version dynamically
+        CurrentAppVersion = ResolveCurrentAppVersion();
+
         // Initial setup
         DetectGame();
         LoadCustomArgs();
         LoadProfilesList();
         _ = InitializeCatalogAsync();
+        _ = CheckAppUpdateAsync(silent: true);
     }
 
     public void DetectGame()
@@ -873,6 +918,202 @@ public partial class MainViewModel : ViewModelBase
         {
             StatusMessage = $"Errore esportazione: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    public async Task CheckAppUpdateManualAsync()
+    {
+        await CheckAppUpdateAsync(silent: false);
+    }
+
+    public async Task CheckAppUpdateAsync(bool silent = false)
+    {
+        if (IsAppUpdateChecking) return;
+
+        IsAppUpdateChecking = true;
+        if (!silent)
+        {
+            StatusMessage = "Verifica aggiornamenti applicazione in corso...";
+        }
+
+        try
+        {
+            var result = await _appUpdateService.CheckForUpdateAsync(CurrentAppVersion);
+            if (result.HasUpdate && result.LatestRelease != null)
+            {
+                IsAppUpdateAvailable = true;
+                LatestAppRelease = result.LatestRelease;
+                LatestAppVersion = result.LatestRelease.Version;
+                LatestAppReleaseTitle = result.LatestRelease.Title;
+                LatestAppReleaseNotes = result.LatestRelease.ReleaseNotes;
+                LatestAppReleaseUrl = result.LatestRelease.HtmlUrl;
+                AppUpdateStatusText = $"Nuova versione v{result.LatestRelease.Version} disponibile!";
+                if (!silent)
+                {
+                    StatusMessage = AppUpdateStatusText;
+                    IsAppUpdateDialogVisible = true;
+                }
+            }
+            else
+            {
+                IsAppUpdateAvailable = false;
+                AppUpdateStatusText = $"Valheim Mod Manager è aggiornato (v{CurrentAppVersion})";
+                if (!silent)
+                {
+                    StatusMessage = string.IsNullOrWhiteSpace(result.ErrorMessage)
+                        ? AppUpdateStatusText
+                        : $"Verifica fallita: {result.ErrorMessage}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!silent)
+            {
+                StatusMessage = $"Errore verifica aggiornamenti: {ex.Message}";
+            }
+        }
+        finally
+        {
+            IsAppUpdateChecking = false;
+        }
+    }
+
+    [RelayCommand]
+    public void ShowAppUpdateDialog()
+    {
+        if (LatestAppRelease != null)
+        {
+            IsAppUpdateDialogVisible = true;
+        }
+        else
+        {
+            _ = CheckAppUpdateManualAsync();
+        }
+    }
+
+    [RelayCommand]
+    public void DismissAppUpdateDialog()
+    {
+        IsAppUpdateDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public async Task DownloadAppUpdateAsync()
+    {
+        if (LatestAppRelease == null || IsAppUpdateDownloading) return;
+
+        var asset = _appUpdateService.SelectAssetForCurrentPlatform(LatestAppRelease);
+        if (asset == null)
+        {
+            StatusMessage = "Nessun pacchetto compatibile trovato per questa piattaforma.";
+            return;
+        }
+
+        IsAppUpdateDownloading = true;
+        AppUpdateDownloadProgress = 0;
+        StatusMessage = $"Download aggiornamento v{LatestAppRelease.Version} in corso...";
+
+        try
+        {
+            var downloadsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Downloads");
+            if (!Directory.Exists(downloadsDir))
+            {
+                downloadsDir = Path.GetTempPath();
+            }
+
+            var destFile = Path.Combine(downloadsDir, asset.Name);
+            var progress = new Progress<double>(p => AppUpdateDownloadProgress = p * 100);
+
+            await _appUpdateService.DownloadAssetAsync(asset, destFile, progress);
+            DownloadedAppPackagePath = destFile;
+            StatusMessage = $"Aggiornamento scaricato con successo in {destFile}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Errore durante il download dell'aggiornamento: {ex.Message}";
+        }
+        finally
+        {
+            IsAppUpdateDownloading = false;
+        }
+    }
+
+    [RelayCommand]
+    public void OpenDownloadedUpdate()
+    {
+        if (string.IsNullOrEmpty(DownloadedAppPackagePath) || !File.Exists(DownloadedAppPackagePath))
+        {
+            return;
+        }
+
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{DownloadedAppPackagePath}\"",
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                var dir = Path.GetDirectoryName(DownloadedAppPackagePath) ?? DownloadedAppPackagePath;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "xdg-open",
+                    Arguments = $"\"{dir}\"",
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Impossibile aprire la cartella: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenGitHubReleasePage()
+    {
+        var targetUrl = !string.IsNullOrEmpty(LatestAppReleaseUrl)
+            ? LatestAppReleaseUrl
+            : "https://github.com/VasariRulez/ValheimModManager/releases";
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = targetUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Impossibile aprire il browser: {ex.Message}";
+        }
+    }
+
+    private static string ResolveCurrentAppVersion()
+    {
+        try
+        {
+            var asm = typeof(MainViewModel).Assembly;
+            var ver = asm.GetName().Version;
+            if (ver != null)
+            {
+                return $"{ver.Major}.{ver.Minor}.{ver.Build}";
+            }
+        }
+        catch
+        {
+            // fallback
+        }
+        return "1.0.4";
     }
 
     private class DummySteamLocator : ISteamLocator
