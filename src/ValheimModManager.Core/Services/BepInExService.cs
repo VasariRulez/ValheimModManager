@@ -64,7 +64,7 @@ public sealed class BepInExService
             try
             {
                 var info = FileVersionInfo.GetVersionInfo(profilePreloader);
-                version = info.ProductVersion ?? info.FileVersion;
+                version = CleanVersionInfo(info.FileVersion, info.ProductVersion);
             }
             catch (Exception ex)
             {
@@ -185,5 +185,22 @@ public sealed class BepInExService
         if (File.Exists(doorstopVer)) File.Delete(doorstopVer);
 
         _logger.LogInformation("Restored game to vanilla state by removing doorstop and winhttp from {Dir}", game.GameDirectory);
+    }
+
+    public static string? CleanVersionInfo(string? fileVersion, string? productVersion)
+    {
+        if (!string.IsNullOrWhiteSpace(fileVersion))
+        {
+            return fileVersion.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(productVersion))
+        {
+            var pv = productVersion.Trim();
+            var plusIdx = pv.IndexOf('+');
+            return plusIdx >= 0 ? pv[..plusIdx].Trim() : pv;
+        }
+
+        return null;
     }
 }

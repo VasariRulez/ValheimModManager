@@ -66,4 +66,20 @@ public class BepInExServiceTests : IDisposable
         Assert.False(File.Exists(Path.Combine(_gameDir, "winhttp.dll")));
         Assert.False(File.Exists(Path.Combine(_gameDir, "doorstop_config.ini")));
     }
+
+    [Theory]
+    [InlineData("5.4.2202.0", "5.4.2202.0+13a7b9c", "5.4.2202.0")]
+    [InlineData("5.4.22.0", null, "5.4.22.0")]
+    [InlineData(null, "5.4.2202.0+abcdef123456789", "5.4.2202.0")]
+    [InlineData("", "5.4.21.0", "5.4.21.0")]
+    [InlineData("   ", "5.4.20.0+meta+data", "5.4.20.0")]
+    [InlineData(null, null, null)]
+    public void BepInExService_CleanVersionInfo_PrioritizesFileVersionAndStripsMetadata(
+        string? fileVersion,
+        string? productVersion,
+        string? expected)
+    {
+        var result = BepInExService.CleanVersionInfo(fileVersion, productVersion);
+        Assert.Equal(expected, result);
+    }
 }
