@@ -33,6 +33,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly AppUpdateService _appUpdateService;
     private readonly R2ModmanImporter _r2Importer;
     private readonly ProfileShareService _profileShareService;
+    private readonly ManualModInstaller _manualInstaller;
     private readonly GameLauncher _gameLauncher;
     private readonly ISteamLocator _steamLocator;
     private readonly IProcessMonitor _processMonitor;
@@ -215,6 +216,7 @@ public partial class MainViewModel : ViewModelBase
         _appUpdateService = new AppUpdateService(_httpClient);
         _r2Importer = new R2ModmanImporter(_httpClient, _profileService, _catalogService);
         _profileShareService = new ProfileShareService();
+        _manualInstaller = new ManualModInstaller();
 
         if (OperatingSystem.IsWindows())
         {
@@ -742,6 +744,54 @@ public partial class MainViewModel : ViewModelBase
 
         InstalledMods.Remove(item);
         StatusMessage = string.Format(Strings.StatusModUninstalled, item.Name);
+    }
+
+    public async Task InstallManualModFilesAsync(IReadOnlyList<string> filePaths)
+    {
+        if (filePaths == null || filePaths.Count == 0) return;
+
+        IsBusy = true;
+        try
+        {
+            var profileBepDir = _profileService.GetProfileBepInExDirectory(SelectedProfile);
+            var profile = _profileService.GetProfile(SelectedProfile);
+            int installedCount = 0;
+
+            foreach (var filePath in filePaths)
+            {
+                var ext = Path.GetExtension(filePath).ToLowerInvariant();
+                if (ext != ".zip" && ext != ".dll")
+                {
+                    StatusMessage = string.Format(Strings.StatusDropNotSupported, Path.GetFileName(filePath));
+                    continue;
+                }
+
+                StatusMessage = string.Format(Strings.StatusManualModInstalling, Path.GetFileName(filePath));
+
+                try
+                {
+                    var installedMod = await Task.Run(() => _manualInstaller.InstallFromFile(filePath, profileBepDir));
+                    profile.Mods.RemoveAll(m => m.CanonicalId == installedMod.CanonicalId);
+                    profile.Mods.Add(installedMod);
+                    installedCount++;
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = string.Format(Strings.StatusManualModError, ex.Message);
+                }
+            }
+
+            if (installedCount > 0)
+            {
+                _profileService.SaveProfile(profile);
+                LoadInstalledMods();
+                StatusMessage = string.Format(Strings.StatusManualModSuccess, Path.GetFileName(filePaths[0]));
+            }
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]

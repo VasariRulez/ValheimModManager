@@ -47,6 +47,9 @@ public record AppStrings
     public string SearchInstalledPlaceholder { get; init; } = "";
     public string CheckUpdatesButton { get; init; } = "";
     public string UpdateAllModsButton { get; init; } = "";
+    public string InstallFromFileButton { get; init; } = "";
+    public string ManualModBadge { get; init; } = "";
+    public string FilePickerManualModTitle { get; init; } = "";
     public string ModAuthorPrefix { get; init; } = "";
     public string ModUpdateAvailableBadge { get; init; } = "";
 
@@ -172,6 +175,10 @@ public record AppStrings
     public string StatusServerExportSuccess { get; init; } = "";
     public string StatusServerExportError { get; init; } = "";
     public string StatusShareImportSuccess { get; init; } = "";
+    public string StatusManualModInstalling { get; init; } = "";
+    public string StatusManualModSuccess { get; init; } = "";
+    public string StatusManualModError { get; init; } = "";
+    public string StatusDropNotSupported { get; init; } = "";
     public string StatusAppUpdateChecking { get; init; } = "";
     public string StatusAppUpdateAvailable { get; init; } = "";
     public string StatusAppUpdateLatest { get; init; } = "";

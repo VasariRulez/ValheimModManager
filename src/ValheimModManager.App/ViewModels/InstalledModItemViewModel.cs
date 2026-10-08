@@ -21,6 +21,11 @@ public partial class InstalledModItemViewModel : ObservableObject
     public string Owner => Model.CanonicalId.Namespace;
     public string InstalledVersion => Model.InstalledVersion;
     public string ProviderId => Model.Key.ProviderId;
+    public bool IsManualMod => string.Equals(Model.Key.ProviderId, "manual", StringComparison.OrdinalIgnoreCase);
+    public string ProviderBadgeText => IsManualMod 
+        ? ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ManualModBadge 
+        : ProviderId;
+    public string ProviderBadgeColor => IsManualMod ? "#7c3aed" : "#3f3f46";
     public string KeyString => Model.Key.ToString();
     public string AuthorDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModAuthorPrefix, Owner);
     public string UpdateBadgeText => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModUpdateAvailableBadge, LatestVersion);

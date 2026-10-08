@@ -51,6 +51,9 @@ public sealed record ItalianStrings : AppStrings
         SearchInstalledPlaceholder = "Cerca tra le mod installate (filtro automatico)...";
         CheckUpdatesButton = "Verifica Aggiornamenti";
         UpdateAllModsButton = "Aggiorna Tutte le Mod";
+        InstallFromFileButton = "➕  Installa da File...";
+        ManualModBadge = "Manuale";
+        FilePickerManualModTitle = "Seleziona mod da installare (.zip o .dll)";
         ModAuthorPrefix = "Autore: {0}";
         ModUpdateAvailableBadge = "Aggiornamento v{0} disp.";
 
@@ -176,6 +179,10 @@ public sealed record ItalianStrings : AppStrings
         StatusServerExportSuccess = "Pacchetto server esportato con successo in {0}";
         StatusServerExportError = "Errore durante l'esportazione del pacchetto server: {0}";
         StatusShareImportSuccess = "Profilo [{0}] importato con successo ({1} mod installate)!";
+        StatusManualModInstalling = "Installazione mod manuale '{0}' in corso...";
+        StatusManualModSuccess = "Mod manuale '{0}' installata con successo!";
+        StatusManualModError = "Errore durante l'installazione della mod manuale: {0}";
+        StatusDropNotSupported = "Formato file '{0}' non supportato. Seleziona file .zip o .dll.";
         StatusAppUpdateChecking = "Verifica aggiornamenti applicazione in corso...";
         StatusAppUpdateAvailable = "Nuova versione v{0} disponibile!";
         StatusAppUpdateLatest = "Stai già utilizzando l'ultima versione disponibile.";
