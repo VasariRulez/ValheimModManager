@@ -29,6 +29,8 @@ public sealed record EnglishStrings : AppStrings
         HeaderMenuCloneProfile = "Clone active profile";
         HeaderMenuDeleteProfile = "Delete active profile";
         HeaderMenuExportProfile = "Export Profile (.vmmprofile)";
+        HeaderMenuShareProfileCode = "Share Profile (Copy Code)";
+        HeaderMenuExportServer = "Export Server Package (.zip)";
         HeaderMenuImportVmmProfile = "Import Profile (.vmmprofile)";
         HeaderMenuImportR2z = "Import from r2modman archive (.r2z)";
         HeaderMenuImportR2Code = "Import from r2modman Code...";
@@ -101,6 +103,10 @@ public sealed record EnglishStrings : AppStrings
         ImportR2Prompt = "Paste alphanumeric export code (e.g. 018f...):";
         ImportR2Placeholder = "Paste share code...";
         ImportR2Button = "Download & Import";
+        ShareProfileTitle = "Share Profile";
+        ShareProfilePrompt = "Copy this compressed code to share the profile with your friends:";
+        ShareProfileCopyButton = "Copy Code To Clipboard";
+        ShareProfileCopiedTooltip = "Copied!";
         AppUpdateDialogTitle = "Update Available!";
         ReleaseNotesLabel = "Release notes:";
         DownloadingPackageLabel = "Downloading package...";
@@ -166,6 +172,10 @@ public sealed record EnglishStrings : AppStrings
         StatusVmmImportSuccess = "Profile [{0}] imported successfully!";
         StatusVmmExportSuccess = "Profile exported to {0}";
         StatusVmmExportError = "Export error: {0}";
+        StatusShareCodeCopied = "Profile share code copied to clipboard!";
+        StatusServerExportSuccess = "Server package exported successfully to {0}";
+        StatusServerExportError = "Error exporting server package: {0}";
+        StatusShareImportSuccess = "Profile [{0}] imported successfully ({1} mods installed)!";
         StatusAppUpdateChecking = "Checking for application updates...";
         StatusAppUpdateAvailable = "New version v{0} available!";
         StatusAppUpdateLatest = "You are already using the latest version available.";

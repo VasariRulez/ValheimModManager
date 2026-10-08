@@ -55,7 +55,10 @@
                                         <MenuItem Header="{Binding Strings.HeaderMenuCloneProfile}" Command="{Binding CloneActiveProfileCommand}" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuDeleteProfile}" Command="{Binding DeleteCurrentProfileCommand}" />
                                         <Separator />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuShareProfileCode}" Command="{Binding ShowShareProfileDialogCommand}" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuExportProfile}" Click="OnExportProfileClicked" />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuExportServer}" Click="OnExportServerPackageClicked" />
+                                        <Separator />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportVmmProfile}" Click="OnImportVmmProfileClicked" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportR2z}" Click="OnImportR2zClicked" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportR2Code}" Command="{Binding ShowImportR2CodeDialogCommand}" />
@@ -482,6 +485,30 @@
                         <Button Content="{Binding Strings.CommonCancel}" Command="{Binding CancelImportR2CodeDialogCommand}" Background="#3f3f46" />
                         <Button Content="{Binding Strings.ImportR2Button}" Command="{Binding ConfirmImportR2CodeCommand}" Background="#2563eb" Foreground="White" FontWeight="Bold" />
                     </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- MODAL OVERLAY: CONDIVIDI PROFILO CON CODICE -->
+        <Border Background="#80000000" IsVisible="{Binding IsShareProfileDialogVisible}" ZIndex="100">
+            <Border Background="#27272a" CornerRadius="8" Padding="20" Width="480" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="#3f3f46" BorderThickness="1">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="{Binding Strings.ShareProfileTitle}" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
+                    <TextBlock Text="{Binding Strings.ShareProfilePrompt}" FontSize="12" Foreground="#a1a1aa" />
+                    <TextBox Text="{Binding GeneratedShareCode}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="120"
+                             Background="#18181b" Foreground="#93c5fd" FontFamily="Consolas,Monospace" FontSize="11" />
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,10,0,0">
+                        <TextBlock Grid.Column="0" Text="{Binding Strings.ShareProfileCopiedTooltip}" 
+                                   IsVisible="{Binding IsShareCodeCopied}" Foreground="#22c55e" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Content="{Binding Strings.ShareProfileCopyButton}" 
+                                Command="{Binding CopyGeneratedShareCodeCommand}" 
+                                Background="#2563eb" Foreground="White" FontWeight="Bold" Margin="0,0,8,0" />
+                        <Button Grid.Column="3" Content="{Binding Strings.CommonClose}" 
+                                Command="{Binding DismissShareProfileDialogCommand}" 
+                                Background="#3f3f46" />
+                    </Grid>
                 </StackPanel>
             </Border>
         </Border>

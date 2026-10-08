@@ -29,6 +29,8 @@ public sealed record ItalianStrings : AppStrings
         HeaderMenuCloneProfile = "Clona profilo attivo";
         HeaderMenuDeleteProfile = "Elimina profilo attivo";
         HeaderMenuExportProfile = "Esporta Profilo (.vmmprofile)";
+        HeaderMenuShareProfileCode = "Condividi Profilo (Copia Codice)";
+        HeaderMenuExportServer = "Esporta Pacchetto Server (.zip)";
         HeaderMenuImportVmmProfile = "Importa Profilo (.vmmprofile)";
         HeaderMenuImportR2z = "Importa da archivio r2modman (.r2z)";
         HeaderMenuImportR2Code = "Importa da Codice r2modman...";
@@ -101,6 +103,10 @@ public sealed record ItalianStrings : AppStrings
         ImportR2Prompt = "Incolla il codice alfanumerico di esportazione (es. 018f...):";
         ImportR2Placeholder = "Incolla codice di condivisione...";
         ImportR2Button = "Scarica & Importa";
+        ShareProfileTitle = "Condividi Profilo";
+        ShareProfilePrompt = "Copia questo codice compresso per condividere il profilo con i tuoi amici:";
+        ShareProfileCopyButton = "Copia Codice Negli Appunti";
+        ShareProfileCopiedTooltip = "Copiato!";
         AppUpdateDialogTitle = "Aggiornamento Disponibile!";
         ReleaseNotesLabel = "Note di rilascio:";
         DownloadingPackageLabel = "Download del pacchetto in corso...";
@@ -166,6 +172,10 @@ public sealed record ItalianStrings : AppStrings
         StatusVmmImportSuccess = "Profilo [{0}] importato con successo!";
         StatusVmmExportSuccess = "Profilo esportato in {0}";
         StatusVmmExportError = "Errore esportazione: {0}";
+        StatusShareCodeCopied = "Codice di condivisione profilo copiato negli appunti!";
+        StatusServerExportSuccess = "Pacchetto server esportato con successo in {0}";
+        StatusServerExportError = "Errore durante l'esportazione del pacchetto server: {0}";
+        StatusShareImportSuccess = "Profilo [{0}] importato con successo ({1} mod installate)!";
         StatusAppUpdateChecking = "Verifica aggiornamenti applicazione in corso...";
         StatusAppUpdateAvailable = "Nuova versione v{0} disponibile!";
         StatusAppUpdateLatest = "Stai già utilizzando l'ultima versione disponibile.";

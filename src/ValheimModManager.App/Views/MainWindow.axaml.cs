@@ -12,6 +12,22 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            vm.OnCopyToClipboardRequested = async text =>
+            {
+                var cb = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (cb != null)
+                {
+                    await cb.SetTextAsync(text);
+                }
+            };
+        }
     }
 
     private async void OnBrowseGameFolderClicked(object? sender, RoutedEventArgs e)
@@ -49,6 +65,27 @@ public partial class MainWindow : Window
         if (file != null)
         {
             vm.ExportActiveProfile(file.Path.LocalPath);
+        }
+    }
+
+    private async void OnExportServerPackageClicked(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm) return;
+
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Esporta Pacchetto Server Dedicato",
+            DefaultExtension = "zip",
+            SuggestedFileName = $"{vm.SelectedProfile}-DedicatedServer.zip",
+            FileTypeChoices = new List<FilePickerFileType>
+            {
+                new("Dedicated Server Modpack (*.zip)") { Patterns = ["*.zip"] }
+            }
+        });
+
+        if (file != null)
+        {
+            vm.ExportServerPackage(file.Path.LocalPath);
         }
     }
 

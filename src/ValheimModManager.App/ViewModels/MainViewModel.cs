@@ -32,9 +32,12 @@ public partial class MainViewModel : ViewModelBase
     private readonly UpdateService _updateService;
     private readonly AppUpdateService _appUpdateService;
     private readonly R2ModmanImporter _r2Importer;
+    private readonly ProfileShareService _profileShareService;
     private readonly GameLauncher _gameLauncher;
     private readonly ISteamLocator _steamLocator;
     private readonly IProcessMonitor _processMonitor;
+
+    public Action<string>? OnCopyToClipboardRequested { get; set; }
 
     private CancellationTokenSource? _catalogSearchCts;
     private CancellationTokenSource? _installedSearchCts;
@@ -160,6 +163,15 @@ public partial class MainViewModel : ViewModelBase
     private string _r2CodeInput = "";
 
     [ObservableProperty]
+    private bool _isShareProfileDialogVisible;
+
+    [ObservableProperty]
+    private string _generatedShareCode = "";
+
+    [ObservableProperty]
+    private bool _isShareCodeCopied;
+
+    [ObservableProperty]
     private AppStrings _strings = ItalianStrings.Instance;
 
     [ObservableProperty]
@@ -202,6 +214,7 @@ public partial class MainViewModel : ViewModelBase
         _updateService = new UpdateService(_catalogService);
         _appUpdateService = new AppUpdateService(_httpClient);
         _r2Importer = new R2ModmanImporter(_httpClient, _profileService, _catalogService);
+        _profileShareService = new ProfileShareService();
 
         if (OperatingSystem.IsWindows())
         {
@@ -960,15 +973,98 @@ public partial class MainViewModel : ViewModelBase
     public async Task ConfirmImportR2CodeAsync()
     {
         if (string.IsNullOrWhiteSpace(R2CodeInput)) return;
+        var input = R2CodeInput.Trim();
         IsBusy = true;
-        StatusMessage = Strings.StatusR2Importing;
+
         try
         {
-            var res = await _r2Importer.ImportFromCodeAsync(R2CodeInput.Trim());
-            LoadProfilesList();
-            SelectedProfile = res.CreatedProfile.Name;
-            IsImportR2CodeDialogVisible = false;
-            StatusMessage = string.Format(Strings.StatusR2ImportSuccess, res.CreatedProfile.Name, res.ResolvedCatalogMods.Count);
+            if (_profileShareService.IsVmmShareCode(input))
+            {
+                StatusMessage = "Importazione profilo da codice VMM...";
+                var manifest = _profileShareService.ParseShareCode(input);
+
+                var existingNames = _profileService.ListProfileNames();
+                var uniqueName = manifest.ProfileName;
+                int counter = 2;
+                while (existingNames.Contains(uniqueName, StringComparer.OrdinalIgnoreCase))
+                {
+                    uniqueName = $"{manifest.ProfileName} ({counter++})";
+                }
+
+                var profile = _profileService.CreateProfile(uniqueName, manifest.Target);
+                var profileDir = _profileService.GetProfileDirectory(profile.Name);
+                var profileBepDir = _profileService.GetProfileBepInExDirectory(profile.Name);
+
+                // Extract config files
+                var configDir = Path.Combine(profileDir, "BepInEx", "config");
+                Directory.CreateDirectory(configDir);
+                foreach (var (relPath, content) in manifest.ConfigFiles)
+                {
+                    try
+                    {
+                        var destPath = Path.Combine(configDir, relPath.Replace('/', Path.DirectorySeparatorChar));
+                        var parentDir = Path.GetDirectoryName(destPath);
+                        if (!string.IsNullOrEmpty(parentDir)) Directory.CreateDirectory(parentDir);
+                        File.WriteAllText(destPath, content, System.Text.Encoding.UTF8);
+                    }
+                    catch { }
+                }
+
+                // Download & install catalog mods
+                int installedCount = 0;
+                foreach (var modEntry in manifest.Mods)
+                {
+                    try
+                    {
+                        var canonical = CanonicalModId.Parse(modEntry.CanonicalId);
+                        var catalogMatch = _catalogService.FindByCanonicalId(canonical);
+                        if (catalogMatch != null)
+                        {
+                            var targetVersion = catalogMatch.Versions.FirstOrDefault(v => v.VersionNumber == modEntry.Version)
+                                                ?? catalogMatch.Versions.First();
+
+                            StatusMessage = string.Format(Strings.StatusDownloadingMod, catalogMatch.Name, targetVersion.VersionNumber, catalogMatch.Key.ProviderId);
+
+                            var ticket = new DownloadTicket(new Uri(targetVersion.DownloadUrl), $"{catalogMatch.Name}-{targetVersion.VersionNumber}.zip");
+                            var zip = await _installService.DownloadPackageAsync(ticket, catalogMatch.Key.ProviderId, catalogMatch.Name, targetVersion.VersionNumber);
+                            var files = _installService.InstallZipToProfile(zip, profileBepDir, catalogMatch.CanonicalId);
+
+                            if (!modEntry.IsEnabled)
+                            {
+                                files = _installService.ToggleMod(files, false);
+                            }
+
+                            profile.Mods.Add(new InstalledMod(
+                                Key: catalogMatch.Key,
+                                CanonicalId: catalogMatch.CanonicalId,
+                                InstalledVersion: targetVersion.VersionNumber,
+                                IsEnabled: modEntry.IsEnabled,
+                                InstalledAt: DateTime.UtcNow,
+                                InstalledFiles: files,
+                                Dependencies: targetVersion.Dependencies.Select(d => d.RawIdentifier).ToList()
+                            ));
+
+                            installedCount++;
+                        }
+                    }
+                    catch { }
+                }
+
+                _profileService.SaveProfile(profile);
+                LoadProfilesList();
+                SelectedProfile = profile.Name;
+                IsImportR2CodeDialogVisible = false;
+                StatusMessage = string.Format(Strings.StatusShareImportSuccess, profile.Name, installedCount);
+            }
+            else
+            {
+                StatusMessage = Strings.StatusR2Importing;
+                var res = await _r2Importer.ImportFromCodeAsync(input);
+                LoadProfilesList();
+                SelectedProfile = res.CreatedProfile.Name;
+                IsImportR2CodeDialogVisible = false;
+                StatusMessage = string.Format(Strings.StatusR2ImportSuccess, res.CreatedProfile.Name, res.ResolvedCatalogMods.Count);
+            }
         }
         catch (Exception ex)
         {
@@ -984,6 +1080,55 @@ public partial class MainViewModel : ViewModelBase
     public void CancelImportR2CodeDialog()
     {
         IsImportR2CodeDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowShareProfileDialog()
+    {
+        try
+        {
+            var profile = _profileService.GetProfile(SelectedProfile);
+            var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
+            GeneratedShareCode = _profileShareService.GenerateShareCode(profile, profileDir);
+            IsShareCodeCopied = false;
+            IsShareProfileDialogVisible = true;
+            OnCopyToClipboardRequested?.Invoke(GeneratedShareCode);
+            IsShareCodeCopied = true;
+            StatusMessage = Strings.StatusShareCodeCopied;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
+    }
+
+    [RelayCommand]
+    public void CopyGeneratedShareCode()
+    {
+        if (string.IsNullOrWhiteSpace(GeneratedShareCode)) return;
+        OnCopyToClipboardRequested?.Invoke(GeneratedShareCode);
+        IsShareCodeCopied = true;
+        StatusMessage = Strings.StatusShareCodeCopied;
+    }
+
+    [RelayCommand]
+    public void DismissShareProfileDialog()
+    {
+        IsShareProfileDialogVisible = false;
+    }
+
+    public void ExportServerPackage(string destinationZip)
+    {
+        try
+        {
+            var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
+            _profileShareService.ExportServerPackage(profileDir, destinationZip);
+            StatusMessage = string.Format(Strings.StatusServerExportSuccess, destinationZip);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = string.Format(Strings.StatusServerExportError, ex.Message);
+        }
     }
 
     public async Task ImportR2zFileAsync(string filePath)

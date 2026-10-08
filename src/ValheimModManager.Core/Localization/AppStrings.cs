@@ -25,6 +25,8 @@ public record AppStrings
     public string HeaderMenuCloneProfile { get; init; } = "";
     public string HeaderMenuDeleteProfile { get; init; } = "";
     public string HeaderMenuExportProfile { get; init; } = "";
+    public string HeaderMenuShareProfileCode { get; init; } = "";
+    public string HeaderMenuExportServer { get; init; } = "";
     public string HeaderMenuImportVmmProfile { get; init; } = "";
     public string HeaderMenuImportR2z { get; init; } = "";
     public string HeaderMenuImportR2Code { get; init; } = "";
@@ -97,6 +99,10 @@ public record AppStrings
     public string ImportR2Prompt { get; init; } = "";
     public string ImportR2Placeholder { get; init; } = "";
     public string ImportR2Button { get; init; } = "";
+    public string ShareProfileTitle { get; init; } = "";
+    public string ShareProfilePrompt { get; init; } = "";
+    public string ShareProfileCopyButton { get; init; } = "";
+    public string ShareProfileCopiedTooltip { get; init; } = "";
     public string AppUpdateDialogTitle { get; init; } = "";
     public string ReleaseNotesLabel { get; init; } = "";
     public string DownloadingPackageLabel { get; init; } = "";
@@ -162,6 +168,10 @@ public record AppStrings
     public string StatusVmmImportSuccess { get; init; } = "";
     public string StatusVmmExportSuccess { get; init; } = "";
     public string StatusVmmExportError { get; init; } = "";
+    public string StatusShareCodeCopied { get; init; } = "";
+    public string StatusServerExportSuccess { get; init; } = "";
+    public string StatusServerExportError { get; init; } = "";
+    public string StatusShareImportSuccess { get; init; } = "";
     public string StatusAppUpdateChecking { get; init; } = "";
     public string StatusAppUpdateAvailable { get; init; } = "";
     public string StatusAppUpdateLatest { get; init; } = "";
