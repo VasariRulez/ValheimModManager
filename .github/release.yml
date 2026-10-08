@@ -1,0 +1,13 @@
+changelog:
+  categories:
+    - title: "🚀 Nuove Funzionalità / Features"
+      labels:
+        - "feature"
+        - "enhancement"
+    - title: "🐛 Correzioni Bug / Bug Fixes"
+      labels:
+        - "bug"
+        - "fix"
+    - title: "🛠️ Manutenzione & Miglioramenti / Maintenance"
+      labels:
+        - "*"
