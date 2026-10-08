@@ -27,6 +27,7 @@ public record AppStrings
     public string HeaderMenuExportProfile { get; init; } = "";
     public string HeaderMenuShareProfileCode { get; init; } = "";
     public string HeaderMenuExportServer { get; init; } = "";
+    public string HeaderMenuImportShareCode { get; init; } = "";
     public string HeaderMenuImportVmmProfile { get; init; } = "";
     public string HeaderMenuImportR2z { get; init; } = "";
     public string HeaderMenuImportR2Code { get; init; } = "";
@@ -102,6 +103,10 @@ public record AppStrings
     public string ImportR2Prompt { get; init; } = "";
     public string ImportR2Placeholder { get; init; } = "";
     public string ImportR2Button { get; init; } = "";
+    public string ImportShareCodeTitle { get; init; } = "";
+    public string ImportShareCodePrompt { get; init; } = "";
+    public string ImportShareCodePlaceholder { get; init; } = "";
+    public string ImportShareCodeButton { get; init; } = "";
     public string ShareProfileTitle { get; init; } = "";
     public string ShareProfilePrompt { get; init; } = "";
     public string ShareProfileCopyButton { get; init; } = "";

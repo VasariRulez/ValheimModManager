@@ -164,6 +164,12 @@ public partial class MainViewModel : ViewModelBase
     private string _r2CodeInput = "";
 
     [ObservableProperty]
+    private bool _isImportShareCodeDialogVisible;
+
+    [ObservableProperty]
+    private string _shareCodeInput = "";
+
+    [ObservableProperty]
     private bool _isShareProfileDialogVisible;
 
     [ObservableProperty]
@@ -1130,6 +1136,28 @@ public partial class MainViewModel : ViewModelBase
     public void CancelImportR2CodeDialog()
     {
         IsImportR2CodeDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowImportShareCodeDialog()
+    {
+        ShareCodeInput = "";
+        IsImportShareCodeDialogVisible = true;
+    }
+
+    [RelayCommand]
+    public void CancelImportShareCodeDialog()
+    {
+        IsImportShareCodeDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public async Task ConfirmImportShareCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ShareCodeInput)) return;
+        R2CodeInput = ShareCodeInput;
+        IsImportShareCodeDialogVisible = false;
+        await ConfirmImportR2CodeAsync();
     }
 
     [RelayCommand]

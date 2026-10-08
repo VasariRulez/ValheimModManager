@@ -31,6 +31,7 @@ public sealed record ItalianStrings : AppStrings
         HeaderMenuExportProfile = "Esporta Profilo (.vmmprofile)";
         HeaderMenuShareProfileCode = "Condividi Profilo (Copia Codice)";
         HeaderMenuExportServer = "Esporta Pacchetto Server (.zip)";
+        HeaderMenuImportShareCode = "Importa da Codice Condivisione (VMM)...";
         HeaderMenuImportVmmProfile = "Importa Profilo (.vmmprofile)";
         HeaderMenuImportR2z = "Importa da archivio r2modman (.r2z)";
         HeaderMenuImportR2Code = "Importa da Codice r2modman...";
@@ -106,6 +107,10 @@ public sealed record ItalianStrings : AppStrings
         ImportR2Prompt = "Incolla il codice alfanumerico di esportazione (es. 018f...):";
         ImportR2Placeholder = "Incolla codice di condivisione...";
         ImportR2Button = "Scarica & Importa";
+        ImportShareCodeTitle = "Importa Profilo da Codice di Condivisione";
+        ImportShareCodePrompt = "Incolla il codice generato da Valheim Mod Manager (vmm1-...):";
+        ImportShareCodePlaceholder = "Incolla codice di condivisione (vmm1-...)...";
+        ImportShareCodeButton = "Importa Profilo";
         ShareProfileTitle = "Condividi Profilo";
         ShareProfilePrompt = "Copia questo codice compresso per condividere il profilo con i tuoi amici:";
         ShareProfileCopyButton = "Copia Codice Negli Appunti";
