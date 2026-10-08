@@ -18,54 +18,44 @@
         <Grid RowDefinitions="Auto,*,Auto">
             
             <!-- HEADER & TOOLBAR -->
-            <Border Grid.Row="0" Background="#27272a" Padding="14,10" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Border Grid.Row="0" Background="#27272a" Padding="12,8" BorderBrush="#3f3f46" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     
-                    <!-- Title & Profile Selector with Management Toolbar -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <Image Source="/Assets/icon.png" Width="34" Height="34" VerticalAlignment="Center" />
+                    <!-- Left: Title & Profile Selector with Streamlined Management -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <!-- Brand -->
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Image Source="/Assets/icon.png" Width="30" Height="30" VerticalAlignment="Center" />
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="17" Foreground="#e4e4e7" LetterSpacing="2" />
-                                <TextBlock Text="MOD MANAGER" FontSize="10" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="1" />
+                                <TextBlock Text="VALHEIM" FontWeight="Black" FontSize="16" Foreground="#e4e4e7" LetterSpacing="1.5" />
+                                <TextBlock Text="MOD MANAGER" FontSize="9" Foreground="#a1a1aa" FontWeight="SemiBold" LetterSpacing="0.8" />
                             </StackPanel>
                         </StackPanel>
                         
-                        <Rectangle Width="1" Height="28" Fill="#3f3f46" Margin="4,0" />
+                        <Rectangle Width="1" Height="26" Fill="#3f3f46" Margin="2,0" />
                         
                         <!-- Profile Selection & Actions -->
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Strings.HeaderProfileLabel}" VerticalAlignment="Center" Foreground="#a1a1aa" FontSize="12" FontWeight="Medium" />
                             <ComboBox ItemsSource="{Binding Profiles}"
                                       SelectedItem="{Binding SelectedProfile}"
-                                      Width="140" />
+                                      Width="130" />
 
-                            <!-- Profile Action Buttons -->
+                            <!-- Quick Create Profile -->
                             <Button Content="➕" 
                                     Command="{Binding ShowNewProfileDialogCommand}"
                                     ToolTip.Tip="{Binding Strings.HeaderTooltipNewProfile}"
-                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
-                            
-                            <Button Content="📋" 
-                                    Command="{Binding CloneActiveProfileCommand}"
-                                    ToolTip.Tip="{Binding Strings.HeaderTooltipCloneProfile}"
-                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
-                            
-                            <Button Content="🗑️" 
-                                    Command="{Binding DeleteCurrentProfileCommand}"
-                                    ToolTip.Tip="{Binding Strings.HeaderTooltipDeleteProfile}"
-                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
+                                    Background="#3f3f46" Padding="7,6" CornerRadius="4" />
 
-                            <Button Content="📤" 
-                                    Click="OnExportProfileClicked"
-                                    ToolTip.Tip="{Binding Strings.HeaderTooltipExportProfile}"
-                                    Background="#3f3f46" Padding="8,6" CornerRadius="4" />
-
-                            <!-- Import Dropdown Menu -->
-                            <Button Content="📥" ToolTip.Tip="{Binding Strings.HeaderTooltipImportProfile}"
-                                    Background="#3f3f46" Padding="8,6" CornerRadius="4">
+                            <!-- More Profile Options Menu (Clone, Delete, Export, Import) -->
+                            <Button Content="⚙️" ToolTip.Tip="{Binding Strings.HeaderTooltipProfileOptions}"
+                                    Background="#3f3f46" Padding="7,6" CornerRadius="4">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                        <MenuItem Header="{Binding Strings.HeaderMenuCloneProfile}" Command="{Binding CloneActiveProfileCommand}" />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuDeleteProfile}" Command="{Binding DeleteCurrentProfileCommand}" />
+                                        <Separator />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuExportProfile}" Click="OnExportProfileClicked" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportVmmProfile}" Click="OnImportVmmProfileClicked" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportR2z}" Click="OnImportR2zClicked" />
                                         <MenuItem Header="{Binding Strings.HeaderMenuImportR2Code}" Command="{Binding ShowImportR2CodeDialogCommand}" />
@@ -75,53 +65,58 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- App Update Available Alert Banner -->
-                    <Border Grid.Column="1"
-                            IsVisible="{Binding IsAppUpdateAvailable}"
-                            Background="#1e3a8a" BorderBrush="#3b82f6" BorderThickness="1" CornerRadius="6"
-                            Padding="10,5" Margin="8,0" VerticalAlignment="Center" HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Strings.HeaderBannerUpdateAvailable}" Foreground="#bfdbfe" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Content="{Binding FormattedInstallUpdateBanner}"
-                                    Command="{Binding ShowAppUpdateDialogCommand}"
-                                    Background="#2563eb" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" CornerRadius="4" />
-                        </StackPanel>
-                    </Border>
+                    <!-- Center: Flexible Status Area (App Update & BepInEx Status Pill) -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" 
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0">
+                        
+                        <!-- App Update Available Pill -->
+                        <Border IsVisible="{Binding IsAppUpdateAvailable}"
+                                Background="#1e3a8a" BorderBrush="#3b82f6" BorderThickness="1" CornerRadius="6"
+                                Padding="8,4" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Strings.HeaderBannerUpdateAvailable}" Foreground="#bfdbfe" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                                <Button Content="{Binding FormattedInstallUpdateBanner}"
+                                        Command="{Binding ShowAppUpdateDialogCommand}"
+                                        Background="#2563eb" Foreground="White" FontSize="11" FontWeight="Bold" Padding="6,3" CornerRadius="4" />
+                            </StackPanel>
+                        </Border>
 
-                    <!-- BepInEx Banner -->
-                    <Border Grid.Column="2" 
-                            Background="#18181b"
-                            BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="6"
-                            Padding="10,5" Margin="12,0" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Ellipse Width="8" Height="8"
-                                     Fill="{Binding IsBepInExInstalled, Converter={x:Null}}" />
-                            <TextBlock Text="{Binding BepInExStatusText}" 
-                                       Foreground="#e4e4e7" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
-                            <Button Content="{Binding Strings.HeaderInstallBepInExButton}" 
-                                     Command="{Binding InstallBepInExCommand}"
-                                     IsVisible="{Binding !IsBepInExInstalled}"
-                                     Background="#d97706" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" />
-                            <Button Content="{Binding Strings.HeaderRestoreVanillaButton}" 
-                                     Command="{Binding RestoreVanillaCommand}"
-                                     IsVisible="{Binding IsBepInExInstalled}"
-                                     Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" Padding="8,4" />
-                        </StackPanel>
-                    </Border>
+                        <!-- BepInEx Status Pill -->
+                        <Border Background="#18181b"
+                                BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="6"
+                                Padding="8,4" VerticalAlignment="Center"
+                                ToolTip.Tip="{Binding BepInExStatusTooltip}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Ellipse Width="8" Height="8"
+                                         Fill="{Binding BepInExStatusColor}" />
+                                <TextBlock Text="{Binding BepInExStatusText}" 
+                                           Foreground="#e4e4e7" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                                <Button Content="{Binding Strings.HeaderInstallBepInExShort}" 
+                                        Command="{Binding InstallBepInExCommand}"
+                                        IsVisible="{Binding !IsBepInExInstalled}"
+                                        Background="#d97706" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,3" CornerRadius="4" />
+                                <Button Content="{Binding Strings.HeaderRestoreVanillaShort}" 
+                                        Command="{Binding RestoreVanillaCommand}"
+                                        IsVisible="{Binding IsBepInExInstalled}"
+                                        Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" Padding="8,3" CornerRadius="4" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
 
-                    <!-- Play Actions -->
-                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <!-- Right: Primary Play Actions (Always visible and anchored right) -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <Button Content="{Binding Strings.HeaderLaunchGameButton}" 
                                 Command="{Binding LaunchGameCommand}"
                                 Background="#16a34a" Foreground="White" 
-                                FontWeight="Bold" FontSize="13"
-                                Padding="16,10" CornerRadius="6" />
+                                FontWeight="Bold" FontSize="12"
+                                Padding="14,9" CornerRadius="6" />
                         
                         <Button Content="{Binding Strings.HeaderLaunchServerButton}" 
                                 Command="{Binding LaunchServerCommand}"
                                 Background="#27272a" Foreground="#d4d4d8" 
                                 FontWeight="SemiBold" FontSize="12"
-                                Padding="12,10" CornerRadius="6"
+                                Padding="10,9" CornerRadius="6"
                                 ToolTip.Tip="{Binding Strings.HeaderLaunchServerTooltip}" />
                     </StackPanel>
                 </Grid>

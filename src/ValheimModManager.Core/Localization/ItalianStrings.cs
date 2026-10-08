@@ -25,13 +25,19 @@ public sealed record ItalianStrings : AppStrings
         HeaderTooltipDeleteProfile = "Elimina profilo attivo";
         HeaderTooltipExportProfile = "Esporta profilo (.vmmprofile)";
         HeaderTooltipImportProfile = "Opzioni di importazione profilo";
+        HeaderTooltipProfileOptions = "Altre opzioni profilo (clona, elimina, esporta, importa)";
+        HeaderMenuCloneProfile = "Clona profilo attivo";
+        HeaderMenuDeleteProfile = "Elimina profilo attivo";
+        HeaderMenuExportProfile = "Esporta Profilo (.vmmprofile)";
         HeaderMenuImportVmmProfile = "Importa Profilo (.vmmprofile)";
         HeaderMenuImportR2z = "Importa da archivio r2modman (.r2z)";
         HeaderMenuImportR2Code = "Importa da Codice r2modman...";
         HeaderBannerUpdateAvailable = "🎉 Aggiornamento Disponibile!";
         HeaderBannerInstallUpdate = "Installa v{0}";
         HeaderInstallBepInExButton = "Installa BepInEx 1-Click";
+        HeaderInstallBepInExShort = "Installa";
         HeaderRestoreVanillaButton = "Ripristina Vanilla";
+        HeaderRestoreVanillaShort = "Ripristina";
         HeaderLaunchGameButton = "▶  AVVIA VALHEIM";
         HeaderLaunchServerButton = "🛡️  Server";
         HeaderLaunchServerTooltip = "Avvia Valheim Dedicated Server con il profilo selezionato";
@@ -103,8 +109,14 @@ public sealed record ItalianStrings : AppStrings
 
         // BepInEx Status
         BepInExConfigured = "BepInEx: Configurato & Attivo ({0})";
+        BepInExConfiguredShort = "BepInEx: Attivo ({0})";
         BepInExHooksPending = "BepInEx: Installato nel profilo, ganci di gioco da applicare";
+        BepInExHooksPendingShort = "BepInEx: Ganci da applicare";
         BepInExNotInstalled = "BepInEx: Non installato (necessario per caricare le mod)";
+        BepInExNotInstalledShort = "BepInEx: Non installato";
+        BepInExTooltipConfigured = "BepInEx {0} è configurato e attivo nel profilo selezionato.";
+        BepInExTooltipHooksPending = "BepInEx è presente nel profilo ma i file di hooking devono essere applicati alla cartella del gioco. Clicca su Installa per applicarli.";
+        BepInExTooltipNotInstalled = "BepInEx non è installato in questo profilo (richiesto per caricare le mod). Clicca su Installa per scaricarlo e configurarlo.";
 
         // Detailed Status Messages
         StatusFolderNotExists = "La cartella specificata non esiste.";

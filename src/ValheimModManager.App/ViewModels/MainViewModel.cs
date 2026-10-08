@@ -97,7 +97,13 @@ public partial class MainViewModel : ViewModelBase
     private bool _isBepInExInstalled;
 
     [ObservableProperty]
-    private string _bepInExStatusText = "BepInEx: Verifica in corso...";
+    private string _bepInExStatusText = "BepInEx: ...";
+
+    [ObservableProperty]
+    private string _bepInExStatusColor = "#ef4444";
+
+    [ObservableProperty]
+    private string _bepInExStatusTooltip = "";
 
     [ObservableProperty]
     private ObservableCollection<string> _profiles = [];
@@ -401,15 +407,22 @@ public partial class MainViewModel : ViewModelBase
 
         if (IsBepInExInstalled)
         {
-            BepInExStatusText = string.Format(Strings.BepInExConfigured, status.Version ?? "5.4.x");
+            var ver = status.Version ?? "5.4.x";
+            BepInExStatusText = string.Format(Strings.BepInExConfiguredShort, ver);
+            BepInExStatusColor = "#22c55e";
+            BepInExStatusTooltip = string.Format(Strings.BepInExTooltipConfigured, ver);
         }
         else if (status.IsInstalledInProfile)
         {
-            BepInExStatusText = Strings.BepInExHooksPending;
+            BepInExStatusText = Strings.BepInExHooksPendingShort;
+            BepInExStatusColor = "#f59e0b";
+            BepInExStatusTooltip = Strings.BepInExTooltipHooksPending;
         }
         else
         {
-            BepInExStatusText = Strings.BepInExNotInstalled;
+            BepInExStatusText = Strings.BepInExNotInstalledShort;
+            BepInExStatusColor = "#ef4444";
+            BepInExStatusTooltip = Strings.BepInExTooltipNotInstalled;
         }
     }
 

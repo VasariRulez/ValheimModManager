@@ -21,13 +21,19 @@ public record AppStrings
     public string HeaderTooltipDeleteProfile { get; init; } = "";
     public string HeaderTooltipExportProfile { get; init; } = "";
     public string HeaderTooltipImportProfile { get; init; } = "";
+    public string HeaderTooltipProfileOptions { get; init; } = "";
+    public string HeaderMenuCloneProfile { get; init; } = "";
+    public string HeaderMenuDeleteProfile { get; init; } = "";
+    public string HeaderMenuExportProfile { get; init; } = "";
     public string HeaderMenuImportVmmProfile { get; init; } = "";
     public string HeaderMenuImportR2z { get; init; } = "";
     public string HeaderMenuImportR2Code { get; init; } = "";
     public string HeaderBannerUpdateAvailable { get; init; } = "";
     public string HeaderBannerInstallUpdate { get; init; } = "";
     public string HeaderInstallBepInExButton { get; init; } = "";
+    public string HeaderInstallBepInExShort { get; init; } = "";
     public string HeaderRestoreVanillaButton { get; init; } = "";
+    public string HeaderRestoreVanillaShort { get; init; } = "";
     public string HeaderLaunchGameButton { get; init; } = "";
     public string HeaderLaunchServerButton { get; init; } = "";
     public string HeaderLaunchServerTooltip { get; init; } = "";
@@ -99,8 +105,14 @@ public record AppStrings
 
     // BepInEx Status
     public string BepInExConfigured { get; init; } = "";
+    public string BepInExConfiguredShort { get; init; } = "";
     public string BepInExHooksPending { get; init; } = "";
+    public string BepInExHooksPendingShort { get; init; } = "";
     public string BepInExNotInstalled { get; init; } = "";
+    public string BepInExNotInstalledShort { get; init; } = "";
+    public string BepInExTooltipConfigured { get; init; } = "";
+    public string BepInExTooltipHooksPending { get; init; } = "";
+    public string BepInExTooltipNotInstalled { get; init; } = "";
 
     // Detailed Status Messages
     public string StatusFolderNotExists { get; init; } = "";

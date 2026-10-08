@@ -76,6 +76,10 @@ public class LocalizationTests : IDisposable
         Assert.NotEqual(it.CommonClose, en.CommonClose);
         Assert.NotEqual(it.HeaderLaunchGameButton, en.HeaderLaunchGameButton);
         Assert.NotEqual(it.StatusGamePathConfigured, en.StatusGamePathConfigured);
+        Assert.NotEqual(it.HeaderInstallBepInExShort, en.HeaderInstallBepInExShort);
+        Assert.NotEqual(it.BepInExConfiguredShort, en.BepInExConfiguredShort);
+        Assert.NotEqual(it.BepInExHooksPendingShort, en.BepInExHooksPendingShort);
+        Assert.NotEqual(it.HeaderTooltipProfileOptions, en.HeaderTooltipProfileOptions);
     }
 
     [Theory]
@@ -115,7 +119,8 @@ public class LocalizationTests : IDisposable
     [Fact]
     public void ProfileService_SavesAndRetrievesLanguagePreference()
     {
-        var profileService = new ProfileService(_testDir);
+        var profilesDir = Path.Combine(_testDir, "profiles");
+        var profileService = new ProfileService(profilesDir);
 
         var initialState = profileService.LoadState();
         Assert.Null(initialState.Language);

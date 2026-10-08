@@ -25,13 +25,19 @@ public sealed record EnglishStrings : AppStrings
         HeaderTooltipDeleteProfile = "Delete active profile";
         HeaderTooltipExportProfile = "Export profile (.vmmprofile)";
         HeaderTooltipImportProfile = "Profile import options";
+        HeaderTooltipProfileOptions = "More profile options (clone, delete, export, import)";
+        HeaderMenuCloneProfile = "Clone active profile";
+        HeaderMenuDeleteProfile = "Delete active profile";
+        HeaderMenuExportProfile = "Export Profile (.vmmprofile)";
         HeaderMenuImportVmmProfile = "Import Profile (.vmmprofile)";
         HeaderMenuImportR2z = "Import from r2modman archive (.r2z)";
         HeaderMenuImportR2Code = "Import from r2modman Code...";
         HeaderBannerUpdateAvailable = "🎉 Update Available!";
         HeaderBannerInstallUpdate = "Install v{0}";
         HeaderInstallBepInExButton = "Install BepInEx 1-Click";
+        HeaderInstallBepInExShort = "Install";
         HeaderRestoreVanillaButton = "Restore Vanilla";
+        HeaderRestoreVanillaShort = "Restore";
         HeaderLaunchGameButton = "▶  LAUNCH VALHEIM";
         HeaderLaunchServerButton = "🛡️  Server";
         HeaderLaunchServerTooltip = "Launch Valheim Dedicated Server with the selected profile";
@@ -103,8 +109,14 @@ public sealed record EnglishStrings : AppStrings
 
         // BepInEx Status
         BepInExConfigured = "BepInEx: Configured & Active ({0})";
+        BepInExConfiguredShort = "BepInEx: Active ({0})";
         BepInExHooksPending = "BepInEx: Installed in profile, game hooks pending";
+        BepInExHooksPendingShort = "BepInEx: Hooks pending";
         BepInExNotInstalled = "BepInEx: Not installed (required to load mods)";
+        BepInExNotInstalledShort = "BepInEx: Not installed";
+        BepInExTooltipConfigured = "BepInEx {0} is configured and active in the selected profile.";
+        BepInExTooltipHooksPending = "BepInEx is present in profile, but hook files must be deployed to the game folder. Click Install to deploy them.";
+        BepInExTooltipNotInstalled = "BepInEx is not installed in this profile (required to load mods). Click Install to download and configure it.";
 
         // Detailed Status Messages
         StatusFolderNotExists = "The specified folder does not exist.";
