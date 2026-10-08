@@ -35,6 +35,7 @@ public sealed record ItalianStrings : AppStrings
         HeaderMenuImportVmmProfile = "Importa Profilo (.vmmprofile)";
         HeaderMenuImportR2z = "Importa da archivio r2modman (.r2z)";
         HeaderMenuImportR2Code = "Importa da Codice r2modman...";
+        HeaderMenuOpenProfileFolder = "📂 Apri Cartella del Profilo Attivo";
         HeaderBannerUpdateAvailable = "🎉 Aggiornamento Disponibile!";
         HeaderBannerInstallUpdate = "Installa v{0}";
         FooterBannerUpdateAvailable = "È disponibile una nuova versione v{0} di Valheim Mod Manager!";
@@ -85,6 +86,10 @@ public sealed record ItalianStrings : AppStrings
         SourcesThunderstoreStatus = "(API v1 Valheim Community attiva)";
         SourcesHexiumStatus = "(API OpenAPI compatibile Thunderstore attiva)";
         SourcesNexusStatus = "(Architettura pianificata, supporto previsto nelle future versioni)";
+        StorageSectionTitle = "ARCHIVIAZIONE DATI & PROFILI";
+        StorageSectionDescription = "Cartella locale in cui il manager archivia i profili, le mod e le configurazioni (.cfg):";
+        OpenProfilesFolderButton = "📂 Apri Cartella Profili";
+        OpenActiveProfileFolderButton = "📂 Apri Profilo Attivo";
         AppUpdateSectionTitle = "AGGIORNAMENTO VALHEIM MOD MANAGER";
         AppVersionCurrentPrefix = "Versione attuale: v{0}";
         CheckAppUpdatesButton = "🔄 Controlla Aggiornamenti";

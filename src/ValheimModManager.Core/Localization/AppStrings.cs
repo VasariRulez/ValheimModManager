@@ -31,6 +31,7 @@ public record AppStrings
     public string HeaderMenuImportVmmProfile { get; init; } = "";
     public string HeaderMenuImportR2z { get; init; } = "";
     public string HeaderMenuImportR2Code { get; init; } = "";
+    public string HeaderMenuOpenProfileFolder { get; init; } = "";
     public string HeaderBannerUpdateAvailable { get; init; } = "";
     public string HeaderBannerInstallUpdate { get; init; } = "";
     public string FooterBannerUpdateAvailable { get; init; } = "";
@@ -81,6 +82,10 @@ public record AppStrings
     public string SourcesThunderstoreStatus { get; init; } = "";
     public string SourcesHexiumStatus { get; init; } = "";
     public string SourcesNexusStatus { get; init; } = "";
+    public string StorageSectionTitle { get; init; } = "";
+    public string StorageSectionDescription { get; init; } = "";
+    public string OpenProfilesFolderButton { get; init; } = "";
+    public string OpenActiveProfileFolderButton { get; init; } = "";
     public string AppUpdateSectionTitle { get; init; } = "";
     public string AppVersionCurrentPrefix { get; init; } = "";
     public string CheckAppUpdatesButton { get; init; } = "";

@@ -1425,6 +1425,56 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    public string ProfilesDirectoryPath => _profileService.BaseProfilesDirectory;
+
+    [RelayCommand]
+    public void OpenProfilesFolder()
+    {
+        OpenFolderInFileManager(_profileService.BaseProfilesDirectory);
+    }
+
+    [RelayCommand]
+    public void OpenActiveProfileFolder()
+    {
+        var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
+        OpenFolderInFileManager(profileDir);
+    }
+
+    private void OpenFolderInFileManager(string folderPath)
+    {
+        try
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{folderPath}\"",
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "xdg-open",
+                    Arguments = $"\"{folderPath}\"",
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = string.Format(Strings.StatusCannotOpenFolder, ex.Message);
+        }
+    }
+
+
     [RelayCommand]
     public void OpenGitHubReleasePage()
     {
