@@ -80,6 +80,39 @@ public sealed class LinuxSteamLocator : ISteamLocator
         return installs;
     }
 
+    public string? GetSteamExecutablePath()
+    {
+        var standardBinaries = new[]
+        {
+            "/usr/bin/steam",
+            "/usr/games/steam",
+            "/usr/local/bin/steam"
+        };
+
+        foreach (var bin in standardBinaries)
+        {
+            if (File.Exists(bin)) return bin;
+        }
+
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(home))
+        {
+            var flatpakBin = Path.Combine(home, ".local", "share", "flatpak", "exports", "bin", "com.valvesoftware.Steam");
+            if (File.Exists(flatpakBin)) return flatpakBin;
+        }
+
+        const string systemFlatpak = "/var/lib/flatpak/exports/bin/com.valvesoftware.Steam";
+        if (File.Exists(systemFlatpak)) return systemFlatpak;
+
+        // If steam folders were found, return the command "steam" (assuming PATH)
+        if (ResolveLinuxSteamPaths().Count > 0)
+        {
+            return "steam";
+        }
+
+        return null;
+    }
+
     private static List<string> ResolveLinuxSteamPaths()
     {
         var list = new List<string>();

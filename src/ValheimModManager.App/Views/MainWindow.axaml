@@ -101,7 +101,15 @@
                                 Command="{Binding LaunchGameCommand}"
                                 Background="#16a34a" Foreground="White" 
                                 FontWeight="Bold" FontSize="12"
-                                Padding="14,9" CornerRadius="6" />
+                                Padding="14,9" CornerRadius="6"
+                                ToolTip.Tip="{Binding Strings.HeaderLaunchGameTooltip}">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{Binding Strings.MenuLaunchSteam}" Command="{Binding LaunchGameSteamCommand}" />
+                                    <MenuItem Header="{Binding Strings.MenuLaunchDirect}" Command="{Binding LaunchGameDirectCommand}" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
                         
                         <Button Content="{Binding Strings.HeaderLaunchServerButton}" 
                                 Command="{Binding LaunchServerCommand}"
@@ -412,6 +420,14 @@
 
                                 <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
                                     <StackPanel Spacing="14">
+                                        <CheckBox IsChecked="{Binding LaunchViaSteam}"
+                                                  Content="{Binding Strings.LaunchViaSteamOption}"
+                                                  ToolTip.Tip="{Binding Strings.LaunchViaSteamTooltip}"
+                                                  Foreground="#e4e4e7"
+                                                  FontWeight="SemiBold" />
+
+                                        <Separator Background="#3f3f46" Margin="0,2" />
+
                                         <TextBlock Text="{Binding Strings.LaunchOptionsDescription}" Foreground="#a1a1aa" FontSize="12" />
                                         
                                         <Grid ColumnDefinitions="*,Auto">

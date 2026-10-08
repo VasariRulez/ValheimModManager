@@ -78,8 +78,12 @@ public class LocalizationTests : IDisposable
         Assert.NotEqual(it.StatusGamePathConfigured, en.StatusGamePathConfigured);
         Assert.NotEqual(it.HeaderInstallBepInExShort, en.HeaderInstallBepInExShort);
         Assert.NotEqual(it.BepInExConfiguredShort, en.BepInExConfiguredShort);
-        Assert.NotEqual(it.BepInExHooksPendingShort, en.BepInExHooksPendingShort);
         Assert.NotEqual(it.HeaderTooltipProfileOptions, en.HeaderTooltipProfileOptions);
+        Assert.NotEqual(it.LaunchViaSteamOption, en.LaunchViaSteamOption);
+        Assert.NotEqual(it.MenuLaunchSteam, en.MenuLaunchSteam);
+        Assert.NotEqual(it.MenuLaunchDirect, en.MenuLaunchDirect);
+        Assert.NotEqual(it.HeaderLaunchGameTooltip, en.HeaderLaunchGameTooltip);
+        Assert.NotEqual(it.StatusGameLaunchedSteam, en.StatusGameLaunchedSteam);
     }
 
     [Theory]

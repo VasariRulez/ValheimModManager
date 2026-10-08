@@ -6,6 +6,7 @@ using ValheimModManager.Core.Models;
 public interface ISteamLocator
 {
     IReadOnlyList<GameInstall> FindInstalls();
+    string? GetSteamExecutablePath();
 }
 
 public interface IProcessMonitor

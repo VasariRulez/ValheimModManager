@@ -45,6 +45,9 @@ public sealed record ItalianStrings : AppStrings
         HeaderRestoreVanillaButton = "Ripristina Vanilla";
         HeaderRestoreVanillaShort = "Ripristina";
         HeaderLaunchGameButton = "▶  AVVIA VALHEIM";
+        HeaderLaunchGameTooltip = "Avvia Valheim con il profilo selezionato. Clic destro per opzioni di avvio.";
+        MenuLaunchSteam = "▶  Avvia con Steam (Overlay abilitato)";
+        MenuLaunchDirect = "⚡  Avvia direttamente (senza Steam)";
         HeaderLaunchServerButton = "🛡️  Server";
         HeaderLaunchServerTooltip = "Avvia Valheim Dedicated Server con il profilo selezionato";
 
@@ -102,6 +105,8 @@ public sealed record ItalianStrings : AppStrings
         TooltipPresetConsole = "Abilita la console comandi in-game (tasto F5)";
         TooltipPresetExclusive = "Forza la modalità schermo intero esclusivo";
         TooltipPresetVulkan = "Avvia il gioco con le API grafiche Vulkan";
+        LaunchViaSteamOption = "Avvia tramite Steam (Overlay Steam abilitato)";
+        LaunchViaSteamTooltip = "Avvia il gioco tramite il client Steam per abilitare l'overlay di gioco (Shift+Tab) e le funzionalità social.";
 
         // Modals
         NewProfileTitle = "Crea Nuovo Profilo";
@@ -167,6 +172,7 @@ public sealed record ItalianStrings : AppStrings
         StatusVanillaRestored = "Gioco ripristinato allo stato Vanilla originale (ganci rimossi).";
         StatusGamePathNotFound = "Percorso di Valheim non trovato.";
         StatusGameLaunched = "Valheim avviato con il profilo [{0}]!";
+        StatusGameLaunchedSteam = "Valheim avviato tramite Steam con il profilo [{0}]!";
         StatusGameLaunchError = "Errore avvio gioco: {0}";
         StatusServerNotDetected = "Valheim Dedicated Server non rilevato nella libreria Steam (App ID 896660).";
         StatusServerLaunched = "Valheim Dedicated Server avviato con il profilo [{0}]!";

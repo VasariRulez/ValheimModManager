@@ -14,7 +14,8 @@ public sealed record AppState(
     string ActiveProfile = "Default",
     string? CustomGamePath = null,
     string? CustomLaunchArgs = null,
-    string? Language = null
+    string? Language = null,
+    bool LaunchViaSteam = true
 );
 
 public sealed class ProfileService

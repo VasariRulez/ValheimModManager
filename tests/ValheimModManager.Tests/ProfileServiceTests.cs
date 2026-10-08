@@ -73,4 +73,24 @@ public class ProfileServiceTests : IDisposable
         var cleared = service.LoadState();
         Assert.Null(cleared.CustomLaunchArgs);
     }
+
+    [Fact]
+    public void ProfileService_SavesAndRetrievesLaunchViaSteam()
+    {
+        var service = new ProfileService(_testDir);
+
+        // Initially true
+        var state = service.LoadState();
+        Assert.True(state.LaunchViaSteam);
+
+        // Save false
+        service.SaveState(state with { LaunchViaSteam = false });
+        var reloaded = service.LoadState();
+        Assert.False(reloaded.LaunchViaSteam);
+
+        // Save true
+        service.SaveState(reloaded with { LaunchViaSteam = true });
+        var reloaded2 = service.LoadState();
+        Assert.True(reloaded2.LaunchViaSteam);
+    }
 }

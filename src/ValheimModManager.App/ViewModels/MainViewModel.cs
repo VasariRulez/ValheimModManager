@@ -100,6 +100,9 @@ public partial class MainViewModel : ViewModelBase
     private string _customLaunchArgsInput = "";
 
     [ObservableProperty]
+    private bool _launchViaSteam = true;
+
+    [ObservableProperty]
     private bool _isGameFound;
 
     [ObservableProperty]
@@ -240,7 +243,7 @@ public partial class MainViewModel : ViewModelBase
             _processMonitor = new DummyProcessMonitor();
         }
 
-        _gameLauncher = new GameLauncher(_bepInExService, _processMonitor);
+        _gameLauncher = new GameLauncher(_bepInExService, _processMonitor, _steamLocator);
 
         // Determine current app version dynamically
         CurrentAppVersion = ResolveCurrentAppVersion();
@@ -480,6 +483,16 @@ public partial class MainViewModel : ViewModelBase
     {
         var state = _profileService.LoadState();
         CustomLaunchArgsInput = state.CustomLaunchArgs ?? "";
+        LaunchViaSteam = state.LaunchViaSteam;
+    }
+
+    partial void OnLaunchViaSteamChanged(bool value)
+    {
+        var state = _profileService.LoadState();
+        if (state.LaunchViaSteam != value)
+        {
+            _profileService.SaveState(state with { LaunchViaSteam = value });
+        }
     }
 
     partial void OnSelectedProfileChanged(string value)
@@ -890,6 +903,23 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void LaunchGame()
     {
+        ExecuteLaunchGame(preferSteam: LaunchViaSteam);
+    }
+
+    [RelayCommand]
+    public void LaunchGameSteam()
+    {
+        ExecuteLaunchGame(preferSteam: true);
+    }
+
+    [RelayCommand]
+    public void LaunchGameDirect()
+    {
+        ExecuteLaunchGame(preferSteam: false);
+    }
+
+    private void ExecuteLaunchGame(bool preferSteam)
+    {
         if (CurrentInstall == null)
         {
             StatusMessage = Strings.StatusGamePathNotFound;
@@ -900,8 +930,11 @@ public partial class MainViewModel : ViewModelBase
         var profileArgs = string.IsNullOrWhiteSpace(CustomLaunchArgsInput) ? null : CustomLaunchArgsInput.Trim();
         try
         {
-            _gameLauncher.LaunchGame(CurrentInstall, profileDir, profileArgs);
-            StatusMessage = string.Format(Strings.StatusGameLaunched, SelectedProfile);
+            _gameLauncher.LaunchGame(CurrentInstall, profileDir, profileArgs, preferSteam: preferSteam);
+            var isSteamUsed = preferSteam && !string.IsNullOrEmpty(_steamLocator.GetSteamExecutablePath());
+            StatusMessage = isSteamUsed
+                ? string.Format(Strings.StatusGameLaunchedSteam, SelectedProfile)
+                : string.Format(Strings.StatusGameLaunched, SelectedProfile);
         }
         catch (Exception ex)
         {
@@ -1541,6 +1574,7 @@ public partial class MainViewModel : ViewModelBase
     private class DummySteamLocator : ISteamLocator
     {
         public IReadOnlyList<GameInstall> FindInstalls() => [];
+        public string? GetSteamExecutablePath() => null;
     }
 
     private class DummyProcessMonitor : IProcessMonitor

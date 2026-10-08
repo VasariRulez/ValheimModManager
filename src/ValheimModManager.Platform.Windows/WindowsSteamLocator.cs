@@ -80,6 +80,64 @@ public sealed class WindowsSteamLocator : ISteamLocator
         return installs;
     }
 
+    public string? GetSteamExecutablePath()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+            var steamExe = key?.GetValue("SteamExe") as string;
+            if (!string.IsNullOrEmpty(steamExe))
+            {
+                var normalized = Path.GetFullPath(steamExe.Replace('/', '\\'));
+                if (File.Exists(normalized))
+                {
+                    _logger.LogInformation("Found Steam executable via registry SteamExe: {Path}", normalized);
+                    return normalized;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read SteamExe from HKCU registry.");
+        }
+
+        var steamDir = ResolveSteamPath();
+        if (!string.IsNullOrEmpty(steamDir))
+        {
+            var exe = Path.Combine(steamDir, "steam.exe");
+            if (File.Exists(exe))
+            {
+                _logger.LogInformation("Found Steam executable via Steam directory: {Path}", exe);
+                return exe;
+            }
+        }
+
+        var progFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        if (!string.IsNullOrEmpty(progFilesX86))
+        {
+            var fallback = Path.Combine(progFilesX86, "Steam", "steam.exe");
+            if (File.Exists(fallback))
+            {
+                _logger.LogInformation("Found Steam executable via standard ProgramFilesX86: {Path}", fallback);
+                return fallback;
+            }
+        }
+
+        var progFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (!string.IsNullOrEmpty(progFiles))
+        {
+            var fallback = Path.Combine(progFiles, "Steam", "steam.exe");
+            if (File.Exists(fallback))
+            {
+                _logger.LogInformation("Found Steam executable via standard ProgramFiles: {Path}", fallback);
+                return fallback;
+            }
+        }
+
+        _logger.LogWarning("Steam executable could not be resolved.");
+        return null;
+    }
+
     private static string? ResolveSteamPath()
     {
         try

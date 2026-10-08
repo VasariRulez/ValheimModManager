@@ -41,6 +41,9 @@ public record AppStrings
     public string HeaderRestoreVanillaButton { get; init; } = "";
     public string HeaderRestoreVanillaShort { get; init; } = "";
     public string HeaderLaunchGameButton { get; init; } = "";
+    public string HeaderLaunchGameTooltip { get; init; } = "";
+    public string MenuLaunchSteam { get; init; } = "";
+    public string MenuLaunchDirect { get; init; } = "";
     public string HeaderLaunchServerButton { get; init; } = "";
     public string HeaderLaunchServerTooltip { get; init; } = "";
 
@@ -98,6 +101,8 @@ public record AppStrings
     public string TooltipPresetConsole { get; init; } = "";
     public string TooltipPresetExclusive { get; init; } = "";
     public string TooltipPresetVulkan { get; init; } = "";
+    public string LaunchViaSteamOption { get; init; } = "";
+    public string LaunchViaSteamTooltip { get; init; } = "";
 
     // Modals
     public string NewProfileTitle { get; init; } = "";
@@ -163,6 +168,7 @@ public record AppStrings
     public string StatusVanillaRestored { get; init; } = "";
     public string StatusGamePathNotFound { get; init; } = "";
     public string StatusGameLaunched { get; init; } = "";
+    public string StatusGameLaunchedSteam { get; init; } = "";
     public string StatusGameLaunchError { get; init; } = "";
     public string StatusServerNotDetected { get; init; } = "";
     public string StatusServerLaunched { get; init; } = "";
