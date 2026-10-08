@@ -35,7 +35,7 @@
                         
                         <!-- Profile Selection & Actions -->
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <TextBlock Text="Profilo:" VerticalAlignment="Center" Foreground="#a1a1aa" FontSize="12" FontWeight="Medium" />
+                            <TextBlock Text="{Binding Strings.HeaderProfileLabel}" VerticalAlignment="Center" Foreground="#a1a1aa" FontSize="12" FontWeight="Medium" />
                             <ComboBox ItemsSource="{Binding Profiles}"
                                       SelectedItem="{Binding SelectedProfile}"
                                       Width="140" />
@@ -43,32 +43,32 @@
                             <!-- Profile Action Buttons -->
                             <Button Content="➕" 
                                     Command="{Binding ShowNewProfileDialogCommand}"
-                                    ToolTip.Tip="Crea nuovo profilo"
+                                    ToolTip.Tip="{Binding Strings.HeaderTooltipNewProfile}"
                                     Background="#3f3f46" Padding="8,6" CornerRadius="4" />
                             
                             <Button Content="📋" 
                                     Command="{Binding CloneActiveProfileCommand}"
-                                    ToolTip.Tip="Clona profilo attivo"
+                                    ToolTip.Tip="{Binding Strings.HeaderTooltipCloneProfile}"
                                     Background="#3f3f46" Padding="8,6" CornerRadius="4" />
                             
                             <Button Content="🗑️" 
                                     Command="{Binding DeleteCurrentProfileCommand}"
-                                    ToolTip.Tip="Elimina profilo attivo"
+                                    ToolTip.Tip="{Binding Strings.HeaderTooltipDeleteProfile}"
                                     Background="#3f3f46" Padding="8,6" CornerRadius="4" />
 
                             <Button Content="📤" 
                                     Click="OnExportProfileClicked"
-                                    ToolTip.Tip="Esporta profilo (.vmmprofile)"
+                                    ToolTip.Tip="{Binding Strings.HeaderTooltipExportProfile}"
                                     Background="#3f3f46" Padding="8,6" CornerRadius="4" />
 
                             <!-- Import Dropdown Menu -->
-                            <Button Content="📥" ToolTip.Tip="Opzioni di importazione profilo"
+                            <Button Content="📥" ToolTip.Tip="{Binding Strings.HeaderTooltipImportProfile}"
                                     Background="#3f3f46" Padding="8,6" CornerRadius="4">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                                        <MenuItem Header="Importa Profilo (.vmmprofile)" Click="OnImportVmmProfileClicked" />
-                                        <MenuItem Header="Importa da archivio r2modman (.r2z)" Click="OnImportR2zClicked" />
-                                        <MenuItem Header="Importa da Codice r2modman..." Command="{Binding ShowImportR2CodeDialogCommand}" />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuImportVmmProfile}" Click="OnImportVmmProfileClicked" />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuImportR2z}" Click="OnImportR2zClicked" />
+                                        <MenuItem Header="{Binding Strings.HeaderMenuImportR2Code}" Command="{Binding ShowImportR2CodeDialogCommand}" />
                                     </MenuFlyout>
                                 </Button.Flyout>
                             </Button>
@@ -81,8 +81,8 @@
                             Background="#1e3a8a" BorderBrush="#3b82f6" BorderThickness="1" CornerRadius="6"
                             Padding="10,5" Margin="8,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="🎉 Aggiornamento Disponibile!" Foreground="#bfdbfe" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Content="{Binding LatestAppVersion, StringFormat='Installa v{0}'}"
+                            <TextBlock Text="{Binding Strings.HeaderBannerUpdateAvailable}" Foreground="#bfdbfe" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
+                            <Button Content="{Binding FormattedInstallUpdateBanner}"
                                     Command="{Binding ShowAppUpdateDialogCommand}"
                                     Background="#2563eb" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" CornerRadius="4" />
                         </StackPanel>
@@ -98,31 +98,31 @@
                                      Fill="{Binding IsBepInExInstalled, Converter={x:Null}}" />
                             <TextBlock Text="{Binding BepInExStatusText}" 
                                        Foreground="#e4e4e7" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
-                            <Button Content="Installa BepInEx 1-Click" 
-                                    Command="{Binding InstallBepInExCommand}"
-                                    IsVisible="{Binding !IsBepInExInstalled}"
-                                    Background="#d97706" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" />
-                            <Button Content="Ripristina Vanilla" 
-                                    Command="{Binding RestoreVanillaCommand}"
-                                    IsVisible="{Binding IsBepInExInstalled}"
-                                    Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" Padding="8,4" />
+                            <Button Content="{Binding Strings.HeaderInstallBepInExButton}" 
+                                     Command="{Binding InstallBepInExCommand}"
+                                     IsVisible="{Binding !IsBepInExInstalled}"
+                                     Background="#d97706" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,4" />
+                            <Button Content="{Binding Strings.HeaderRestoreVanillaButton}" 
+                                     Command="{Binding RestoreVanillaCommand}"
+                                     IsVisible="{Binding IsBepInExInstalled}"
+                                     Background="#3f3f46" Foreground="#d4d4d8" FontSize="11" Padding="8,4" />
                         </StackPanel>
                     </Border>
 
                     <!-- Play Actions -->
                     <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Button Content="▶  AVVIA VALHEIM" 
+                        <Button Content="{Binding Strings.HeaderLaunchGameButton}" 
                                 Command="{Binding LaunchGameCommand}"
                                 Background="#16a34a" Foreground="White" 
                                 FontWeight="Bold" FontSize="13"
                                 Padding="16,10" CornerRadius="6" />
                         
-                        <Button Content="🛡️  Server" 
+                        <Button Content="{Binding Strings.HeaderLaunchServerButton}" 
                                 Command="{Binding LaunchServerCommand}"
                                 Background="#27272a" Foreground="#d4d4d8" 
                                 FontWeight="SemiBold" FontSize="12"
                                 Padding="12,10" CornerRadius="6"
-                                ToolTip.Tip="Avvia Valheim Dedicated Server con il profilo selezionato" />
+                                ToolTip.Tip="{Binding Strings.HeaderLaunchServerTooltip}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -131,20 +131,20 @@
             <TabControl Grid.Row="1" Margin="12,8,12,8">
                 
                 <!-- TAB 1: MOD INSTALLATE -->
-                <TabItem Header="📦  Mod Installate">
+                <TabItem Header="{Binding Strings.TabInstalledMods}">
                     <Grid RowDefinitions="Auto,*" Margin="8">
                         <!-- Actions bar with Debounced Search -->
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
                             <TextBox Grid.Column="0" 
-                                     PlaceholderText="Cerca tra le mod installate (filtro automatico)..." 
+                                     PlaceholderText="{Binding Strings.SearchInstalledPlaceholder}" 
                                      Text="{Binding InstalledSearchText}"
                                      Width="350" HorizontalAlignment="Left" />
                             
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                <Button Content="Verifica Aggiornamenti" 
+                                <Button Content="{Binding Strings.CheckUpdatesButton}" 
                                         Command="{Binding CheckUpdatesCommand}"
                                         Background="#27272a" />
-                                <Button Content="Aggiorna Tutte le Mod" 
+                                <Button Content="{Binding Strings.UpdateAllModsButton}" 
                                         Command="{Binding UpdateAllModsCommand}"
                                         Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
                             </StackPanel>
@@ -175,20 +175,20 @@
                                                             <TextBlock Text="{Binding InstalledVersion, StringFormat='v{0}'}" FontSize="10" Foreground="#d4d4d8" />
                                                         </Border>
                                                     </StackPanel>
-                                                    <TextBlock Text="{Binding Owner, StringFormat='Autore: {0}'}" FontSize="11" Foreground="#a1a1aa" Margin="0,2,0,0" />
+                                                    <TextBlock Text="{Binding AuthorDisplay}" FontSize="11" Foreground="#a1a1aa" Margin="0,2,0,0" />
                                                 </StackPanel>
 
                                                 <!-- Update badge -->
                                                 <Border Grid.Column="2" 
                                                         IsVisible="{Binding HasUpdate}"
                                                         Background="#d97706" CornerRadius="4" Padding="8,4" Margin="12,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding LatestVersion, StringFormat='Aggiornamento v{0} disp.'}" 
+                                                    <TextBlock Text="{Binding UpdateBadgeText}" 
                                                                Foreground="White" FontSize="11" FontWeight="SemiBold" />
                                                 </Border>
 
                                                 <!-- Update Button -->
                                                 <Button Grid.Column="3" 
-                                                        Content="Aggiorna" 
+                                                        Content="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Strings.CommonUpdate}" 
                                                         IsVisible="{Binding HasUpdate}"
                                                         Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UpdateModCommand}"
                                                         CommandParameter="{Binding .}"
@@ -196,7 +196,7 @@
 
                                                 <!-- Uninstall Button -->
                                                 <Button Grid.Column="4" 
-                                                        Content="Disinstalla" 
+                                                        Content="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Strings.CommonUninstall}" 
                                                         Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).UninstallModCommand}"
                                                         CommandParameter="{Binding .}"
                                                         Background="#7f1d1d" Foreground="#fca5a5" />
@@ -210,12 +210,12 @@
                 </TabItem>
 
                 <!-- TAB 2: ESPLORA ONLINE (CON DEBOUNCE E MULTI-FONTE) -->
-                <TabItem Header="🌐  Esplora Mod Online">
+                <TabItem Header="{Binding Strings.TabOnlineCatalog}">
                     <Grid RowDefinitions="Auto,*" Margin="8">
                         <!-- Filters bar with Debounce and Source Dropdown -->
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
                             <TextBox Grid.Column="0" 
-                                     PlaceholderText="Cerca per nome, autore o descrizione (digitazione automatica)..." 
+                                     PlaceholderText="{Binding Strings.SearchCatalogPlaceholder}" 
                                      Text="{Binding CatalogSearchText}"
                                      Margin="0,0,8,0" />
                             
@@ -225,7 +225,7 @@
                                       Margin="0,0,8,0" Width="170" />
                             
                             <Button Grid.Column="2" 
-                                    Content="🔄  Aggiorna Catalogo" 
+                                    Content="{Binding Strings.RefreshCatalogButton}" 
                                     Command="{Binding RefreshOnlineCatalogCommand}"
                                     Background="#27272a" />
                         </Grid>
@@ -244,7 +244,7 @@
                                                     <!-- Title & Multi-Source Badges -->
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#f4f4f5" />
-                                                        <TextBlock Text="{Binding Owner, StringFormat='di {0}'}" FontSize="12" Foreground="#a1a1aa" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding AuthorDisplay}" FontSize="12" Foreground="#a1a1aa" VerticalAlignment="Center" />
                                                         
                                                         <!-- Sources Badges List -->
                                                         <ItemsControl ItemsSource="{Binding AvailableSources}">
@@ -270,14 +270,14 @@
                                                                TextWrapping="Wrap" MaxLines="2" />
 
                                                     <StackPanel Orientation="Horizontal" Spacing="16">
-                                                        <TextBlock Text="{Binding TotalDownloads, StringFormat='📥 {0:N0} download'}" FontSize="11" Foreground="#a1a1aa" />
-                                                        <TextBlock Text="{Binding RatingScore, StringFormat='⭐ {0} voti'}" FontSize="11" Foreground="#a1a1aa" />
+                                                        <TextBlock Text="{Binding DownloadsDisplay}" FontSize="11" Foreground="#a1a1aa" />
+                                                        <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" />
                                                     </StackPanel>
                                                 </StackPanel>
 
                                                 <!-- Source Selector (se disponibile su più fonti) -->
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0" IsVisible="{Binding HasMultipleSources}">
-                                                    <TextBlock Text="Fonte:" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
+                                                    <TextBlock Text="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Strings.ModSourceLabel}" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
                                                     <ComboBox ItemsSource="{Binding AvailableSources}"
                                                               SelectedItem="{Binding SelectedSource}"
                                                               Width="160" />
@@ -285,7 +285,7 @@
 
                                                 <!-- Version Selector -->
                                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
-                                                    <TextBlock Text="Versione:" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
+                                                    <TextBlock Text="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Strings.ModVersionLabel}" FontSize="10" Foreground="#a1a1aa" Margin="0,0,0,2" />
                                                     <ComboBox ItemsSource="{Binding AvailableVersions}"
                                                               SelectedItem="{Binding SelectedVersion}"
                                                               Width="105" />
@@ -293,7 +293,7 @@
 
                                                 <!-- Install Button -->
                                                 <Button Grid.Column="3" 
-                                                        Content="Installa" 
+                                                        Content="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Strings.CommonInstall}" 
                                                         Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).InstallModCommand}"
                                                         CommandParameter="{Binding .}"
                                                         Background="#16a34a" Foreground="White" FontWeight="Bold"
@@ -308,71 +308,84 @@
                 </TabItem>
 
                 <!-- TAB 3: IMPOSTAZIONI & SELEZIONE MANUALE CARTELLA -->
-                <TabItem Header="⚙️  Impostazioni &amp; Gioco">
+                <TabItem Header="{Binding Strings.TabSettings}">
                     <ScrollViewer Margin="8">
                         <Grid ColumnDefinitions="*,360" Margin="4">
                             
                             <!-- COLONNA SINISTRA: AMBIENTE, CARTELLA & SORGENTI -->
                             <StackPanel Grid.Column="0" Spacing="20" Margin="0,0,16,0">
                                 
-                                <TextBlock Text="CONFIGURAZIONE CARTELLA VALHEIM" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+                                <!-- SELEZIONE LINGUA -->
+                                <TextBlock Text="{Binding Strings.LanguageSectionTitle}" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+                                
+                                <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="{Binding Strings.LanguageSectionDescription}" Foreground="#a1a1aa" FontSize="12" />
+                                        <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                                                  SelectedItem="{Binding SelectedLanguage}"
+                                                  DisplayMemberBinding="{Binding DisplayName}"
+                                                  Width="220" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding Strings.GameFolderTitle}" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
                                 
                                 <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
                                     <StackPanel Spacing="12">
-                                        <TextBlock Text="Percorso cartella Valheim (deve contenere valheim.exe):" Foreground="#a1a1aa" FontSize="12" />
+                                        <TextBlock Text="{Binding Strings.GameFolderDescription}" Foreground="#a1a1aa" FontSize="12" />
                                         
                                         <!-- Manual input + Browse button -->
                                         <Grid ColumnDefinitions="*,Auto,Auto">
-                                            <TextBox Grid.Column="0" Text="{Binding CustomGamePathInput}" Margin="0,0,8,0" PlaceholderText="es. C:\Program Files (x86)\Steam\steamapps\common\Valheim" />
-                                            <Button Grid.Column="1" Content="📂 Sfoglia..." Click="OnBrowseGameFolderClicked" Background="#3f3f46" Margin="0,0,8,0" />
-                                            <Button Grid.Column="2" Content="Salva" Command="{Binding ApplyCustomGamePathCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                                            <TextBox Grid.Column="0" Text="{Binding CustomGamePathInput}" Margin="0,0,8,0" PlaceholderText="{Binding Strings.GameFolderPlaceholder}" />
+                                            <Button Grid.Column="1" Content="{Binding Strings.BrowseButton}" Click="OnBrowseGameFolderClicked" Background="#3f3f46" Margin="0,0,8,0" />
+                                            <Button Grid.Column="2" Content="{Binding Strings.CommonSave}" Command="{Binding ApplyCustomGamePathCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
                                         </Grid>
 
-                                        <Button Content="Rileva automaticamente da librerie Steam" 
+                                        <Button Content="{Binding Strings.AutoDetectSteamButton}" 
                                                 Command="{Binding DetectGame}" 
                                                 Background="#27272a" HorizontalAlignment="Left" />
                                     </StackPanel>
                                 </Border>
 
-                                <TextBlock Text="SORGENTI MOD DISPONIBILI" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
+                                <TextBlock Text="{Binding Strings.SourcesTitle}" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
                                 
                                 <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
                                     <StackPanel Spacing="12">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="✅ Thunderstore" FontWeight="Bold" Foreground="#4ade80" />
-                                            <TextBlock Text="(API v1 Valheim Community attiva)" Foreground="#a1a1aa" />
+                                            <TextBlock Text="{Binding Strings.SourcesThunderstoreStatus}" Foreground="#a1a1aa" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="✅ Hexium" FontWeight="Bold" Foreground="#4ade80" />
-                                            <TextBlock Text="(API OpenAPI compatibile Thunderstore attiva)" Foreground="#a1a1aa" />
+                                            <TextBlock Text="{Binding Strings.SourcesHexiumStatus}" Foreground="#a1a1aa" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
-                                            <TextBlock Text="(Architettura pianificata, supporto previsto nelle future versioni)" Foreground="#a1a1aa" />
+                                            <TextBlock Text="{Binding Strings.SourcesNexusStatus}" Foreground="#a1a1aa" />
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- AGGIORNAMENTI APPLICAZIONE -->
-                                <TextBlock Text="AGGIORNAMENTO VALHEIM MOD MANAGER" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
+                                <TextBlock Text="{Binding Strings.AppUpdateSectionTitle}" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" Margin="0,10,0,0" />
                                 
                                 <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
                                     <StackPanel Spacing="12">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <StackPanel Grid.Column="0" Spacing="4">
-                                                <TextBlock Text="{Binding CurrentAppVersion, StringFormat='Versione attuale: v{0}'}" 
+                                                <TextBlock Text="{Binding FormattedCurrentAppVersion}" 
                                                            FontWeight="SemiBold" Foreground="#e4e4e7" FontSize="13" />
                                                 <TextBlock Text="{Binding AppUpdateStatusText}" 
                                                            Foreground="#a1a1aa" FontSize="12" />
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                                <Button Content="🔄 Controlla Aggiornamenti" 
+                                                <Button Content="{Binding Strings.CheckAppUpdatesButton}" 
                                                         Command="{Binding CheckAppUpdateManualCommand}" 
                                                         IsEnabled="{Binding !IsAppUpdateChecking}"
                                                         Background="#3f3f46" Padding="10,6" FontSize="12" />
 
-                                                <Button Content="{Binding LatestAppVersion, StringFormat='Scarica v{0}'}"
+                                                <Button Content="{Binding FormattedDownloadAppUpdateButton}"
                                                         Command="{Binding ShowAppUpdateDialogCommand}"
                                                         IsVisible="{Binding IsAppUpdateAvailable}"
                                                         Background="#2563eb" Foreground="White" FontWeight="Bold" Padding="10,6" FontSize="12" />
@@ -384,44 +397,43 @@
 
                             <!-- COLONNA DESTRA: OPZIONI DI AVVIO & PRESET RAPIDI -->
                             <StackPanel Grid.Column="1" Spacing="20">
-                                <TextBlock Text="CONFIGURAZIONE OPZIONI DI AVVIO" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
+                                <TextBlock Text="{Binding Strings.LaunchOptionsTitle}" FontWeight="Bold" FontSize="14" Foreground="#e4e4e7" />
 
                                 <Border Background="#27272a" CornerRadius="6" Padding="16" BorderBrush="#3f3f46" BorderThickness="1">
                                     <StackPanel Spacing="14">
-                                        <TextBlock Text="Parametri da passare a Valheim all'avvio:" Foreground="#a1a1aa" FontSize="12" />
+                                        <TextBlock Text="{Binding Strings.LaunchOptionsDescription}" Foreground="#a1a1aa" FontSize="12" />
                                         
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBox Grid.Column="0" Text="{Binding CustomLaunchArgsInput}" Margin="0,0,8,0" PlaceholderText="es. -console" />
-                                            <Button Grid.Column="1" Content="Salva" Command="{Binding ApplyCustomLaunchArgsCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
+                                            <TextBox Grid.Column="0" Text="{Binding CustomLaunchArgsInput}" Margin="0,0,8,0" PlaceholderText="{Binding Strings.LaunchOptionsPlaceholder}" />
+                                            <Button Grid.Column="1" Content="{Binding Strings.CommonSave}" Command="{Binding ApplyCustomLaunchArgsCommand}" Background="#2563eb" Foreground="White" FontWeight="SemiBold" />
                                         </Grid>
 
                                         <Separator Background="#3f3f46" Margin="0,2" />
 
                                         <!-- Quick Presets -->
-                                        <TextBlock Text="Preset rapidi:" FontWeight="SemiBold" Foreground="#d4d4d8" FontSize="12" />
+                                        <TextBlock Text="{Binding Strings.QuickPresetsTitle}" FontWeight="SemiBold" Foreground="#d4d4d8" FontSize="12" />
                                         
                                         <WrapPanel Orientation="Horizontal" Margin="0,-2,0,0">
                                             <Button Content="+ -console" 
                                                     Command="{Binding AppendLaunchArgCommand}" 
                                                     CommandParameter="-console" 
                                                     Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
-                                                    ToolTip.Tip="Abilita la console comandi in-game (tasto F5)" />
+                                                    ToolTip.Tip="{Binding Strings.TooltipPresetConsole}" />
                                             <Button Content="+ -window-mode exclusive" 
                                                     Command="{Binding AppendLaunchArgCommand}" 
                                                     CommandParameter="-window-mode exclusive" 
                                                     Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
-                                                    ToolTip.Tip="Forza la modalità schermo intero esclusivo" />
+                                                    ToolTip.Tip="{Binding Strings.TooltipPresetExclusive}" />
                                             <Button Content="+ -force-vulkan" 
                                                     Command="{Binding AppendLaunchArgCommand}" 
                                                     CommandParameter="-force-vulkan" 
                                                     Background="#3f3f46" Padding="8,4" FontSize="11" Margin="0,0,6,6"
-                                                    ToolTip.Tip="Avvia il gioco con le API grafiche Vulkan" />
+                                                    ToolTip.Tip="{Binding Strings.TooltipPresetVulkan}" />
                                         </WrapPanel>
 
-                                        <Button Content="Svuota opzioni" 
+                                        <Button Content="{Binding Strings.ClearLaunchOptionsButton}" 
                                                 Command="{Binding ClearLaunchArgsCommand}" 
-                                                Background="#27272a" Foreground="#ef4444" FontSize="11" Padding="8,4" HorizontalAlignment="Left"
-                                                ToolTip.Tip="Rimuove tutti gli argomenti di avvio personalizzati" />
+                                                Background="#27272a" Foreground="#ef4444" FontSize="11" Padding="8,4" HorizontalAlignment="Left" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -446,12 +458,12 @@
             <Border Background="#27272a" CornerRadius="8" Padding="20" Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
                     BorderBrush="#3f3f46" BorderThickness="1">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Crea Nuovo Profilo" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
-                    <TextBlock Text="Inserisci il nome per il nuovo set di mod:" FontSize="12" Foreground="#a1a1aa" />
-                    <TextBox Text="{Binding NewProfileNameInput}" PlaceholderText="es. Server Amici, Vanilla+, Hardcore" />
+                    <TextBlock Text="{Binding Strings.NewProfileTitle}" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
+                    <TextBlock Text="{Binding Strings.NewProfilePrompt}" FontSize="12" Foreground="#a1a1aa" />
+                    <TextBox Text="{Binding NewProfileNameInput}" PlaceholderText="{Binding Strings.NewProfilePlaceholder}" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-                        <Button Content="Annulla" Command="{Binding CancelNewProfileDialogCommand}" Background="#3f3f46" />
-                        <Button Content="Crea Profilo" Command="{Binding ConfirmNewProfileCommand}" Background="#16a34a" Foreground="White" FontWeight="Bold" />
+                        <Button Content="{Binding Strings.CommonCancel}" Command="{Binding CancelNewProfileDialogCommand}" Background="#3f3f46" />
+                        <Button Content="{Binding Strings.CreateProfileButton}" Command="{Binding ConfirmNewProfileCommand}" Background="#16a34a" Foreground="White" FontWeight="Bold" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -462,12 +474,12 @@
             <Border Background="#27272a" CornerRadius="8" Padding="20" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center"
                     BorderBrush="#3f3f46" BorderThickness="1">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Importa da Codice r2modman / Thunderstore" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
-                    <TextBlock Text="Incolla il codice alfanumerico di esportazione (es. 018f...):" FontSize="12" Foreground="#a1a1aa" />
-                    <TextBox Text="{Binding R2CodeInput}" PlaceholderText="Incolla codice di condivisione..." />
+                    <TextBlock Text="{Binding Strings.ImportR2Title}" FontWeight="Bold" FontSize="16" Foreground="#f4f4f5" />
+                    <TextBlock Text="{Binding Strings.ImportR2Prompt}" FontSize="12" Foreground="#a1a1aa" />
+                    <TextBox Text="{Binding R2CodeInput}" PlaceholderText="{Binding Strings.ImportR2Placeholder}" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-                        <Button Content="Annulla" Command="{Binding CancelImportR2CodeDialogCommand}" Background="#3f3f46" />
-                        <Button Content="Scarica &amp; Importa" Command="{Binding ConfirmImportR2CodeCommand}" Background="#2563eb" Foreground="White" FontWeight="Bold" />
+                        <Button Content="{Binding Strings.CommonCancel}" Command="{Binding CancelImportR2CodeDialogCommand}" Background="#3f3f46" />
+                        <Button Content="{Binding Strings.ImportR2Button}" Command="{Binding ConfirmImportR2CodeCommand}" Background="#2563eb" Foreground="White" FontWeight="Bold" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -481,7 +493,7 @@
                     <!-- Title and badge -->
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="Aggiornamento Disponibile!" FontWeight="Bold" FontSize="18" Foreground="#f4f4f5" />
+                            <TextBlock Text="{Binding Strings.AppUpdateDialogTitle}" FontWeight="Bold" FontSize="18" Foreground="#f4f4f5" />
                             <TextBlock Text="{Binding LatestAppReleaseTitle}" Foreground="#93c5fd" FontSize="13" FontWeight="SemiBold" />
                         </StackPanel>
                         <Border Grid.Column="1" Background="#1e3a8a" CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
@@ -490,7 +502,7 @@
                     </Grid>
 
                     <!-- Changelog box -->
-                    <TextBlock Text="Note di rilascio:" FontSize="12" Foreground="#a1a1aa" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Strings.ReleaseNotesLabel}" FontSize="12" Foreground="#a1a1aa" FontWeight="SemiBold" />
                     <Border Background="#18181b" CornerRadius="6" Padding="12" MaxHeight="160" BorderBrush="#3f3f46" BorderThickness="1">
                         <ScrollViewer>
                             <TextBlock Text="{Binding LatestAppReleaseNotes}" TextWrapping="Wrap" Foreground="#d4d4d8" FontSize="12" />
@@ -500,7 +512,7 @@
                     <!-- Download progress if downloading -->
                     <StackPanel Spacing="6" IsVisible="{Binding IsAppUpdateDownloading}">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Download del pacchetto in corso..." Foreground="#a1a1aa" FontSize="11" />
+                            <TextBlock Grid.Column="0" Text="{Binding Strings.DownloadingPackageLabel}" Foreground="#a1a1aa" FontSize="11" />
                             <TextBlock Grid.Column="1" Text="{Binding AppUpdateDownloadProgress, StringFormat='{}{0:0}%'}" Foreground="#60a5fa" FontSize="11" FontWeight="Bold" />
                         </Grid>
                         <ProgressBar Value="{Binding AppUpdateDownloadProgress}" Minimum="0" Maximum="100" Height="6" />
@@ -511,20 +523,20 @@
                             IsVisible="{Binding DownloadedAppPackagePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock Text="✅ Pacchetto scaricato nei Download!" FontWeight="Bold" Foreground="#a7f3d0" FontSize="12" />
+                                <TextBlock Text="{Binding Strings.PackageDownloadedSuccess}" FontWeight="Bold" Foreground="#a7f3d0" FontSize="12" />
                                 <TextBlock Text="{Binding DownloadedAppPackagePath}" TextTrimming="CharacterEllipsis" Foreground="#6ee7b7" FontSize="10" />
                             </StackPanel>
-                            <Button Grid.Column="1" Content="Apri cartella" Command="{Binding OpenDownloadedUpdateCommand}"
+                            <Button Grid.Column="1" Content="{Binding Strings.OpenFolderButton}" Command="{Binding OpenDownloadedUpdateCommand}"
                                     Background="#047857" Foreground="White" FontSize="11" Padding="8,4" Margin="8,0,0,0" />
                         </Grid>
                     </Border>
 
                     <!-- Buttons -->
                     <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,8,0,0">
-                        <Button Grid.Column="0" Content="🌐 Pagina GitHub" Command="{Binding OpenGitHubReleasePageCommand}" Background="#3f3f46" FontSize="12" />
+                        <Button Grid.Column="0" Content="{Binding Strings.GitHubPageButton}" Command="{Binding OpenGitHubReleasePageCommand}" Background="#3f3f46" FontSize="12" />
                         
-                        <Button Grid.Column="2" Content="Chiudi" Command="{Binding DismissAppUpdateDialogCommand}" Background="#3f3f46" Margin="0,0,8,0" FontSize="12" />
-                        <Button Grid.Column="3" Content="Scarica Pacchetto" 
+                        <Button Grid.Column="2" Content="{Binding Strings.CommonClose}" Command="{Binding DismissAppUpdateDialogCommand}" Background="#3f3f46" Margin="0,0,8,0" FontSize="12" />
+                        <Button Grid.Column="3" Content="{Binding Strings.DownloadPackageButton}" 
                                 Command="{Binding DownloadAppUpdateCommand}" 
                                 IsEnabled="{Binding !IsAppUpdateDownloading}"
                                 Background="#2563eb" Foreground="White" FontWeight="Bold" FontSize="12" />

@@ -15,6 +15,7 @@ using ValheimModManager.Core.Abstractions;
 using ValheimModManager.Core.Import;
 using ValheimModManager.Core.Install;
 using ValheimModManager.Core.Models;
+using ValheimModManager.Core.Localization;
 using ValheimModManager.Core.Providers.Thunderstore;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Platform.Windows;
@@ -144,8 +145,32 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _r2CodeInput = "";
 
-    public IReadOnlyList<string> SourceFilterOptions { get; } =
-        ["Tutte le fonti", "Thunderstore", "Hexium"];
+    [ObservableProperty]
+    private AppStrings _strings = ItalianStrings.Instance;
+
+    [ObservableProperty]
+    private string _selectedLanguageCode = LocalizationService.LanguageItalian;
+
+    public IReadOnlyList<LanguageOption> AvailableLanguages => LocalizationService.Instance.AvailableLanguages;
+
+    public LanguageOption? SelectedLanguage
+    {
+        get => AvailableLanguages.FirstOrDefault(l => l.Code == SelectedLanguageCode) ?? AvailableLanguages[0];
+        set
+        {
+            if (value != null && value.Code != SelectedLanguageCode)
+            {
+                SetLanguage(value.Code);
+            }
+        }
+    }
+
+    [ObservableProperty]
+    private IReadOnlyList<string> _sourceFilterOptions = [];
+
+    public string FormattedInstallUpdateBanner => string.Format(Strings.HeaderBannerInstallUpdate, LatestAppVersion);
+    public string FormattedCurrentAppVersion => string.Format(Strings.AppVersionCurrentPrefix, CurrentAppVersion);
+    public string FormattedDownloadAppUpdateButton => string.Format(Strings.DownloadAppUpdateButton, LatestAppVersion);
 
     public MainViewModel()
     {
@@ -183,6 +208,11 @@ public partial class MainViewModel : ViewModelBase
 
         // Determine current app version dynamically
         CurrentAppVersion = ResolveCurrentAppVersion();
+
+        // Language setup
+        var state = _profileService.LoadState();
+        var initialLang = LocalizationService.Instance.NormalizeLanguageCode(state.Language);
+        SetLanguageInternal(initialLang, saveState: false);
 
         // Initial setup
         DetectGame();
@@ -241,14 +271,14 @@ public partial class MainViewModel : ViewModelBase
     {
         if (!Directory.Exists(folderPath))
         {
-            StatusMessage = "La cartella specificata non esiste.";
+            StatusMessage = Strings.StatusFolderNotExists;
             return;
         }
 
         var exe = Path.Combine(folderPath, "valheim.exe");
         if (!File.Exists(exe))
         {
-            StatusMessage = "Attenzione: 'valheim.exe' non trovato nella cartella selezionata.";
+            StatusMessage = Strings.StatusExeNotFound;
             return;
         }
 
@@ -260,7 +290,7 @@ public partial class MainViewModel : ViewModelBase
         CustomGamePathInput = folderPath;
         IsGameFound = true;
         UpdateBepInExStatus();
-        StatusMessage = "Cartella di Valheim configurata con successo!";
+        StatusMessage = Strings.StatusGamePathConfigured;
     }
 
     [RelayCommand]
@@ -278,8 +308,8 @@ public partial class MainViewModel : ViewModelBase
 
         CustomLaunchArgsInput = trimmed ?? "";
         StatusMessage = trimmed == null
-            ? "Opzioni di avvio personalizzate rimosse."
-            : "Opzioni di avvio personalizzate impostate con successo!";
+            ? Strings.StatusLaunchArgsEmpty
+            : Strings.StatusLaunchArgsSaved;
     }
 
     [RelayCommand]
@@ -301,8 +331,69 @@ public partial class MainViewModel : ViewModelBase
         ApplyCustomLaunchArgs();
     }
 
+    [RelayCommand]
+    public void SetLanguage(string languageCode)
+    {
+        SetLanguageInternal(languageCode, saveState: true);
+    }
+
+    private void SetLanguageInternal(string languageCode, bool saveState)
+    {
+        var norm = LocalizationService.Instance.NormalizeLanguageCode(languageCode);
+        SelectedLanguageCode = norm;
+        Strings = LocalizationService.Instance.GetStrings(norm);
+        LocalizationService.Instance.CurrentStrings = Strings;
+        OnPropertyChanged(nameof(SelectedLanguage));
+        OnPropertyChanged(nameof(FormattedInstallUpdateBanner));
+        OnPropertyChanged(nameof(FormattedCurrentAppVersion));
+        OnPropertyChanged(nameof(FormattedDownloadAppUpdateButton));
+
+        UpdateSourceFilterOptions();
+        UpdateBepInExStatus();
+
+        if (InstalledMods.Count > 0)
+        {
+            LoadInstalledMods();
+        }
+        if (CatalogMods.Count > 0)
+        {
+            ApplyCatalogSearch();
+        }
+
+        if (StatusMessage == "Pronto" || StatusMessage == "Ready" || string.IsNullOrWhiteSpace(StatusMessage))
+        {
+            StatusMessage = Strings.CommonReady;
+        }
+
+        if (saveState)
+        {
+            var state = _profileService.LoadState();
+            _profileService.SaveState(state with { Language = norm });
+        }
+    }
+
+    private void UpdateSourceFilterOptions()
+    {
+        var prevFilter = SelectedSourceFilter;
+        SourceFilterOptions = [Strings.SourceFilterAll, "Thunderstore", "Hexium"];
+
+        if (prevFilter == "Thunderstore")
+        {
+            SelectedSourceFilter = "Thunderstore";
+        }
+        else if (prevFilter == "Hexium")
+        {
+            SelectedSourceFilter = "Hexium";
+        }
+        else
+        {
+            SelectedSourceFilter = SourceFilterOptions[0];
+        }
+    }
+
     public void UpdateBepInExStatus()
     {
+        if (Strings == null) return;
         var profileDir = _profileService.GetProfileDirectory(SelectedProfile);
         var status = _bepInExService.GetStatus(CurrentInstall, profileDir);
 
@@ -310,15 +401,15 @@ public partial class MainViewModel : ViewModelBase
 
         if (IsBepInExInstalled)
         {
-            BepInExStatusText = $"BepInEx: Configurato & Attivo ({status.Version ?? "5.4.x"})";
+            BepInExStatusText = string.Format(Strings.BepInExConfigured, status.Version ?? "5.4.x");
         }
         else if (status.IsInstalledInProfile)
         {
-            BepInExStatusText = "BepInEx: Installato nel profilo, ganci di gioco da applicare";
+            BepInExStatusText = Strings.BepInExHooksPending;
         }
         else
         {
-            BepInExStatusText = "BepInEx: Non installato (necessario per caricare le mod)";
+            BepInExStatusText = Strings.BepInExNotInstalled;
         }
     }
 
@@ -425,18 +516,18 @@ public partial class MainViewModel : ViewModelBase
     private async Task InitializeCatalogAsync()
     {
         IsBusy = true;
-        StatusMessage = "Caricamento catalogo locale...";
+        StatusMessage = Strings.StatusCatalogLoading;
         await _catalogService.LoadFromLocalCacheAsync();
 
         if (_catalogService.TotalPackageCount == 0)
         {
-            StatusMessage = "Primo avvio: aggiornamento catalogo da Thunderstore & Hexium...";
+            StatusMessage = Strings.StatusCatalogFirstRun;
             await RefreshOnlineCatalogAsync();
         }
         else
         {
             ApplyCatalogSearch();
-            StatusMessage = $"Catalogo pronto ({_catalogService.TotalPackageCount} pacchetti disponibili).";
+            StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
             IsBusy = false;
         }
     }
@@ -445,18 +536,18 @@ public partial class MainViewModel : ViewModelBase
     public async Task RefreshOnlineCatalogAsync()
     {
         IsBusy = true;
-        StatusMessage = "Aggiornamento catalogo online da Thunderstore e Hexium in corso...";
+        StatusMessage = Strings.StatusCatalogUpdating;
         ProgressValue = 0.1;
 
         try
         {
             await _catalogService.RefreshAllAsync();
             ApplyCatalogSearch();
-            StatusMessage = $"Catalogo aggiornato ({_catalogService.TotalPackageCount} pacchetti disponibili).";
+            StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore aggiornamento catalogo: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusCatalogError, ex.Message);
         }
         finally
         {
@@ -500,7 +591,7 @@ public partial class MainViewModel : ViewModelBase
         var chosenSummary = chosenSource.Summary;
         var chosenVersion = item.SelectedVersion;
 
-        StatusMessage = $"Download e installazione di {item.Name} v{chosenVersion} da {chosenSource.DisplayName}...";
+        StatusMessage = string.Format(Strings.StatusDownloadingMod, item.Name, chosenVersion, chosenSource.DisplayName);
 
         try
         {
@@ -513,7 +604,7 @@ public partial class MainViewModel : ViewModelBase
             {
                 if (dep.AlreadyInstalled) continue;
 
-                StatusMessage = $"Installazione dipendenza: {dep.Summary.Name} v{dep.RequiredVersion}...";
+                StatusMessage = string.Format(Strings.StatusInstallingDependency, dep.Summary.Name, dep.RequiredVersion);
                 var depVersion = dep.Summary.Versions.FirstOrDefault(v => v.VersionNumber == dep.RequiredVersion)
                                  ?? dep.Summary.Versions.First();
 
@@ -554,11 +645,11 @@ public partial class MainViewModel : ViewModelBase
 
             _profileService.SaveProfile(profile);
             LoadInstalledMods();
-            StatusMessage = $"{item.Name} v{chosenVersion} installata da {chosenSource.DisplayName} nel profilo [{SelectedProfile}]!";
+            StatusMessage = string.Format(Strings.StatusModInstalledInProfile, item.Name, chosenVersion, chosenSource.DisplayName, SelectedProfile);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore durante l'installazione di {item.Name}: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusModInstallError, item.Name, ex.Message);
         }
         finally
         {
@@ -585,12 +676,12 @@ public partial class MainViewModel : ViewModelBase
             };
             _profileService.SaveProfile(profile);
 
-            StatusMessage = $"{item.Name} {(enabled ? "attivata" : "disattivata")}.";
+            StatusMessage = $"{item.Name} {(enabled ? Strings.StatusModEnabled : Strings.StatusModDisabled)}.";
         }
         catch (Exception ex)
         {
             item.SetIsEnabledSilently(!enabled);
-            StatusMessage = $"Errore durante la modifica di {item.Name}: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusModToggleError, item.Name, ex.Message);
         }
     }
 
@@ -614,7 +705,7 @@ public partial class MainViewModel : ViewModelBase
         _profileService.SaveProfile(profile);
 
         InstalledMods.Remove(item);
-        StatusMessage = $"{item.Name} disinstallata.";
+        StatusMessage = string.Format(Strings.StatusModUninstalled, item.Name);
     }
 
     [RelayCommand]
@@ -635,7 +726,7 @@ public partial class MainViewModel : ViewModelBase
         var outdated = InstalledMods.Where(m => m.HasUpdate).ToList();
         if (outdated.Count == 0)
         {
-            StatusMessage = "Tutte le mod sono già aggiornate all'ultima versione!";
+            StatusMessage = Strings.StatusAllModsAlreadyUpToDate;
             return;
         }
 
@@ -644,7 +735,7 @@ public partial class MainViewModel : ViewModelBase
             await UpdateModAsync(mod);
         }
 
-        StatusMessage = "Tutte le mod sono state aggiornate con successo!";
+        StatusMessage = Strings.StatusAllModsUpdatedSuccess;
     }
 
     [RelayCommand]
@@ -652,12 +743,12 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentInstall == null)
         {
-            StatusMessage = "Specificare prima la cartella di Valheim nelle impostazioni.";
+            StatusMessage = Strings.StatusSpecifyGameFolderFirst;
             return;
         }
 
         IsBusy = true;
-        StatusMessage = "Download del pacchetto ufficiale BepInExPack_Valheim...";
+        StatusMessage = Strings.StatusDownloadingBepInEx;
         try
         {
             var bepMod = _catalogService.FindByCanonicalId(new CanonicalModId("denikson", "BepInExPack_Valheim"));
@@ -683,11 +774,11 @@ public partial class MainViewModel : ViewModelBase
             _bepInExService.DeployToGame(zipPath, CurrentInstall, profileDir);
 
             UpdateBepInExStatus();
-            StatusMessage = "BepInEx installato e configurato con successo!";
+            StatusMessage = Strings.StatusBepInExInstalledSuccess;
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore installazione BepInEx: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusBepInExInstallError, ex.Message);
         }
         finally
         {
@@ -701,7 +792,7 @@ public partial class MainViewModel : ViewModelBase
         if (CurrentInstall == null) return;
         _bepInExService.RestoreVanilla(CurrentInstall);
         UpdateBepInExStatus();
-        StatusMessage = "Gioco ripristinato allo stato Vanilla originale (ganci rimossi).";
+        StatusMessage = Strings.StatusVanillaRestored;
     }
 
     [RelayCommand]
@@ -709,7 +800,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentInstall == null)
         {
-            StatusMessage = "Percorso di Valheim non trovato.";
+            StatusMessage = Strings.StatusGamePathNotFound;
             return;
         }
 
@@ -718,11 +809,11 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             _gameLauncher.LaunchGame(CurrentInstall, profileDir, profileArgs);
-            StatusMessage = $"Valheim avviato con il profilo [{SelectedProfile}]!";
+            StatusMessage = string.Format(Strings.StatusGameLaunched, SelectedProfile);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore avvio gioco: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusGameLaunchError, ex.Message);
         }
     }
 
@@ -734,7 +825,7 @@ public partial class MainViewModel : ViewModelBase
 
         if (serverInstall == null)
         {
-            StatusMessage = "Valheim Dedicated Server non rilevato nella libreria Steam (App ID 896660).";
+            StatusMessage = Strings.StatusServerNotDetected;
             return;
         }
 
@@ -742,11 +833,11 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             _gameLauncher.LaunchGame(serverInstall, profileDir, "-nographics -batchmode");
-            StatusMessage = $"Valheim Dedicated Server avviato con il profilo [{SelectedProfile}]!";
+            StatusMessage = string.Format(Strings.StatusServerLaunched, SelectedProfile);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore avvio server: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusServerLaunchError, ex.Message);
         }
     }
 
@@ -780,11 +871,11 @@ public partial class MainViewModel : ViewModelBase
             _profileService.CreateProfile(name);
             LoadProfilesList();
             SelectedProfile = name;
-            StatusMessage = $"Nuovo profilo [{name}] creato con successo.";
+            StatusMessage = string.Format(Strings.StatusProfileCreated, name);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore creazione profilo: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusProfileCreateError, ex.Message);
         }
     }
 
@@ -805,11 +896,11 @@ public partial class MainViewModel : ViewModelBase
             _profileService.CloneProfile(baseName, newName);
             LoadProfilesList();
             SelectedProfile = newName;
-            StatusMessage = $"Profilo [{newName}] clonato con successo.";
+            StatusMessage = string.Format(Strings.StatusProfileCloned, newName);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore clonazione profilo: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusProfileCloneError, ex.Message);
         }
     }
 
@@ -818,7 +909,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (SelectedProfile.Equals("Default", StringComparison.OrdinalIgnoreCase))
         {
-            StatusMessage = "Il profilo predefinito 'Default' non può essere cancellato.";
+            StatusMessage = Strings.StatusDefaultProfileCannotDelete;
             return;
         }
 
@@ -827,11 +918,11 @@ public partial class MainViewModel : ViewModelBase
             var old = SelectedProfile;
             _profileService.DeleteProfile(old);
             LoadProfilesList();
-            StatusMessage = $"Profilo [{old}] eliminato.";
+            StatusMessage = string.Format(Strings.StatusProfileDeleted, old);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore eliminazione profilo: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusProfileDeleteError, ex.Message);
         }
     }
 
@@ -847,18 +938,18 @@ public partial class MainViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(R2CodeInput)) return;
         IsBusy = true;
-        StatusMessage = "Download e importazione profilo da codice r2modman in corso...";
+        StatusMessage = Strings.StatusR2Importing;
         try
         {
             var res = await _r2Importer.ImportFromCodeAsync(R2CodeInput.Trim());
             LoadProfilesList();
             SelectedProfile = res.CreatedProfile.Name;
             IsImportR2CodeDialogVisible = false;
-            StatusMessage = $"Profilo [{res.CreatedProfile.Name}] importato con successo ({res.ResolvedCatalogMods.Count} mod risolte)!";
+            StatusMessage = string.Format(Strings.StatusR2ImportSuccess, res.CreatedProfile.Name, res.ResolvedCatalogMods.Count);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore importazione codice: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusR2ImportError, ex.Message);
         }
         finally
         {
@@ -875,17 +966,17 @@ public partial class MainViewModel : ViewModelBase
     public async Task ImportR2zFileAsync(string filePath)
     {
         IsBusy = true;
-        StatusMessage = $"Importazione profilo r2modman da file {Path.GetFileName(filePath)}...";
+        StatusMessage = string.Format(Strings.StatusR2FileImporting, Path.GetFileName(filePath));
         try
         {
             var res = await _r2Importer.ImportFromR2zAsync(filePath);
             LoadProfilesList();
             SelectedProfile = res.CreatedProfile.Name;
-            StatusMessage = $"Profilo [{res.CreatedProfile.Name}] importato con successo!";
+            StatusMessage = string.Format(Strings.StatusVmmImportSuccess, res.CreatedProfile.Name);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore importazione .r2z: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusR2ImportError, ex.Message);
         }
         finally
         {
@@ -900,11 +991,11 @@ public partial class MainViewModel : ViewModelBase
             var imported = _profileService.ImportProfile(filePath);
             LoadProfilesList();
             SelectedProfile = imported.Name;
-            StatusMessage = $"Profilo [{imported.Name}] importato con successo!";
+            StatusMessage = string.Format(Strings.StatusVmmImportSuccess, imported.Name);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore importazione: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusR2ImportError, ex.Message);
         }
     }
 
@@ -913,11 +1004,11 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             _profileService.ExportProfile(SelectedProfile, targetZip);
-            StatusMessage = $"Profilo esportato in {targetZip}";
+            StatusMessage = string.Format(Strings.StatusVmmExportSuccess, targetZip);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore esportazione: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusVmmExportError, ex.Message);
         }
     }
 
@@ -934,7 +1025,7 @@ public partial class MainViewModel : ViewModelBase
         IsAppUpdateChecking = true;
         if (!silent)
         {
-            StatusMessage = "Verifica aggiornamenti applicazione in corso...";
+            StatusMessage = Strings.StatusAppUpdateChecking;
         }
 
         try
@@ -948,7 +1039,9 @@ public partial class MainViewModel : ViewModelBase
                 LatestAppReleaseTitle = result.LatestRelease.Title;
                 LatestAppReleaseNotes = result.LatestRelease.ReleaseNotes;
                 LatestAppReleaseUrl = result.LatestRelease.HtmlUrl;
-                AppUpdateStatusText = $"Nuova versione v{result.LatestRelease.Version} disponibile!";
+                OnPropertyChanged(nameof(FormattedInstallUpdateBanner));
+                OnPropertyChanged(nameof(FormattedDownloadAppUpdateButton));
+                AppUpdateStatusText = string.Format(Strings.StatusAppUpdateAvailable, result.LatestRelease.Version);
                 if (!silent)
                 {
                     StatusMessage = AppUpdateStatusText;
@@ -958,12 +1051,12 @@ public partial class MainViewModel : ViewModelBase
             else
             {
                 IsAppUpdateAvailable = false;
-                AppUpdateStatusText = $"Valheim Mod Manager è aggiornato (v{CurrentAppVersion})";
+                AppUpdateStatusText = Strings.StatusAppUpdateLatest;
                 if (!silent)
                 {
                     StatusMessage = string.IsNullOrWhiteSpace(result.ErrorMessage)
                         ? AppUpdateStatusText
-                        : $"Verifica fallita: {result.ErrorMessage}";
+                        : string.Format(Strings.StatusAppUpdateCheckFailed, result.ErrorMessage);
                 }
             }
         }
@@ -971,7 +1064,7 @@ public partial class MainViewModel : ViewModelBase
         {
             if (!silent)
             {
-                StatusMessage = $"Errore verifica aggiornamenti: {ex.Message}";
+                StatusMessage = string.Format(Strings.StatusAppUpdateCheckFailed, ex.Message);
             }
         }
         finally
@@ -1007,13 +1100,13 @@ public partial class MainViewModel : ViewModelBase
         var asset = _appUpdateService.SelectAssetForCurrentPlatform(LatestAppRelease);
         if (asset == null)
         {
-            StatusMessage = "Nessun pacchetto compatibile trovato per questa piattaforma.";
+            StatusMessage = Strings.StatusNoPackageForPlatform;
             return;
         }
 
         IsAppUpdateDownloading = true;
         AppUpdateDownloadProgress = 0;
-        StatusMessage = $"Download aggiornamento v{LatestAppRelease.Version} in corso...";
+        StatusMessage = string.Format(Strings.StatusAppUpdateDownloading, LatestAppRelease.Version);
 
         try
         {
@@ -1030,11 +1123,11 @@ public partial class MainViewModel : ViewModelBase
 
             await _appUpdateService.DownloadAssetAsync(asset, destFile, progress);
             DownloadedAppPackagePath = destFile;
-            StatusMessage = $"Aggiornamento scaricato con successo in {destFile}";
+            StatusMessage = string.Format(Strings.StatusAppUpdateDownloaded, destFile);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Errore durante il download dell'aggiornamento: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusAppUpdateDownloadError, ex.Message);
         }
         finally
         {
@@ -1074,7 +1167,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Impossibile aprire la cartella: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusCannotOpenFolder, ex.Message);
         }
     }
 
@@ -1095,7 +1188,7 @@ public partial class MainViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Impossibile aprire il browser: {ex.Message}";
+            StatusMessage = string.Format(Strings.StatusCannotOpenBrowser, ex.Message);
         }
     }
 

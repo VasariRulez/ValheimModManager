@@ -22,6 +22,8 @@ public partial class InstalledModItemViewModel : ObservableObject
     public string InstalledVersion => Model.InstalledVersion;
     public string ProviderId => Model.Key.ProviderId;
     public string KeyString => Model.Key.ToString();
+    public string AuthorDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModAuthorPrefix, Owner);
+    public string UpdateBadgeText => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModUpdateAvailableBadge, LatestVersion);
 
     private readonly Action<InstalledModItemViewModel, bool>? _onToggle;
     private bool _suppressToggleCallback;

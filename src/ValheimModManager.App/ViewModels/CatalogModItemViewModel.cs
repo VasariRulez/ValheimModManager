@@ -28,6 +28,9 @@ public partial class CatalogModItemViewModel : ObservableObject
     public string IconUrl => Grouped.IconUrl;
     public long TotalDownloads => Grouped.TotalDownloadsOverall;
     public int RatingScore => Grouped.HighestRatingOverall;
+    public string AuthorDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModByPrefix, Owner);
+    public string DownloadsDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModDownloadsLabel, TotalDownloads);
+    public string RatingDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModVotesLabel, RatingScore);
     public IReadOnlyList<string> Categories => Grouped.Categories;
     public IReadOnlyList<ModSourceRelease> AvailableSources => Grouped.AvailableSources;
     public bool HasMultipleSources => AvailableSources.Count > 1;
