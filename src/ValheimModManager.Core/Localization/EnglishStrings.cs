@@ -34,6 +34,8 @@ public sealed record EnglishStrings : AppStrings
         HeaderMenuImportR2Code = "Import from r2modman Code...";
         HeaderBannerUpdateAvailable = "🎉 Update Available!";
         HeaderBannerInstallUpdate = "Install v{0}";
+        FooterBannerUpdateAvailable = "A new version v{0} of Valheim Mod Manager is available!";
+        FooterBannerDismissTooltip = "Dismiss for now";
         HeaderInstallBepInExButton = "Install BepInEx 1-Click";
         HeaderInstallBepInExShort = "Install";
         HeaderRestoreVanillaButton = "Restore Vanilla";

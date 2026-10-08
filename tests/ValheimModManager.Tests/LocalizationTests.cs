@@ -134,4 +134,16 @@ public class LocalizationTests : IDisposable
         var reloadedIt = profileService.LoadState();
         Assert.Equal("it", reloadedIt.Language);
     }
+
+    [Fact]
+    public void FooterBannerStrings_FormatCorrectly()
+    {
+        var it = ItalianStrings.Instance;
+        var formattedIt = string.Format(it.FooterBannerUpdateAvailable, "1.0.5");
+        Assert.Contains("1.0.5", formattedIt);
+
+        var en = EnglishStrings.Instance;
+        var formattedEn = string.Format(en.FooterBannerUpdateAvailable, "1.0.5");
+        Assert.Contains("1.0.5", formattedEn);
+    }
 }

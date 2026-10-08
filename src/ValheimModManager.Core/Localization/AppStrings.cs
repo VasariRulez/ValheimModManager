@@ -30,6 +30,8 @@ public record AppStrings
     public string HeaderMenuImportR2Code { get; init; } = "";
     public string HeaderBannerUpdateAvailable { get; init; } = "";
     public string HeaderBannerInstallUpdate { get; init; } = "";
+    public string FooterBannerUpdateAvailable { get; init; } = "";
+    public string FooterBannerDismissTooltip { get; init; } = "";
     public string HeaderInstallBepInExButton { get; init; } = "";
     public string HeaderInstallBepInExShort { get; init; } = "";
     public string HeaderRestoreVanillaButton { get; init; } = "";

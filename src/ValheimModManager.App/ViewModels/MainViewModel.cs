@@ -46,6 +46,14 @@ public partial class MainViewModel : ViewModelBase
     private bool _isAppUpdateAvailable;
 
     [ObservableProperty]
+    private bool _isAppUpdateBannerDismissed;
+
+    public bool IsAppUpdateBannerVisible => IsAppUpdateAvailable && !IsAppUpdateBannerDismissed;
+
+    partial void OnIsAppUpdateBannerDismissedChanged(bool value) => OnPropertyChanged(nameof(IsAppUpdateBannerVisible));
+    partial void OnIsAppUpdateAvailableChanged(bool value) => OnPropertyChanged(nameof(IsAppUpdateBannerVisible));
+
+    [ObservableProperty]
     private bool _isAppUpdateChecking;
 
     [ObservableProperty]
@@ -174,6 +182,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private IReadOnlyList<string> _sourceFilterOptions = [];
 
+    public string FormattedUpdateBannerTitle => string.Format(Strings.FooterBannerUpdateAvailable, LatestAppVersion);
     public string FormattedInstallUpdateBanner => string.Format(Strings.HeaderBannerInstallUpdate, LatestAppVersion);
     public string FormattedCurrentAppVersion => string.Format(Strings.AppVersionCurrentPrefix, CurrentAppVersion);
     public string FormattedDownloadAppUpdateButton => string.Format(Strings.DownloadAppUpdateButton, LatestAppVersion);
@@ -350,6 +359,7 @@ public partial class MainViewModel : ViewModelBase
         Strings = LocalizationService.Instance.GetStrings(norm);
         LocalizationService.Instance.CurrentStrings = Strings;
         OnPropertyChanged(nameof(SelectedLanguage));
+        OnPropertyChanged(nameof(FormattedUpdateBannerTitle));
         OnPropertyChanged(nameof(FormattedInstallUpdateBanner));
         OnPropertyChanged(nameof(FormattedCurrentAppVersion));
         OnPropertyChanged(nameof(FormattedDownloadAppUpdateButton));
@@ -1047,11 +1057,13 @@ public partial class MainViewModel : ViewModelBase
             if (result.HasUpdate && result.LatestRelease != null)
             {
                 IsAppUpdateAvailable = true;
+                IsAppUpdateBannerDismissed = false;
                 LatestAppRelease = result.LatestRelease;
                 LatestAppVersion = result.LatestRelease.Version;
                 LatestAppReleaseTitle = result.LatestRelease.Title;
                 LatestAppReleaseNotes = result.LatestRelease.ReleaseNotes;
                 LatestAppReleaseUrl = result.LatestRelease.HtmlUrl;
+                OnPropertyChanged(nameof(FormattedUpdateBannerTitle));
                 OnPropertyChanged(nameof(FormattedInstallUpdateBanner));
                 OnPropertyChanged(nameof(FormattedDownloadAppUpdateButton));
                 AppUpdateStatusText = string.Format(Strings.StatusAppUpdateAvailable, result.LatestRelease.Version);
@@ -1103,6 +1115,12 @@ public partial class MainViewModel : ViewModelBase
     public void DismissAppUpdateDialog()
     {
         IsAppUpdateDialogVisible = false;
+    }
+
+    [RelayCommand]
+    public void DismissUpdateBanner()
+    {
+        IsAppUpdateBannerDismissed = true;
     }
 
     [RelayCommand]
