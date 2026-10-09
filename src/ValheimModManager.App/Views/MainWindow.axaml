@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ValheimModManager.App.ViewModels"
         xmlns:m="using:ValheimModManager.Core.Models"
+        xmlns:controls="using:ValheimModManager.App.Controls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
@@ -590,11 +591,11 @@
                         </Border>
                     </Grid>
 
-                    <!-- Changelog box -->
+                    <!-- Changelog box with Markdown formatting -->
                     <TextBlock Text="{Binding Strings.ReleaseNotesLabel}" FontSize="12" Foreground="#a1a1aa" FontWeight="SemiBold" />
-                    <Border Background="#18181b" CornerRadius="6" Padding="12" MaxHeight="160" BorderBrush="#3f3f46" BorderThickness="1">
+                    <Border Background="#18181b" CornerRadius="6" Padding="12" MaxHeight="200" BorderBrush="#3f3f46" BorderThickness="1">
                         <ScrollViewer>
-                            <TextBlock Text="{Binding LatestAppReleaseNotes}" TextWrapping="Wrap" Foreground="#d4d4d8" FontSize="12" />
+                            <controls:MarkdownDocumentView Markdown="{Binding LatestAppReleaseNotes}" />
                         </ScrollViewer>
                     </Border>
 
