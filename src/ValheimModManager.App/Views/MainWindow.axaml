@@ -254,39 +254,40 @@
                                                 </Border>
 
                                                 <!-- Details -->
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <!-- Title & Multi-Source Badges -->
-                                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#f4f4f5" />
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                    <!-- Title & Author -->
+                                                    <WrapPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#f4f4f5" Margin="0,0,8,0" VerticalAlignment="Center" />
                                                         <TextBlock Text="{Binding AuthorDisplay}" FontSize="12" Foreground="#a1a1aa" VerticalAlignment="Center" />
-                                                        
-                                                        <!-- Sources Badges List -->
-                                                        <ItemsControl ItemsSource="{Binding AvailableSources}">
-                                                            <ItemsControl.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <StackPanel Orientation="Horizontal" Spacing="6" />
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsControl.ItemsPanel>
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate x:DataType="m:ModSourceRelease">
-                                                                    <Border Background="{Binding IsNewestOverall, Converter={x:Null}}"
-                                                                            CornerRadius="4" Padding="6,2"
-                                                                            BorderBrush="#3b82f6" BorderThickness="1">
-                                                                        <TextBlock Text="{Binding .}" FontSize="10" Foreground="#93c5fd" FontWeight="Medium" />
-                                                                    </Border>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </StackPanel>
+                                                    </WrapPanel>
 
                                                     <TextBlock Text="{Binding Description}" 
                                                                Foreground="#d4d4d8" FontSize="12" Margin="0,4,0,6"
                                                                TextWrapping="Wrap" MaxLines="2" />
 
-                                                    <StackPanel Orientation="Horizontal" Spacing="16">
-                                                        <TextBlock Text="{Binding DownloadsDisplay}" FontSize="11" Foreground="#a1a1aa" />
-                                                        <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" />
-                                                    </StackPanel>
+                                                    <!-- Stats & Available Source Badges -->
+                                                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding DownloadsDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,14,0" />
+                                                        <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,16,0" />
+                                                        
+                                                        <!-- Sources Badges List -->
+                                                        <ItemsControl ItemsSource="{Binding AvailableSources}" VerticalAlignment="Center">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <WrapPanel Orientation="Horizontal" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="m:ModSourceRelease">
+                                                                    <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                                            Background="#1e293b"
+                                                                            BorderBrush="#3b82f6" BorderThickness="1">
+                                                                        <TextBlock Text="{Binding BadgeText}" FontSize="10" Foreground="#93c5fd" FontWeight="Medium" />
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </WrapPanel>
                                                 </StackPanel>
 
                                                 <!-- Source Selector (se disponibile su più fonti) -->

@@ -67,6 +67,9 @@ public sealed record ModSourceRelease(
     bool IsNewestOverall
 )
 {
+    public string BadgeText =>
+        $"{(ProviderId.Equals("thunderstore", StringComparison.OrdinalIgnoreCase) ? "⚡" : "🔷")} {DisplayName} v{LatestVersion}{(IsNewestOverall ? " ⭐" : "")}";
+
     public override string ToString() =>
         IsNewestOverall
             ? $"{DisplayName} (v{LatestVersion} - Più recente ⭐)"
