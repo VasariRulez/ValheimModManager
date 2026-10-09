@@ -41,20 +41,19 @@ public partial class CatalogModItemViewModel : ObservableObject
     public IReadOnlyList<ModSourceRelease> AvailableSources => Grouped.AvailableSources;
     public bool HasMultipleSources => AvailableSources.Count > 1;
 
-    public ModSourceRelease? NewestSource => AvailableSources.Count > 0 ? AvailableSources[0] : null;
+    public IReadOnlyList<ModSourceRelease> UpToDateSources =>
+        AvailableSources.Where(s => s.IsNewestOverall).ToList();
 
-    public string PrimaryBadgeText =>
-        NewestSource != null
-            ? $"{(NewestSource.ProviderId.Equals("thunderstore", System.StringComparison.OrdinalIgnoreCase) ? "⚡" : "🔷")} {NewestSource.DisplayName} v{NewestSource.LatestVersion}"
-            : string.Empty;
+    public IReadOnlyList<ModSourceRelease> OutdatedSources =>
+        AvailableSources.Where(s => !s.IsNewestOverall).ToList();
 
-    public bool HasAlternativeSources => AvailableSources.Count > 1;
+    public bool HasOutdatedSources => OutdatedSources.Count > 0;
 
-    public string AlternativeSourcesTooltip =>
-        string.Join(", ", AvailableSources.Skip(1).Select(s => $"{s.DisplayName} (v{s.LatestVersion})"));
+    public string OutdatedSourcesTooltip =>
+        string.Join(", ", OutdatedSources.Select(s => $"{s.DisplayName} (v{s.LatestVersion})"));
 
-    public string AlternativeSourcesCountText =>
-        $"+{AvailableSources.Count - 1} {(AvailableSources.Count - 1 == 1 ? "fonte" : "fonti")}";
+    public string OutdatedSourcesCountText =>
+        $"+{OutdatedSources.Count} {(OutdatedSources.Count == 1 ? "fonte precedente" : "fonti precedenti")}";
 
     public ModSummary Summary => SelectedSource.Summary;
     public string ProviderId => SelectedSource.ProviderId;
