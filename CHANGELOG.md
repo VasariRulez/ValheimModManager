@@ -3,6 +3,42 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.9] - 2026-10-09
+
+### 🇮🇹 Italiano
+
+#### Aggiunto
+- **Anteprime Miniature Mod (Thumbnail) nel Catalogo**: Visualizzazione asincrona e non bloccante delle immagini di anteprima delle mod con sistema di caching a due livelli: cache in-memory e cache persistente su disco (`%LOCALAPPDATA%\ValheimModManager\cache\icons\`). Fallback elegante con icona 📦 per mod prive di immagine remota.
+- **Riprogettazione Layout Scheda Catalogo**:
+  - Riga 1: Nome mod in risalto (15px bold) e Autore all'interno di un `WrapPanel` per prevenire troncamenti con titoli lunghi.
+  - Riga 2: Descrizione della mod su 2 righe con wrapping nativo.
+  - Riga 3: Statistiche (Download e Voti) affiancate dai badge degli store.
+  - Margine di sicurezza di 16px verso la colonna delle azioni a destra (Selettore Fonte, Versione e pulsante Installa) sempre perfettamente allineata e centrata.
+- **Logica Multi-Store Intelligente & Risoluzione Parità**:
+  - Badge di provenienza chiari e compatti (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`).
+  - Il badge di provenienza viene mostrato anche per mod mono-store, garantendo trasparenza sull'origine del pacchetto.
+  - In caso di parità di versione tra più store (es. Thunderstore e Hexium alla stessa versione), vengono mostrati entrambi i badge affiancati riconoscendo entrambe le piattaforme senza preferenze arbitrarie.
+  - Se uno store offre una versione precedente, viene mostrata solo la versione più recente e le altre vengono raggruppate in un pill secondario discreto (`+1 fonte precedente`) con tooltip descrittivo.
+- **Documentazione Storica Completa**: Changelog retroattivo completo da v1.0.0 a v1.0.8 documentato in `CHANGELOG.md`.
+
+---
+
+### 🇬🇧 English
+
+#### Added
+- **Asynchronous Mod Thumbnail Previews in Catalog**: Non-blocking image preview loading with a two-layer cache: high-performance in-memory cache and persistent disk cache (`%LOCALAPPDATA%\ValheimModManager\cache\icons\`). Graceful fallback placeholder 📦 for mods without remote icons.
+- **Redesigned Catalog Row Layout**:
+  - Row 1: Bold mod title (15px) and author in a responsive `WrapPanel` preventing overflows or clipping on long names.
+  - Row 2: Mod description (up to 2 lines) with native text wrapping.
+  - Row 3: Mod statistics (Downloads & Ratings) alongside store badges.
+  - 16px safety padding isolating right-side action controls (Source Selector, Version Selector, and Install button).
+- **Smart Multi-Store Display & Version Tie-Breaker**:
+  - Clean and concise provenance badges (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`).
+  - Source provenance badge displayed even for single-source mods for transparency.
+  - In case of version ties across multiple repositories, both store badges are displayed side-by-side without arbitrary bias.
+  - If a repository has an older release, only the up-to-date source badge is displayed, while legacy versions are grouped under a subtle secondary pill (`+1 older source`) with an informative tooltip.
+- **Complete Historical Changelog**: Comprehensive retroactive release history from v1.0.0 to v1.0.8 documented in `CHANGELOG.md`.
+
 ---
 
 ## [1.0.8] - 2026-10-08
