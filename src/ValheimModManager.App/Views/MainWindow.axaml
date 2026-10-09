@@ -265,28 +265,27 @@
                                                                Foreground="#d4d4d8" FontSize="12" Margin="0,4,0,6"
                                                                TextWrapping="Wrap" MaxLines="2" />
 
-                                                    <!-- Stats & Available Source Badges -->
+                                                    <!-- Stats & Source Badges -->
                                                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding DownloadsDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,14,0" />
                                                         <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,16,0" />
                                                         
-                                                        <!-- Sources Badges List -->
-                                                        <ItemsControl ItemsSource="{Binding AvailableSources}" VerticalAlignment="Center">
-                                                            <ItemsControl.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <WrapPanel Orientation="Horizontal" />
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsControl.ItemsPanel>
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate x:DataType="m:ModSourceRelease">
-                                                                    <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
-                                                                            Background="#1e293b"
-                                                                            BorderBrush="#3b82f6" BorderThickness="1">
-                                                                        <TextBlock Text="{Binding BadgeText}" FontSize="10" Foreground="#93c5fd" FontWeight="Medium" />
-                                                                    </Border>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
+                                                        <!-- Primary (Newest) Source Badge -->
+                                                        <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                                Background="#1e293b"
+                                                                BorderBrush="#3b82f6" BorderThickness="1"
+                                                                VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding PrimaryBadgeText}" FontSize="10" Foreground="#93c5fd" FontWeight="Medium" />
+                                                        </Border>
+
+                                                        <!-- Alternative Sources Indicator (if present) -->
+                                                        <Border CornerRadius="4" Padding="5,2" Margin="0,0,6,0"
+                                                                Background="#27272a" BorderBrush="#52525b" BorderThickness="1"
+                                                                IsVisible="{Binding HasAlternativeSources}"
+                                                                ToolTip.Tip="{Binding AlternativeSourcesTooltip}"
+                                                                VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding AlternativeSourcesCountText}" FontSize="9" Foreground="#a1a1aa" FontWeight="Normal" />
+                                                        </Border>
                                                     </WrapPanel>
                                                 </StackPanel>
 

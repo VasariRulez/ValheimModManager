@@ -41,6 +41,21 @@ public partial class CatalogModItemViewModel : ObservableObject
     public IReadOnlyList<ModSourceRelease> AvailableSources => Grouped.AvailableSources;
     public bool HasMultipleSources => AvailableSources.Count > 1;
 
+    public ModSourceRelease? NewestSource => AvailableSources.Count > 0 ? AvailableSources[0] : null;
+
+    public string PrimaryBadgeText =>
+        NewestSource != null
+            ? $"{(NewestSource.ProviderId.Equals("thunderstore", System.StringComparison.OrdinalIgnoreCase) ? "⚡" : "🔷")} {NewestSource.DisplayName} v{NewestSource.LatestVersion}"
+            : string.Empty;
+
+    public bool HasAlternativeSources => AvailableSources.Count > 1;
+
+    public string AlternativeSourcesTooltip =>
+        string.Join(", ", AvailableSources.Skip(1).Select(s => $"{s.DisplayName} (v{s.LatestVersion})"));
+
+    public string AlternativeSourcesCountText =>
+        $"+{AvailableSources.Count - 1} {(AvailableSources.Count - 1 == 1 ? "fonte" : "fonti")}";
+
     public ModSummary Summary => SelectedSource.Summary;
     public string ProviderId => SelectedSource.ProviderId;
 
