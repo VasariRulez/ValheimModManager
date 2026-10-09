@@ -3,12 +3,18 @@ namespace ValheimModManager.App.ViewModels;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ValheimModManager.App.Services;
 using ValheimModManager.Core.Models;
 
 public partial class CatalogModItemViewModel : ObservableObject
 {
     public GroupedModSummary Grouped { get; }
+
+    [ObservableProperty]
+    private Bitmap? _thumbnail;
 
     [ObservableProperty]
     private ModSourceRelease _selectedSource;
@@ -44,6 +50,17 @@ public partial class CatalogModItemViewModel : ObservableObject
         _selectedSource = grouped.AvailableSources[0];
         _selectedVersion = _selectedSource.LatestVersion;
         RefreshVersionsList();
+        _ = LoadThumbnailAsync();
+    }
+
+    public async Task LoadThumbnailAsync()
+    {
+        if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl)) return;
+        var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl);
+        if (bmp != null)
+        {
+            Thumbnail = bmp;
+        }
     }
 
     public CatalogModItemViewModel(ModSummary singleSummary)
