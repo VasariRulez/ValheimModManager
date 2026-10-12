@@ -95,6 +95,13 @@ public sealed record EnglishStrings : AppStrings
         ClearIconCacheTooltip = "Deletes all cached mod thumbnails from disk and memory";
         ClearIconCacheMenu = "🖼️  Clear Icon Cache";
         StatusIconCacheCleared = "Icon cache cleared ({0} images removed).";
+        CatalogPaginationShowing = "Showing {0}–{1} of {2:N0} mods";
+        CatalogPaginationEmpty = "No mods found";
+        CatalogPaginationPage = "Page {0} of {1}";
+        CatalogPrevPageButton = "◀ Previous";
+        CatalogNextPageButton = "Next ▶";
+        CatalogFirstPageTooltip = "First page";
+        CatalogLastPageTooltip = "Last page";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Settings & Game";

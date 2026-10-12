@@ -95,6 +95,13 @@ public sealed record ItalianStrings : AppStrings
         ClearIconCacheTooltip = "Elimina tutte le miniature delle mod salvate su disco e in memoria";
         ClearIconCacheMenu = "🖼️  Svuota Cache Icone";
         StatusIconCacheCleared = "Cache icone svuotata ({0} immagini rimosse).";
+        CatalogPaginationShowing = "Mostrate {0}–{1} di {2:N0} mod";
+        CatalogPaginationEmpty = "Nessuna mod trovata";
+        CatalogPaginationPage = "Pagina {0} di {1}";
+        CatalogPrevPageButton = "◀ Precedente";
+        CatalogNextPageButton = "Successiva ▶";
+        CatalogFirstPageTooltip = "Prima pagina";
+        CatalogLastPageTooltip = "Ultima pagina";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Impostazioni & Gioco";

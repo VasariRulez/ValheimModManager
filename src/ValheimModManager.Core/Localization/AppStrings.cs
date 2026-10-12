@@ -91,6 +91,13 @@ public record AppStrings
     public string ClearIconCacheTooltip { get; init; } = "";
     public string ClearIconCacheMenu { get; init; } = "";
     public string StatusIconCacheCleared { get; init; } = "";
+    public string CatalogPaginationShowing { get; init; } = "";
+    public string CatalogPaginationEmpty { get; init; } = "";
+    public string CatalogPaginationPage { get; init; } = "";
+    public string CatalogPrevPageButton { get; init; } = "";
+    public string CatalogNextPageButton { get; init; } = "";
+    public string CatalogFirstPageTooltip { get; init; } = "";
+    public string CatalogLastPageTooltip { get; init; } = "";
 
     // Tab 3: Settings
     public string TabSettings { get; init; } = "";

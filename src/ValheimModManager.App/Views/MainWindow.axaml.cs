@@ -32,6 +32,10 @@ public partial class MainWindow : Window
                     await cb.SetTextAsync(text);
                 }
             };
+            vm.OnCatalogPageChanged = () =>
+            {
+                CatalogScrollViewer?.ScrollToHome();
+            };
         }
     }
 

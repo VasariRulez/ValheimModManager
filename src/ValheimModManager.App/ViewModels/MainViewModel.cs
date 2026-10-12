@@ -219,6 +219,40 @@ public partial class MainViewModel : ViewModelBase
     public string SortDirectionIcon => IsSortDescending ? "↓" : "↑";
     public string SortDirectionTooltip => IsSortDescending ? Strings.SortDirectionDescTooltip : Strings.SortDirectionAscTooltip;
 
+    private const int CatalogPageSize = 100;
+    private IReadOnlyList<GroupedModSummary> _filteredCatalogResults = [];
+
+    public Action? OnCatalogPageChanged { get; set; }
+
+    [ObservableProperty]
+    private int _currentCatalogPage = 1;
+
+    [ObservableProperty]
+    private int _totalCatalogPages = 1;
+
+    [ObservableProperty]
+    private int _totalCatalogResults = 0;
+
+    public bool CanGoPreviousCatalogPage => CurrentCatalogPage > 1;
+    public bool CanGoNextCatalogPage => CurrentCatalogPage < TotalCatalogPages;
+
+    public string CatalogPaginationInfoText
+    {
+        get
+        {
+            if (TotalCatalogResults == 0)
+            {
+                return Strings.CatalogPaginationEmpty;
+            }
+            var start = ((CurrentCatalogPage - 1) * CatalogPageSize) + 1;
+            var end = Math.Min(CurrentCatalogPage * CatalogPageSize, TotalCatalogResults);
+            return string.Format(Strings.CatalogPaginationShowing, start, end, TotalCatalogResults);
+        }
+    }
+
+    public string CatalogPageIndicatorText =>
+        string.Format(Strings.CatalogPaginationPage, CurrentCatalogPage, TotalCatalogPages);
+
     public string FormattedUpdateBannerTitle => string.Format(Strings.FooterBannerUpdateAvailable, LatestAppVersion);
     public string FormattedInstallUpdateBanner => string.Format(Strings.HeaderBannerInstallUpdate, LatestAppVersion);
     public string FormattedCurrentAppVersion => string.Format(Strings.AppVersionCurrentPrefix, CurrentAppVersion);
@@ -410,9 +444,14 @@ public partial class MainViewModel : ViewModelBase
         {
             LoadInstalledMods();
         }
-        if (CatalogMods.Count > 0)
+        if (_filteredCatalogResults.Count > 0 || CatalogMods.Count > 0)
         {
-            ApplyCatalogSearch();
+            LoadCatalogPage(scrollToTop: false);
+        }
+        else
+        {
+            OnPropertyChanged(nameof(CatalogPaginationInfoText));
+            OnPropertyChanged(nameof(CatalogPageIndicatorText));
         }
 
         if (StatusMessage == "Pronto" || StatusMessage == "Ready" || string.IsNullOrWhiteSpace(StatusMessage))
@@ -430,6 +469,9 @@ public partial class MainViewModel : ViewModelBase
     private void UpdateSourceFilterOptions()
     {
         var prevFilter = SelectedSourceFilter;
+        var prevSortIdx = SelectedSortIndex >= 0 && SelectedSortIndex <= 5 ? SelectedSortIndex : 1;
+
+        _suppressSortTrigger = true;
         SourceFilterOptions = [Strings.SourceFilterAll, "Thunderstore", "Hexium"];
 
         if (prevFilter == "Thunderstore")
@@ -445,8 +487,6 @@ public partial class MainViewModel : ViewModelBase
             SelectedSourceFilter = SourceFilterOptions[0];
         }
 
-        var prevSortIdx = SelectedSortIndex >= 0 && SelectedSortIndex <= 5 ? SelectedSortIndex : 1;
-        _suppressSortTrigger = true;
         SortByOptions =
         [
             Strings.SortByRelevance,
@@ -596,6 +636,7 @@ public partial class MainViewModel : ViewModelBase
     // FIX TRIGGER FILTRO SORGENTE
     partial void OnSelectedSourceFilterChanged(string value)
     {
+        if (_suppressSortTrigger) return;
         ApplyCatalogSearch();
     }
 
@@ -753,15 +794,73 @@ public partial class MainViewModel : ViewModelBase
             ProviderId: providerId,
             SortBy: sortBy,
             SortDescending: IsSortDescending,
-            PageSize: 100
+            PageSize: 0
         );
 
-        var results = _catalogService.SearchGrouped(query);
+        _filteredCatalogResults = _catalogService.SearchGrouped(query);
+        TotalCatalogResults = _filteredCatalogResults.Count;
+        TotalCatalogPages = Math.Max(1, (int)Math.Ceiling((double)TotalCatalogResults / CatalogPageSize));
+        CurrentCatalogPage = 1;
+
+        LoadCatalogPage(scrollToTop: true);
+    }
+
+    private void LoadCatalogPage(bool scrollToTop = true)
+    {
+        if (CurrentCatalogPage < 1) CurrentCatalogPage = 1;
+        if (CurrentCatalogPage > TotalCatalogPages) CurrentCatalogPage = TotalCatalogPages;
+
+        var pageItems = _filteredCatalogResults
+            .Skip((CurrentCatalogPage - 1) * CatalogPageSize)
+            .Take(CatalogPageSize);
+
         CatalogMods.Clear();
-        foreach (var mod in results)
+        foreach (var mod in pageItems)
         {
             CatalogMods.Add(new CatalogModItemViewModel(mod));
         }
+
+        OnPropertyChanged(nameof(CanGoPreviousCatalogPage));
+        OnPropertyChanged(nameof(CanGoNextCatalogPage));
+        OnPropertyChanged(nameof(CatalogPaginationInfoText));
+        OnPropertyChanged(nameof(CatalogPageIndicatorText));
+
+        if (scrollToTop)
+        {
+            OnCatalogPageChanged?.Invoke();
+        }
+    }
+
+    [RelayCommand]
+    public void FirstCatalogPage()
+    {
+        if (CurrentCatalogPage <= 1) return;
+        CurrentCatalogPage = 1;
+        LoadCatalogPage(scrollToTop: true);
+    }
+
+    [RelayCommand]
+    public void PreviousCatalogPage()
+    {
+        if (CurrentCatalogPage <= 1) return;
+        CurrentCatalogPage--;
+        LoadCatalogPage(scrollToTop: true);
+    }
+
+    [RelayCommand]
+    public void NextCatalogPage()
+    {
+        if (CurrentCatalogPage >= TotalCatalogPages) return;
+        CurrentCatalogPage++;
+        LoadCatalogPage(scrollToTop: true);
+    }
+
+    [RelayCommand]
+    public void LastCatalogPage()
+    {
+        if (CurrentCatalogPage >= TotalCatalogPages) return;
+        CurrentCatalogPage = TotalCatalogPages;
+        LoadCatalogPage(scrollToTop: true);
     }
 
     [RelayCommand]
