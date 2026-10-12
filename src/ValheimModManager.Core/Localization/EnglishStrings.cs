@@ -91,6 +91,10 @@ public sealed record EnglishStrings : AppStrings
         RebuildCatalogCacheTooltip = "Deletes local cache and re-downloads all online catalogs from scratch";
         RefreshCatalogFastMenu = "🔄  Refresh Catalog (Fast Delta)";
         RefreshCatalogFullMenu = "🧹  Rebuild from scratch (Clear Cache)";
+        ClearIconCacheButton = "🖼️ Clear Icon Cache";
+        ClearIconCacheTooltip = "Deletes all cached mod thumbnails from disk and memory";
+        ClearIconCacheMenu = "🖼️  Clear Icon Cache";
+        StatusIconCacheCleared = "Icon cache cleared ({0} images removed).";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Settings & Game";

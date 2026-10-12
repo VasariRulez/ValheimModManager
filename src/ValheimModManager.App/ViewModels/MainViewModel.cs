@@ -716,6 +716,18 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void ClearIconCache()
+    {
+        var deleted = ValheimModManager.App.Services.AvaloniaImageLoader.Instance.ClearCache();
+        foreach (var mod in CatalogMods)
+        {
+            mod.Thumbnail = null;
+            _ = mod.LoadThumbnailAsync();
+        }
+        StatusMessage = string.Format(Strings.StatusIconCacheCleared, deleted);
+    }
+
+    [RelayCommand]
     public void ApplyCatalogSearch()
     {
         string? providerId = SelectedSourceFilter switch

@@ -91,6 +91,10 @@ public sealed record ItalianStrings : AppStrings
         RebuildCatalogCacheTooltip = "Elimina la cache locale e riscarica da zero tutti i cataloghi online";
         RefreshCatalogFastMenu = "🔄  Aggiorna Catalogo (Rapido)";
         RefreshCatalogFullMenu = "🧹  Riscarica da zero (Svuota Cache)";
+        ClearIconCacheButton = "🖼️ Svuota Cache Icone";
+        ClearIconCacheTooltip = "Elimina tutte le miniature delle mod salvate su disco e in memoria";
+        ClearIconCacheMenu = "🖼️  Svuota Cache Icone";
+        StatusIconCacheCleared = "Cache icone svuotata ({0} immagini rimosse).";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Impostazioni & Gioco";

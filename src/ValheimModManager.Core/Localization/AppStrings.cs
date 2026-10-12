@@ -87,6 +87,10 @@ public record AppStrings
     public string RebuildCatalogCacheTooltip { get; init; } = "";
     public string RefreshCatalogFastMenu { get; init; } = "";
     public string RefreshCatalogFullMenu { get; init; } = "";
+    public string ClearIconCacheButton { get; init; } = "";
+    public string ClearIconCacheTooltip { get; init; } = "";
+    public string ClearIconCacheMenu { get; init; } = "";
+    public string StatusIconCacheCleared { get; init; } = "";
 
     // Tab 3: Settings
     public string TabSettings { get; init; } = "";

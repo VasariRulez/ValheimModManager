@@ -252,6 +252,9 @@
                                                   Command="{Binding RefreshOnlineCatalogCommand}" />
                                         <MenuItem Header="{Binding Strings.RefreshCatalogFullMenu}"
                                                   Command="{Binding RebuildCatalogCacheCommand}" />
+                                        <Separator />
+                                        <MenuItem Header="{Binding Strings.ClearIconCacheMenu}"
+                                                  Command="{Binding ClearIconCacheCommand}" />
                                     </ContextMenu>
                                 </Button.ContextMenu>
                             </Button>
@@ -421,11 +424,17 @@
 
                                         <Separator Background="#3f3f46" Margin="0,2" />
 
-                                        <Button Content="{Binding Strings.RebuildCatalogCacheButton}"
-                                                Command="{Binding RebuildCatalogCacheCommand}"
-                                                IsEnabled="{Binding !IsBusy}"
-                                                ToolTip.Tip="{Binding Strings.RebuildCatalogCacheTooltip}"
-                                                Background="#3f3f46" Foreground="#f4f4f5" Padding="12,7" FontSize="12" HorizontalAlignment="Left" />
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Button Content="{Binding Strings.RebuildCatalogCacheButton}"
+                                                    Command="{Binding RebuildCatalogCacheCommand}"
+                                                    IsEnabled="{Binding !IsBusy}"
+                                                    ToolTip.Tip="{Binding Strings.RebuildCatalogCacheTooltip}"
+                                                    Background="#3f3f46" Foreground="#f4f4f5" Padding="12,7" FontSize="12" Margin="0,0,8,6" />
+                                            <Button Content="{Binding Strings.ClearIconCacheButton}"
+                                                    Command="{Binding ClearIconCacheCommand}"
+                                                    ToolTip.Tip="{Binding Strings.ClearIconCacheTooltip}"
+                                                    Background="#3f3f46" Foreground="#f4f4f5" Padding="12,7" FontSize="12" Margin="0,0,0,6" />
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
 

@@ -57,4 +57,10 @@ public sealed class AvaloniaImageLoader
             return null;
         }
     }
+
+    public int ClearCache()
+    {
+        _memoryCache.Clear();
+        return _imageCacheService.ClearCache();
+    }
 }

@@ -117,4 +117,24 @@ public sealed class ImageCacheService
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(url))).ToLowerInvariant();
         return Path.Combine(_cacheDirectory, $"{hash}.png");
     }
+
+    public int ClearCache()
+    {
+        if (!Directory.Exists(_cacheDirectory)) return 0;
+
+        int deleted = 0;
+        foreach (var file in Directory.GetFiles(_cacheDirectory))
+        {
+            try
+            {
+                File.Delete(file);
+                deleted++;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete cached icon file {File}", file);
+            }
+        }
+        return deleted;
+    }
 }
