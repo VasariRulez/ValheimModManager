@@ -3,6 +3,50 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.11] - 2026-10-12
+
+### 🇮🇹 Italiano
+
+#### Aggiunto
+- **Paginazione Classica nel Catalogo Online**:
+  - Barra di paginazione fissa nella parte inferiore della scheda *Esplora Mod Online* con contatore dei risultati filtrati (`Mostrate 1–100 di X mod`) e controlli rapidi per **Prima pagina (`⏮`)**, **Precedente (`◀`)**, indicatore **`Pagina X di Y`**, **Successiva (`▶`)** e **Ultima pagina (`⏭`)**.
+  - Navigazione tra le pagine istantanea (**0 ms**) sulla lista già ordinata in memoria e ritorno automatico in cima allo scorrimento (`ScrollToHome`) ad ogni cambio pagina.
+  - Reset intelligente a *Pagina 1* quando si modificano ricerca testuale, filtro sorgente o criterio/direzione di ordinamento, mantenendo invece la pagina attiva al cambio lingua o allo svuotamento della cache icone.
+- **Delta Sync Incrementale sui Chunk SHA-256**:
+  - Salvataggio degli hash SHA-256 dei chunk del catalogo in `thunderstore.chunks.json` per scaricare durante gli aggiornamenti solo i chunk effettivamente modificati (riducendo drasticamente traffico di rete e tempi di aggiornamento).
+  - Esclusione automatica del manifest chunk per gli store privi di hash immutabile nell'URL (come Hexium), garantendone sempre l'aggiornamento puntuale.
+- **Strumenti di Manutenzione e Ripristino Cache (Catalogo + Icone)**:
+  - Aggiunto il comando **🧹 Svuota Cache e Riscarica Catalogo** per eliminare la cache JSON locale e forzare il download integrale da zero di tutti gli store.
+  - Aggiunto il comando **🖼️ Svuota Cache Icone** per rimuovere tutte le miniature salvate in RAM e su disco (`%LOCALAPPDATA%\ValheimModManager\cache\icons\`) e ricaricare al volo quelle visibili.
+  - Entrambi i comandi sono accessibili sia dalla scheda *⚙ Impostazioni* sia tramite **clic destro** sul pulsante *🔄 Aggiorna Catalogo*.
+
+#### Migliorato
+- **Snellimento Cache JSON del Catalogo (-73% su disco, 100% versioni preservate)**:
+  - Eliminata la duplicazione ridondante di `Description` e `IconUrl` all'interno delle singole `ModVersion` e introdotto il serializzatore compatto `DependencyJsonConverter` (`"Autore-Mod-1.0.0"`), riducendo `thunderstore.json` da ~443 MB a ~118 MB e `hexium.json` da ~21,7 MB a ~7,4 MB senza perdere alcuna versione storica e con auto-compattazione trasparente delle cache esistenti.
+
+---
+
+### 🇬🇧 English
+
+#### Added
+- **Classic Pagination in Online Catalog**:
+  - Fixed bottom pagination bar in the *Browse Online Mods* tab featuring a filtered results counter (`Showing 1–100 of X mods`) and navigation controls for **First page (`⏮`)**, **Previous (`◀`)**, **`Page X of Y`** indicator, **Next (`▶`)**, and **Last page (`⏭`)**.
+  - Instant **0 ms** page switching over the pre-sorted in-memory list with automatic scroll-to-top (`ScrollToHome`) on page change.
+  - Smart reset to *Page 1* when search text, source filter, or sort criterion/direction changes, while preserving the current page when switching language or clearing the icon cache.
+- **Incremental SHA-256 Chunk Delta Sync**:
+  - Tracks SHA-256 chunk hashes in `thunderstore.chunks.json` so manual catalog refreshes only download chunks that actually changed, dramatically cutting network usage and refresh times.
+  - Automatically skips chunk manifest caching for providers without immutable SHA-256 URLs (such as Hexium) so they always refresh reliably.
+- **Cache Maintenance & Failsafe Controls (Catalog + Icons)**:
+  - Added **🧹 Clear Cache & Rebuild Catalog** to wipe local JSON caches and re-download all online catalogs from scratch.
+  - Added **🖼️ Clear Icon Cache** to purge all mod thumbnails from RAM and disk (`%LOCALAPPDATA%\ValheimModManager\cache\icons\`) and immediately reload visible icons.
+  - Both actions are available in the *⚙ Settings* tab and via the **right-click context menu** on the *🔄 Refresh Catalog* button.
+
+#### Improved
+- **Slimmed Catalog JSON Cache (-73% disk footprint, 100% version history preserved)**:
+  - Omitted duplicate per-version `Description` and `IconUrl` fields on `ModVersion` entries and introduced the compact `DependencyJsonConverter` (`"Author-Mod-1.0.0"`), shrinking `thunderstore.json` from ~443 MB to ~118 MB and `hexium.json` from ~21.7 MB to ~7.4 MB while keeping 100% of historical versions and automatically compacting legacy caches in the background.
+
+---
+
 ## [1.0.10] - 2026-10-12
 
 ### 🇮🇹 Italiano

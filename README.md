@@ -17,10 +17,12 @@ Designed to overcome the limitations of legacy mod managers, it features native 
 
 ## ✨ Key Features
 
-### 🌐 Unified Multi-Source Catalog & Cached Thumbnails
+### 🌐 Unified Multi-Source Catalog, Pagination & Cached Thumbnails
 - **Thunderstore & Hexium**: Browse and download directly from both official Thunderstore and [Hexium](https://valheim.hexium.gg/) repositories.
 - **Smart Grouping & Version Tie-Resolution**: Automatically groups identical mods across stores (by canonical author and name) into a single card, displaying clear provenance badges (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`)—side-by-side when stores tie on the latest version, or grouping older versions under a subtle secondary pill (`+1 older source`).
-- **Asynchronous Mod Thumbnails**: Non-blocking mod icon loading backed by a two-tier cache (high-speed in-memory RAM cache + persistent disk cache in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`) with a clean `📦` fallback placeholder.
+- **Classic Pagination (`100 mods/page`)**: Browse the entire catalog effortlessly with a bottom pagination bar (`Showing 1–100 of X mods`, `⏮`, `◀ Previous`, `Page X of Y`, `Next ▶`, `⏭`), featuring instant 0ms page transitions and automatic scroll-to-top.
+- **Compact JSON Cache & SHA-256 Delta Sync**: Slimmed local catalog storage (-73% disk footprint while preserving 100% of version history) paired with incremental SHA-256 chunk delta syncing and one-click failsafe cache rebuild controls in Settings and on the *Refresh Catalog* right-click menu.
+- **Asynchronous Mod Thumbnails**: Non-blocking on-demand mod icon loading backed by a two-tier cache (high-speed in-memory RAM cache + persistent disk cache in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`) with a clean `📦` fallback placeholder and one-click icon cache clearing.
 - **Comprehensive Card Stats**: Total downloads, community ratings, and last updated date (`📅 dd/MM/yyyy`) displayed right on each catalog card.
 
 ### 🎯 Weighted Relevance Search & Advanced Sorting
@@ -65,7 +67,7 @@ c:\repo\ValheinModManager\
 │   ├── ValheimModManager.Platform.Linux\   # Steam Deck / Flatpak locator & Linux process monitor
 │   └── ValheimModManager.App\              # Avalonia 12 Desktop App (MVVM, Fluent Dark Theme, EN/IT)
 ├── tests\
-│   └── ValheimModManager.Tests\            # 73 Automated Tests (xUnit)
+│   └── ValheimModManager.Tests\            # 75 Automated Tests (xUnit)
 ├── scripts\
 │   ├── publish.ps1                         # Post-build publishing script (PowerShell)
 │   └── publish.sh                          # Post-build publishing script (Bash / CI)
@@ -94,7 +96,7 @@ dotnet run --project src/ValheimModManager.App/ValheimModManager.App.csproj
 ```
 
 ### Running Automated Tests
-The test suite includes **73 unit and integration tests** (xUnit) covering package installation, SemVer comparison, dependency resolution, multi-source grouping and sorting, weighted relevance search, cross-store update detection, `vmm1` Share Codes, r2modman import, manual mod installation, Steam launch arguments, and localization:
+The test suite includes **75 unit and integration tests** (xUnit) covering package installation, SemVer comparison, dependency resolution, multi-source grouping and sorting, weighted relevance search, cross-store update detection, compact dependency serialization, `vmm1` Share Codes, r2modman import, manual mod installation, Steam launch arguments, and localization:
 
 ```bash
 dotnet test ValheimModManager.slnx
@@ -118,7 +120,7 @@ The repository includes scripts to produce **Self-Contained**, **Single-File**, 
 .\scripts\publish.ps1 -Runtime linux-x64 -SkipTests
 
 # Clean and publish with a custom version string:
-.\scripts\publish.ps1 -Version "1.0.10" -Clean
+.\scripts\publish.ps1 -Version "1.0.11" -Clean
 ```
 
 ### From Linux / Steam Deck / CI (Bash)
@@ -143,8 +145,8 @@ Artifacts are written to the `dist/` directory (git-ignored):
 ## 🔄 CI/CD & Automated Releases
 
 The GitHub Actions workflow in [`.github/workflows/release.yml`](.github/workflows/release.yml) automatically:
-1. Triggers when a version tag is pushed (e.g. `git tag v1.0.10 && git push origin v1.0.10`) or via manual workflow dispatch.
-2. Runs the build and all 73 tests in parallel on Windows and Ubuntu runners.
+1. Triggers when a version tag is pushed (e.g. `git tag v1.0.11 && git push origin v1.0.11`) or via manual workflow dispatch.
+2. Runs the build and all 75 tests in parallel on Windows and Ubuntu runners.
 3. Extracts the matching release notes section from [`CHANGELOG.md`](CHANGELOG.md) and publishes the GitHub Release with `.zip`, `.tar.gz`, and `SHA256SUMS.txt` assets.
 
 ---
