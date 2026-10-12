@@ -37,6 +37,10 @@ public partial class CatalogModItemViewModel : ObservableObject
     public string AuthorDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModByPrefix, Owner);
     public string DownloadsDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModDownloadsLabel, TotalDownloads);
     public string RatingDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModVotesLabel, RatingScore);
+    public System.DateTime DateUpdated => Grouped.DateUpdatedOverall;
+    public string DateUpdatedDisplay => DateUpdated > System.DateTime.MinValue
+        ? string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModUpdatedLabel, DateUpdated.ToLocalTime())
+        : string.Empty;
     public IReadOnlyList<string> Categories => Grouped.Categories;
     public IReadOnlyList<ModSourceRelease> AvailableSources => Grouped.AvailableSources;
     public bool HasMultipleSources => AvailableSources.Count > 1;
@@ -98,7 +102,8 @@ public partial class CatalogModItemViewModel : ObservableObject
                     singleSummary.LatestVersionNumber,
                     true
                 )
-            ]
+            ],
+            DateUpdatedOverall: singleSummary.DateUpdated
         ))
     {
     }

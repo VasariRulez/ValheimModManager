@@ -75,6 +75,15 @@ public sealed record EnglishStrings : AppStrings
         SourceFilterAll = "All sources";
         SourceFilterThunderstore = "Thunderstore only";
         SourceFilterHexium = "Hexium only";
+        ModUpdatedLabel = "📅 {0:dd/MM/yyyy}";
+        SortByRelevance = "🎯 Relevance";
+        SortByDownloads = "⬇ Downloads";
+        SortByLastUpdated = "🕒 Last updated";
+        SortByRating = "★ Rating";
+        SortByName = "🔤 Mod name";
+        SortByAuthor = "👤 Author";
+        SortDirectionDescTooltip = "Descending order (click to toggle)";
+        SortDirectionAscTooltip = "Ascending order (click to toggle)";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Settings & Game";

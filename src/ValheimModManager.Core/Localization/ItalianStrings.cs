@@ -75,6 +75,15 @@ public sealed record ItalianStrings : AppStrings
         SourceFilterAll = "Tutte le sorgenti";
         SourceFilterThunderstore = "Solo Thunderstore";
         SourceFilterHexium = "Solo Hexium";
+        ModUpdatedLabel = "📅 {0:dd/MM/yyyy}";
+        SortByRelevance = "🎯 Rilevanza";
+        SortByDownloads = "⬇ Download";
+        SortByLastUpdated = "🕒 Ultimo aggiornamento";
+        SortByRating = "★ Valutazione";
+        SortByName = "🔤 Nome mod";
+        SortByAuthor = "👤 Autore";
+        SortDirectionDescTooltip = "Ordine decrescente (clicca per invertire)";
+        SortDirectionAscTooltip = "Ordine crescente (clicca per invertire)";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Impostazioni & Gioco";

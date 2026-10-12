@@ -71,6 +71,15 @@ public record AppStrings
     public string SourceFilterAll { get; init; } = "";
     public string SourceFilterThunderstore { get; init; } = "";
     public string SourceFilterHexium { get; init; } = "";
+    public string ModUpdatedLabel { get; init; } = "";
+    public string SortByRelevance { get; init; } = "";
+    public string SortByDownloads { get; init; } = "";
+    public string SortByLastUpdated { get; init; } = "";
+    public string SortByRating { get; init; } = "";
+    public string SortByName { get; init; } = "";
+    public string SortByAuthor { get; init; } = "";
+    public string SortDirectionDescTooltip { get; init; } = "";
+    public string SortDirectionAscTooltip { get; init; } = "";
 
     // Tab 3: Settings
     public string TabSettings { get; init; } = "";

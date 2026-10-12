@@ -204,6 +204,21 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private IReadOnlyList<string> _sourceFilterOptions = [];
 
+    private bool _wasCatalogSearchEmpty = true;
+    private bool _suppressSortTrigger;
+
+    [ObservableProperty]
+    private IReadOnlyList<string> _sortByOptions = [];
+
+    [ObservableProperty]
+    private int _selectedSortIndex = 1; // 1 = Downloads (default)
+
+    [ObservableProperty]
+    private bool _isSortDescending = true;
+
+    public string SortDirectionIcon => IsSortDescending ? "↓" : "↑";
+    public string SortDirectionTooltip => IsSortDescending ? Strings.SortDirectionDescTooltip : Strings.SortDirectionAscTooltip;
+
     public string FormattedUpdateBannerTitle => string.Format(Strings.FooterBannerUpdateAvailable, LatestAppVersion);
     public string FormattedInstallUpdateBanner => string.Format(Strings.HeaderBannerInstallUpdate, LatestAppVersion);
     public string FormattedCurrentAppVersion => string.Format(Strings.AppVersionCurrentPrefix, CurrentAppVersion);
@@ -429,6 +444,22 @@ public partial class MainViewModel : ViewModelBase
         {
             SelectedSourceFilter = SourceFilterOptions[0];
         }
+
+        var prevSortIdx = SelectedSortIndex >= 0 && SelectedSortIndex <= 5 ? SelectedSortIndex : 1;
+        _suppressSortTrigger = true;
+        SortByOptions =
+        [
+            Strings.SortByRelevance,
+            Strings.SortByDownloads,
+            Strings.SortByLastUpdated,
+            Strings.SortByRating,
+            Strings.SortByName,
+            Strings.SortByAuthor
+        ];
+        SelectedSortIndex = prevSortIdx;
+        _suppressSortTrigger = false;
+        OnPropertyChanged(nameof(SortDirectionIcon));
+        OnPropertyChanged(nameof(SortDirectionTooltip));
     }
 
     public void UpdateBepInExStatus()
@@ -506,6 +537,29 @@ public partial class MainViewModel : ViewModelBase
     // DEBOUNCE RICERCA MOD CATALOGO
     partial void OnCatalogSearchTextChanged(string value)
     {
+        var isNowEmpty = string.IsNullOrWhiteSpace(value);
+        if (_wasCatalogSearchEmpty && !isNowEmpty)
+        {
+            // Passaggio automatico a Rilevanza (indice 0) quando si inizia a digitare
+            _suppressSortTrigger = true;
+            SelectedSortIndex = 0;
+            IsSortDescending = true;
+            OnPropertyChanged(nameof(SortDirectionIcon));
+            OnPropertyChanged(nameof(SortDirectionTooltip));
+            _suppressSortTrigger = false;
+        }
+        else if (!_wasCatalogSearchEmpty && isNowEmpty && SelectedSortIndex == 0)
+        {
+            // Ritorno automatico a Download (indice 1) quando si svuota la ricerca
+            _suppressSortTrigger = true;
+            SelectedSortIndex = 1;
+            IsSortDescending = true;
+            OnPropertyChanged(nameof(SortDirectionIcon));
+            OnPropertyChanged(nameof(SortDirectionTooltip));
+            _suppressSortTrigger = false;
+        }
+        _wasCatalogSearchEmpty = isNowEmpty;
+
         _catalogSearchCts?.Cancel();
         _catalogSearchCts = new CancellationTokenSource();
         var token = _catalogSearchCts.Token;
@@ -545,6 +599,35 @@ public partial class MainViewModel : ViewModelBase
         ApplyCatalogSearch();
     }
 
+    partial void OnSelectedSortIndexChanged(int value)
+    {
+        if (_suppressSortTrigger || value < 0) return;
+
+        // Direzione intelligente: Nome (4) e Autore (5) partono Crescenti (A->Z), gli altri Decrescenti
+        var defaultDesc = value is not (4 or 5);
+        _suppressSortTrigger = true;
+        IsSortDescending = defaultDesc;
+        OnPropertyChanged(nameof(SortDirectionIcon));
+        OnPropertyChanged(nameof(SortDirectionTooltip));
+        _suppressSortTrigger = false;
+
+        ApplyCatalogSearch();
+    }
+
+    partial void OnIsSortDescendingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(SortDirectionIcon));
+        OnPropertyChanged(nameof(SortDirectionTooltip));
+        if (_suppressSortTrigger) return;
+        ApplyCatalogSearch();
+    }
+
+    [RelayCommand]
+    public void ToggleSortDirection()
+    {
+        IsSortDescending = !IsSortDescending;
+    }
+
     [RelayCommand]
     public void CheckUpdates() => LoadInstalledMods();
 
@@ -557,10 +640,14 @@ public partial class MainViewModel : ViewModelBase
         InstalledMods.Clear();
         foreach (var mod in profile.Mods)
         {
-            if (!string.IsNullOrWhiteSpace(InstalledSearchText) &&
-                !mod.CanonicalId.Name.Contains(InstalledSearchText, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(InstalledSearchText))
             {
-                continue;
+                var search = InstalledSearchText.Trim();
+                if (!mod.CanonicalId.Name.Contains(search, StringComparison.OrdinalIgnoreCase) &&
+                    !mod.CanonicalId.Namespace.Contains(search, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
             }
 
             var hasUpd = updateMap.TryGetValue(mod.Key, out var upd) && upd.HasUpdate;
@@ -623,9 +710,22 @@ public partial class MainViewModel : ViewModelBase
             _ => null
         };
 
+        var sortBy = SelectedSortIndex switch
+        {
+            0 => ModSortBy.Relevance,
+            1 => ModSortBy.Downloads,
+            2 => ModSortBy.LastUpdated,
+            3 => ModSortBy.Rating,
+            4 => ModSortBy.Name,
+            5 => ModSortBy.Author,
+            _ => ModSortBy.Downloads
+        };
+
         var query = new ModQuery(
             SearchText: CatalogSearchText,
             ProviderId: providerId,
+            SortBy: sortBy,
+            SortDescending: IsSortDescending,
             PageSize: 100
         );
 

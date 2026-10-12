@@ -14,12 +14,24 @@ public sealed record DownloadTicket(
     Dictionary<string, string>? Headers = null
 );
 
+public enum ModSortBy
+{
+    Relevance,
+    Downloads,
+    LastUpdated,
+    Rating,
+    Name,
+    Author
+}
+
 public sealed record ModQuery(
     string? SearchText = null,
     string? Category = null,
     string? Author = null,
     string? ProviderId = null,
     bool IncludeDeprecated = false,
+    ModSortBy SortBy = ModSortBy.Downloads,
+    bool SortDescending = true,
     int PageIndex = 0,
     int PageSize = 50
 );

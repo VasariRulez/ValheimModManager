@@ -210,8 +210,8 @@
                 <!-- TAB 2: ESPLORA ONLINE (CON DEBOUNCE E MULTI-FONTE) -->
                 <TabItem Header="{Binding Strings.TabOnlineCatalog}">
                     <Grid RowDefinitions="Auto,*" Margin="8">
-                        <!-- Filters bar with Debounce and Source Dropdown -->
-                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+                        <!-- Filters bar with Debounce, Source Dropdown, Sort By and Sort Direction -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="0,0,0,12">
                             <TextBox Grid.Column="0" 
                                      PlaceholderText="{Binding Strings.SearchCatalogPlaceholder}" 
                                      Text="{Binding CatalogSearchText}"
@@ -220,9 +220,22 @@
                             <ComboBox Grid.Column="1" 
                                       ItemsSource="{Binding SourceFilterOptions}"
                                       SelectedItem="{Binding SelectedSourceFilter}"
-                                      Margin="0,0,8,0" Width="170" />
+                                      Margin="0,0,8,0" Width="160" />
+
+                            <ComboBox Grid.Column="2"
+                                      ItemsSource="{Binding SortByOptions}"
+                                      SelectedIndex="{Binding SelectedSortIndex}"
+                                      Margin="0,0,4,0" Width="195" />
+
+                            <Button Grid.Column="3"
+                                    Content="{Binding SortDirectionIcon}"
+                                    Command="{Binding ToggleSortDirectionCommand}"
+                                    ToolTip.Tip="{Binding SortDirectionTooltip}"
+                                    Background="#27272a" FontWeight="Bold" FontSize="14"
+                                    Padding="10,4" Margin="0,0,8,0"
+                                    VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
                             
-                            <Button Grid.Column="2" 
+                            <Button Grid.Column="4" 
                                     Content="{Binding Strings.RefreshCatalogButton}" 
                                     Command="{Binding RefreshOnlineCatalogCommand}"
                                     Background="#27272a" />
@@ -268,7 +281,9 @@
                                                     <!-- Stats & Source Badges -->
                                                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding DownloadsDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,14,0" />
-                                                        <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,16,0" />
+                                                        <TextBlock Text="{Binding RatingDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,14,0" />
+                                                        <TextBlock Text="{Binding DateUpdatedDisplay}" FontSize="11" Foreground="#a1a1aa" VerticalAlignment="Center" Margin="0,0,16,0"
+                                                                   IsVisible="{Binding DateUpdatedDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                                         
                                                         <!-- Up-to-date Source Badges (Single or tied newest sources) -->
                                                         <ItemsControl ItemsSource="{Binding UpToDateSources}" VerticalAlignment="Center">

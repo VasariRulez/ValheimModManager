@@ -257,22 +257,74 @@ public sealed class CatalogService : ICatalogSink
                     IsPinned: summaries.Any(s => s.IsPinned),
                     IsDeprecated: summaries.All(s => s.IsDeprecated),
                     Categories: summaries.SelectMany(s => s.Categories).Distinct().ToList(),
-                    AvailableSources: sources
+                    AvailableSources: sources,
+                    DateUpdatedOverall: summaries.Max(s => s.DateUpdated)
                 );
-            })
-            .OrderByDescending(m => m.IsPinned)
-            .ThenByDescending(m => m.TotalDownloadsOverall)
-            .ToList();
+            });
+
+        var sorted = (query.SortBy, query.SortDescending) switch
+        {
+            (ModSortBy.Relevance, true) => grouped
+                .OrderByDescending(m => GetRelevanceScore(m.Name, m.Owner, query.SearchText))
+                .ThenByDescending(m => m.TotalDownloadsOverall),
+            (ModSortBy.Relevance, false) => grouped
+                .OrderBy(m => GetRelevanceScore(m.Name, m.Owner, query.SearchText))
+                .ThenBy(m => m.TotalDownloadsOverall),
+            (ModSortBy.Downloads, true) => string.IsNullOrWhiteSpace(query.SearchText)
+                ? grouped.OrderByDescending(m => m.IsPinned).ThenByDescending(m => m.TotalDownloadsOverall)
+                : grouped.OrderByDescending(m => m.TotalDownloadsOverall),
+            (ModSortBy.Downloads, false) => grouped
+                .OrderBy(m => m.TotalDownloadsOverall),
+            (ModSortBy.LastUpdated, true) => grouped
+                .OrderByDescending(m => m.DateUpdatedOverall)
+                .ThenByDescending(m => m.TotalDownloadsOverall),
+            (ModSortBy.LastUpdated, false) => grouped
+                .OrderBy(m => m.DateUpdatedOverall)
+                .ThenBy(m => m.TotalDownloadsOverall),
+            (ModSortBy.Rating, true) => grouped
+                .OrderByDescending(m => m.HighestRatingOverall)
+                .ThenByDescending(m => m.TotalDownloadsOverall),
+            (ModSortBy.Rating, false) => grouped
+                .OrderBy(m => m.HighestRatingOverall)
+                .ThenBy(m => m.TotalDownloadsOverall),
+            (ModSortBy.Name, false) => grouped
+                .OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
+            (ModSortBy.Name, true) => grouped
+                .OrderByDescending(m => m.Name, StringComparer.OrdinalIgnoreCase),
+            (ModSortBy.Author, false) => grouped
+                .OrderBy(m => m.Owner, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
+            (ModSortBy.Author, true) => grouped
+                .OrderByDescending(m => m.Owner, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
+            _ => grouped
+                .OrderByDescending(m => m.IsPinned)
+                .ThenByDescending(m => m.TotalDownloadsOverall)
+        };
+
+        var resultList = sorted.ToList();
 
         if (query.PageSize > 0)
         {
-            return grouped
+            return resultList
                 .Skip(query.PageIndex * query.PageSize)
                 .Take(query.PageSize)
                 .ToList();
         }
 
-        return grouped;
+        return resultList;
+    }
+
+    private static int GetRelevanceScore(string name, string owner, string? searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText)) return 0;
+        var s = searchText.Trim();
+
+        if (name.Equals(s, StringComparison.OrdinalIgnoreCase)) return 4;
+        if (name.StartsWith(s, StringComparison.OrdinalIgnoreCase)) return 3;
+        if (name.Contains(s, StringComparison.OrdinalIgnoreCase)) return 2;
+        if (owner.Contains(s, StringComparison.OrdinalIgnoreCase)) return 1;
+        return 0;
     }
 
     public ModSummary? FindByCanonicalId(CanonicalModId canonicalId, string? preferredProvider = "thunderstore")

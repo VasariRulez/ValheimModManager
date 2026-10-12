@@ -88,7 +88,8 @@ public sealed record GroupedModSummary(
     bool IsPinned,
     bool IsDeprecated,
     IReadOnlyList<string> Categories,
-    IReadOnlyList<ModSourceRelease> AvailableSources
+    IReadOnlyList<ModSourceRelease> AvailableSources,
+    DateTime DateUpdatedOverall = default
 );
 
 public sealed record ModDetails(
