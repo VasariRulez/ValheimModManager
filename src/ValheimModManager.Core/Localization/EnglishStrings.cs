@@ -84,6 +84,9 @@ public sealed record EnglishStrings : AppStrings
         SortByAuthor = "👤 Author";
         SortDirectionDescTooltip = "Descending order (click to toggle)";
         SortDirectionAscTooltip = "Ascending order (click to toggle)";
+        CatalogSearchLabel = "Search mods:";
+        CatalogSourceFilterLabel = "Source:";
+        CatalogSortByLabel = "Sort by:";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Settings & Game";

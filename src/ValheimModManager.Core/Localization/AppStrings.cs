@@ -80,6 +80,9 @@ public record AppStrings
     public string SortByAuthor { get; init; } = "";
     public string SortDirectionDescTooltip { get; init; } = "";
     public string SortDirectionAscTooltip { get; init; } = "";
+    public string CatalogSearchLabel { get; init; } = "";
+    public string CatalogSourceFilterLabel { get; init; } = "";
+    public string CatalogSortByLabel { get; init; } = "";
 
     // Tab 3: Settings
     public string TabSettings { get; init; } = "";

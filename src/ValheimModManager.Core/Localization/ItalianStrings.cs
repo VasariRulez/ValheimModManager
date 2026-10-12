@@ -84,6 +84,9 @@ public sealed record ItalianStrings : AppStrings
         SortByAuthor = "👤 Autore";
         SortDirectionDescTooltip = "Ordine decrescente (clicca per invertire)";
         SortDirectionAscTooltip = "Ordine crescente (clicca per invertire)";
+        CatalogSearchLabel = "Cerca mod:";
+        CatalogSourceFilterLabel = "Sorgente:";
+        CatalogSortByLabel = "Ordina per:";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Impostazioni & Gioco";

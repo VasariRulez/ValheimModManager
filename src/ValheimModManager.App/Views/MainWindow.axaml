@@ -211,34 +211,41 @@
                 <TabItem Header="{Binding Strings.TabOnlineCatalog}">
                     <Grid RowDefinitions="Auto,*" Margin="8">
                         <!-- Filters bar with Debounce, Source Dropdown, Sort By and Sort Direction -->
-                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="0,0,0,12">
-                            <TextBox Grid.Column="0" 
-                                     PlaceholderText="{Binding Strings.SearchCatalogPlaceholder}" 
-                                     Text="{Binding CatalogSearchText}"
-                                     Margin="0,0,8,0" />
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,12">
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Strings.CatalogSearchLabel}" FontSize="11" Foreground="#a1a1aa" Margin="2,0,0,4" />
+                                <TextBox PlaceholderText="{Binding Strings.SearchCatalogPlaceholder}" 
+                                         Text="{Binding CatalogSearchText}" />
+                            </StackPanel>
                             
-                            <ComboBox Grid.Column="1" 
-                                      ItemsSource="{Binding SourceFilterOptions}"
-                                      SelectedItem="{Binding SelectedSourceFilter}"
-                                      Margin="0,0,8,0" Width="160" />
+                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Strings.CatalogSourceFilterLabel}" FontSize="11" Foreground="#a1a1aa" Margin="2,0,0,4" />
+                                <ComboBox ItemsSource="{Binding SourceFilterOptions}"
+                                          SelectedItem="{Binding SelectedSourceFilter}"
+                                          Width="160" />
+                            </StackPanel>
 
-                            <ComboBox Grid.Column="2"
-                                      ItemsSource="{Binding SortByOptions}"
-                                      SelectedIndex="{Binding SelectedSortIndex}"
-                                      Margin="0,0,4,0" Width="195" />
+                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Strings.CatalogSortByLabel}" FontSize="11" Foreground="#a1a1aa" Margin="2,0,0,4" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <ComboBox ItemsSource="{Binding SortByOptions}"
+                                              SelectedIndex="{Binding SelectedSortIndex}"
+                                              Width="195" />
 
-                            <Button Grid.Column="3"
-                                    Content="{Binding SortDirectionIcon}"
-                                    Command="{Binding ToggleSortDirectionCommand}"
-                                    ToolTip.Tip="{Binding SortDirectionTooltip}"
-                                    Background="#27272a" FontWeight="Bold" FontSize="14"
-                                    Padding="10,4" Margin="0,0,8,0"
-                                    VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                                    <Button Content="{Binding SortDirectionIcon}"
+                                            Command="{Binding ToggleSortDirectionCommand}"
+                                            ToolTip.Tip="{Binding SortDirectionTooltip}"
+                                            Background="#27272a" FontWeight="Bold" FontSize="14"
+                                            Padding="10,4"
+                                            VerticalAlignment="Stretch" VerticalContentAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
                             
-                            <Button Grid.Column="4" 
+                            <Button Grid.Column="3" 
                                     Content="{Binding Strings.RefreshCatalogButton}" 
                                     Command="{Binding RefreshOnlineCatalogCommand}"
-                                    Background="#27272a" />
+                                    Background="#27272a"
+                                    VerticalAlignment="Bottom" />
                         </Grid>
 
                         <!-- Catalog Items List with Multi-Source Grouping -->
