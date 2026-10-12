@@ -95,7 +95,14 @@ public sealed class ThunderstoreCompatibleProvider : IModProvider
         {
             var finalCount = sink.GetProviderPackageCount(Id);
             await sink.CompleteProviderRefreshAsync(Id, finalCount > 0 ? finalCount : totalLoaded, ct);
-            await sink.SaveCachedChunkUrlsAsync(Id, chunkUrls, ct);
+
+            var shaChunks = chunkUrls
+                .Where(u => u.Contains("/sha256/", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (shaChunks.Count > 0)
+            {
+                await sink.SaveCachedChunkUrlsAsync(Id, shaChunks, ct);
+            }
         }
 
         _logger.LogInformation(
@@ -128,19 +135,20 @@ public sealed class ThunderstoreCompatibleProvider : IModProvider
 
     private ModSummary MapToSummary(ThunderstorePackageDto dto)
     {
-        var versions = dto.Versions.Select((v, idx) => new ModVersion(
+        var firstVersion = dto.Versions.FirstOrDefault();
+        var latestVersion = firstVersion?.VersionNumber ?? "1.0.0";
+        var iconUrl = firstVersion?.Icon ?? "";
+        var description = firstVersion?.Description ?? "";
+
+        var versions = dto.Versions.Select(v => new ModVersion(
             v.VersionNumber,
-            idx == 0 ? v.Description : null,
-            idx == 0 ? v.Icon : null,
+            null,
+            null,
             v.DownloadUrl,
             v.FileSize,
             v.DateCreated,
             v.Dependencies.Select(Dependency.Parse).ToList()
         )).ToList();
-
-        var latestVersion = versions.FirstOrDefault()?.VersionNumber ?? "1.0.0";
-        var iconUrl = versions.FirstOrDefault()?.IconUrl ?? "";
-        var description = versions.FirstOrDefault()?.Description ?? "";
 
         var canonical = new CanonicalModId(dto.Owner, dto.Name);
         var key = new ModKey(Id, dto.FullName);

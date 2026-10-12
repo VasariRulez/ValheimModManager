@@ -131,15 +131,15 @@ public sealed class CatalogService : ICatalogSink
 
                 if (list != null)
                 {
-                    var needsCompaction = list.Any(m => m.Versions.Count > 1 && (m.Versions[1].Description != null || m.Versions[1].IconUrl != null));
+                    var needsCompaction = list.Any(m => m.Versions.Count > 0 && (m.Versions[0].Description != null || m.Versions[0].IconUrl != null));
                     var dict = _catalog.GetOrAdd(providerId, _ => new ConcurrentDictionary<string, ModSummary>(StringComparer.OrdinalIgnoreCase));
 
                     foreach (var mod in list)
                     {
-                        if (needsCompaction && mod.Versions.Count > 1)
+                        if (needsCompaction && mod.Versions.Count > 0)
                         {
                             var slimmedVersions = mod.Versions
-                                .Select((v, idx) => idx == 0 ? v : v with { Description = null, IconUrl = null })
+                                .Select(v => v with { Description = null, IconUrl = null })
                                 .ToList();
                             dict[mod.Key.ExternalId] = mod with { Versions = slimmedVersions };
                         }
