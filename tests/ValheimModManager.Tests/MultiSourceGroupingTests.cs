@@ -106,4 +106,80 @@ public class MultiSourceGroupingTests : IDisposable
         Assert.Single(hexOnly[0].AvailableSources);
         Assert.Equal("hexium", hexOnly[0].AvailableSources[0].ProviderId);
     }
+
+    [Fact]
+    public async Task UpdateService_DetectsNewerVersionAcrossAllStoresAndPrefersOriginalStoreOnTie()
+    {
+        var catalog = new CatalogService([], _testDir);
+        var updateService = new UpdateService(catalog);
+
+        var tsMod = new ModSummary(
+            Key: new ModKey("thunderstore", "RandyKnapp-EpicLoot"),
+            CanonicalId: new CanonicalModId("RandyKnapp", "EpicLoot"),
+            Name: "EpicLoot",
+            Owner: "RandyKnapp",
+            PackageUrl: "",
+            Description: "",
+            IconUrl: "",
+            LatestVersionNumber: "1.2.0",
+            TotalDownloads: 500_000,
+            RatingScore: 300,
+            IsPinned: false,
+            IsDeprecated: false,
+            DateUpdated: DateTime.UtcNow,
+            Categories: [],
+            Versions: []
+        );
+
+        var hexMod = new ModSummary(
+            Key: new ModKey("hexium", "RandyKnapp-EpicLoot"),
+            CanonicalId: new CanonicalModId("RandyKnapp", "EpicLoot"),
+            Name: "EpicLoot",
+            Owner: "RandyKnapp",
+            PackageUrl: "",
+            Description: "",
+            IconUrl: "",
+            LatestVersionNumber: "1.3.1",
+            TotalDownloads: 10_000,
+            RatingScore: 50,
+            IsPinned: false,
+            IsDeprecated: false,
+            DateUpdated: DateTime.UtcNow,
+            Categories: [],
+            Versions: []
+        );
+
+        await catalog.UpsertPackageAsync("thunderstore", tsMod);
+        await catalog.UpsertPackageAsync("hexium", hexMod);
+
+        // Installed from thunderstore at v1.2.0, but hexium has v1.3.1 -> should detect v1.3.1 from hexium!
+        var profile = new Profile(
+            Name: "Test",
+            Target: GameTarget.Client,
+            CreatedAt: DateTime.UtcNow,
+            LastModified: DateTime.UtcNow,
+            Mods: [
+                new InstalledMod(
+                    Key: new ModKey("thunderstore", "RandyKnapp-EpicLoot"),
+                    CanonicalId: new CanonicalModId("RandyKnapp", "EpicLoot"),
+                    InstalledVersion: "1.2.0",
+                    IsEnabled: true,
+                    InstalledAt: DateTime.UtcNow,
+                    InstalledFiles: [],
+                    Dependencies: []
+                )
+            ]
+        );
+
+        var checkResults = updateService.CheckUpdates(profile);
+        Assert.Single(checkResults);
+        Assert.True(checkResults[0].HasUpdate);
+        Assert.Equal("1.3.1", checkResults[0].LatestVersion);
+        Assert.Equal("hexium", checkResults[0].CatalogSummary?.Key.ProviderId);
+
+        // Now thunderstore also updates to v1.3.1 (tie) -> if installed from hexium, should keep hexium
+        await catalog.UpsertPackageAsync("thunderstore", tsMod with { LatestVersionNumber = "1.3.1" });
+        var resolvedForHexium = catalog.FindByCanonicalId(new CanonicalModId("RandyKnapp", "EpicLoot"), preferredProvider: "hexium");
+        Assert.Equal("hexium", resolvedForHexium?.Key.ProviderId);
+    }
 }

@@ -652,8 +652,9 @@ public partial class MainViewModel : ViewModelBase
 
             var hasUpd = updateMap.TryGetValue(mod.Key, out var upd) && upd.HasUpdate;
             var latest = upd?.LatestVersion ?? mod.InstalledVersion;
+            var updProvider = upd?.CatalogSummary?.Key.ProviderId;
 
-            InstalledMods.Add(new InstalledModItemViewModel(mod, latest, hasUpd, (vm, isEnabled) => OnModToggleChanged(vm, isEnabled)));
+            InstalledMods.Add(new InstalledModItemViewModel(mod, latest, hasUpd, (vm, isEnabled) => OnModToggleChanged(vm, isEnabled), updProvider));
         }
     }
 

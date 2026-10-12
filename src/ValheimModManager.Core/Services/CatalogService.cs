@@ -329,20 +329,33 @@ public sealed class CatalogService : ICatalogSink
 
     public ModSummary? FindByCanonicalId(CanonicalModId canonicalId, string? preferredProvider = "thunderstore")
     {
-        if (preferredProvider != null &&
-            _catalog.TryGetValue(preferredProvider, out var prefDict))
-        {
-            var match = prefDict.Values.FirstOrDefault(m => m.CanonicalId == canonicalId);
-            if (match != null) return match;
-        }
-
+        var matches = new List<ModSummary>();
         foreach (var dict in _catalog.Values)
         {
             var match = dict.Values.FirstOrDefault(m => m.CanonicalId == canonicalId);
-            if (match != null) return match;
+            if (match != null)
+            {
+                matches.Add(match);
+            }
         }
 
-        return null;
+        if (matches.Count == 0) return null;
+        if (matches.Count == 1) return matches[0];
+
+        string highestVersion = "0.0.0";
+        foreach (var m in matches)
+        {
+            if (ModVersionComparer.IsNewer(m.LatestVersionNumber, highestVersion))
+            {
+                highestVersion = m.LatestVersionNumber;
+            }
+        }
+
+        return matches
+            .Where(m => m.LatestVersionNumber == highestVersion || !ModVersionComparer.IsNewer(highestVersion, m.LatestVersionNumber))
+            .OrderByDescending(m => preferredProvider != null && m.Key.ProviderId.Equals(preferredProvider, StringComparison.OrdinalIgnoreCase) ? 2 : 0)
+            .ThenByDescending(m => m.Key.ProviderId.Equals("thunderstore", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+            .First();
     }
 
     public ModSummary? FindByKey(ModKey key)

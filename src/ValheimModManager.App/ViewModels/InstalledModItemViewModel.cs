@@ -26,9 +26,27 @@ public partial class InstalledModItemViewModel : ObservableObject
         ? ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ManualModBadge 
         : ProviderId;
     public string ProviderBadgeColor => IsManualMod ? "#7c3aed" : "#3f3f46";
+    public string? UpdateProviderId { get; }
     public string KeyString => Model.Key.ToString();
     public string AuthorDisplay => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModAuthorPrefix, Owner);
-    public string UpdateBadgeText => string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModUpdateAvailableBadge, LatestVersion);
+    public string UpdateBadgeText
+    {
+        get
+        {
+            var baseText = string.Format(ValheimModManager.Core.Localization.LocalizationService.Instance.CurrentStrings.ModUpdateAvailableBadge, LatestVersion);
+            if (!string.IsNullOrEmpty(UpdateProviderId) &&
+                !UpdateProviderId.Equals(ProviderId, StringComparison.OrdinalIgnoreCase))
+            {
+                var storeName = UpdateProviderId.Equals("thunderstore", StringComparison.OrdinalIgnoreCase)
+                    ? "⚡ Thunderstore"
+                    : UpdateProviderId.Equals("hexium", StringComparison.OrdinalIgnoreCase)
+                        ? "🔷 Hexium"
+                        : UpdateProviderId;
+                return $"{baseText} ({storeName})";
+            }
+            return baseText;
+        }
+    }
 
     private readonly Action<InstalledModItemViewModel, bool>? _onToggle;
     private bool _suppressToggleCallback;
@@ -37,13 +55,15 @@ public partial class InstalledModItemViewModel : ObservableObject
         InstalledMod model, 
         string latestVersion = "", 
         bool hasUpdate = false,
-        Action<InstalledModItemViewModel, bool>? onToggle = null)
+        Action<InstalledModItemViewModel, bool>? onToggle = null,
+        string? updateProviderId = null)
     {
         Model = model;
         _isEnabled = model.IsEnabled;
         _latestVersion = string.IsNullOrEmpty(latestVersion) ? model.InstalledVersion : latestVersion;
         _hasUpdate = hasUpdate;
         _onToggle = onToggle;
+        UpdateProviderId = updateProviderId;
     }
 
     partial void OnIsEnabledChanged(bool value)
