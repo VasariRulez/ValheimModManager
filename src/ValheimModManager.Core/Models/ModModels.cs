@@ -2,7 +2,10 @@ namespace ValheimModManager.Core.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
+[JsonConverter(typeof(DependencyJsonConverter))]
 public sealed record Dependency(
     string RawIdentifier,
     string? Namespace,
@@ -25,10 +28,58 @@ public sealed record Dependency(
     }
 }
 
+public sealed class DependencyJsonConverter : JsonConverter<Dependency>
+{
+    public override Dependency Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            return Dependency.Parse(reader.GetString() ?? string.Empty);
+        }
+
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            string? raw = null;
+            string? ns = null;
+            string? name = null;
+            string? ver = null;
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var prop = reader.GetString();
+                    reader.Read();
+                    var val = reader.TokenType == JsonTokenType.String ? reader.GetString() : null;
+                    if (string.Equals(prop, "RawIdentifier", StringComparison.OrdinalIgnoreCase)) raw = val;
+                    else if (string.Equals(prop, "Namespace", StringComparison.OrdinalIgnoreCase)) ns = val;
+                    else if (string.Equals(prop, "Name", StringComparison.OrdinalIgnoreCase)) name = val;
+                    else if (string.Equals(prop, "VersionRequirement", StringComparison.OrdinalIgnoreCase)) ver = val;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(raw))
+            {
+                return ns != null || name != null || ver != null
+                    ? new Dependency(raw, ns, name, ver)
+                    : Dependency.Parse(raw);
+            }
+            return new Dependency(string.Empty, ns, name, ver);
+        }
+
+        throw new JsonException($"Unexpected token {reader.TokenType} when parsing Dependency.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, Dependency value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.RawIdentifier);
+    }
+}
+
 public sealed record ModVersion(
     string VersionNumber,
-    string Description,
-    string IconUrl,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Description,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? IconUrl,
     string DownloadUrl,
     long FileSize,
     DateTime DateCreated,

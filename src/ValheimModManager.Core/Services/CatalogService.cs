@@ -43,6 +43,39 @@ public sealed class CatalogService : ICatalogSink
         return Task.CompletedTask;
     }
 
+    public int GetProviderPackageCount(string providerId) =>
+        _catalog.TryGetValue(providerId, out var dict) ? dict.Count : 0;
+
+    public IReadOnlySet<string> GetCachedChunkUrls(string providerId)
+    {
+        var manifestFile = Path.Combine(_cacheDirectory, $"{providerId}.chunks.json");
+        if (!File.Exists(manifestFile)) return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            var json = File.ReadAllText(manifestFile);
+            var list = JsonSerializer.Deserialize<List<string>>(json);
+            return list != null
+                ? new HashSet<string>(list, StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    public async Task SaveCachedChunkUrlsAsync(string providerId, IReadOnlyList<string> chunkUrls, CancellationToken ct = default)
+    {
+        var manifestFile = Path.Combine(_cacheDirectory, $"{providerId}.chunks.json");
+        var tempFile = manifestFile + ".tmp";
+        await using (var fs = File.Create(tempFile))
+        {
+            await JsonSerializer.SerializeAsync(fs, chunkUrls, cancellationToken: ct);
+        }
+        File.Move(tempFile, manifestFile, overwrite: true);
+    }
+
     public async Task CompleteProviderRefreshAsync(string providerId, int totalCount, CancellationToken ct = default)
     {
         _logger.LogInformation("Saving local catalog cache for {ProviderId} ({TotalCount} packages)", providerId, totalCount);
@@ -57,11 +90,7 @@ public sealed class CatalogService : ICatalogSink
                 await JsonSerializer.SerializeAsync(fs, list, cancellationToken: ct);
             }
 
-            if (File.Exists(cacheFile))
-            {
-                File.Delete(cacheFile);
-            }
-            File.Move(tempFile, cacheFile);
+            File.Move(tempFile, cacheFile, overwrite: true);
         }
     }
 
@@ -71,19 +100,45 @@ public sealed class CatalogService : ICatalogSink
 
         foreach (var file in Directory.GetFiles(_cacheDirectory, "*.json"))
         {
+            if (file.EndsWith(".chunks.json", StringComparison.OrdinalIgnoreCase)) continue;
+
             var providerId = Path.GetFileNameWithoutExtension(file);
             try
             {
-                await using var fs = File.OpenRead(file);
-                var list = await JsonSerializer.DeserializeAsync<List<ModSummary>>(fs, cancellationToken: ct);
+                List<ModSummary>? list;
+                await using (var fs = File.OpenRead(file))
+                {
+                    list = await JsonSerializer.DeserializeAsync<List<ModSummary>>(fs, cancellationToken: ct);
+                }
+
                 if (list != null)
                 {
+                    var needsCompaction = list.Any(m => m.Versions.Count > 1 && (m.Versions[1].Description != null || m.Versions[1].IconUrl != null));
                     var dict = _catalog.GetOrAdd(providerId, _ => new ConcurrentDictionary<string, ModSummary>(StringComparer.OrdinalIgnoreCase));
+
                     foreach (var mod in list)
                     {
-                        dict[mod.Key.ExternalId] = mod;
+                        if (needsCompaction && mod.Versions.Count > 1)
+                        {
+                            var slimmedVersions = mod.Versions
+                                .Select((v, idx) => idx == 0 ? v : v with { Description = null, IconUrl = null })
+                                .ToList();
+                            dict[mod.Key.ExternalId] = mod with { Versions = slimmedVersions };
+                        }
+                        else
+                        {
+                            dict[mod.Key.ExternalId] = mod;
+                        }
                     }
+
                     _logger.LogInformation("Loaded {Count} packages for {ProviderId} from disk cache", list.Count, providerId);
+
+                    if (needsCompaction)
+                    {
+                        var pid = providerId;
+                        var count = list.Count;
+                        _ = Task.Run(() => CompleteProviderRefreshAsync(pid, count, CancellationToken.None));
+                    }
                 }
             }
             catch (Exception ex)
@@ -95,9 +150,9 @@ public sealed class CatalogService : ICatalogSink
 
     public async Task RefreshAllAsync(CancellationToken ct = default)
     {
-        foreach (var provider in _providers)
-        {
-            if (provider.Capabilities.HasFlag(ProviderCapabilities.FullIndex))
+        var tasks = _providers
+            .Where(p => p.Capabilities.HasFlag(ProviderCapabilities.FullIndex))
+            .Select(async provider =>
             {
                 try
                 {
@@ -107,8 +162,9 @@ public sealed class CatalogService : ICatalogSink
                 {
                     _logger.LogError(ex, "Failed to refresh provider {ProviderId}", provider.Id);
                 }
-            }
-        }
+            });
+
+        await Task.WhenAll(tasks);
     }
 
     public IReadOnlyList<ModSummary> Search(ModQuery query)

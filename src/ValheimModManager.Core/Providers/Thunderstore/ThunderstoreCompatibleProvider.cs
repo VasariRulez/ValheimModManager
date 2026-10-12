@@ -49,11 +49,23 @@ public sealed class ThunderstoreCompatibleProvider : IModProvider
         }
 
         _logger.LogInformation("Found {Count} chunks for {Provider}", chunkUrls.Count, DisplayName);
+        var cachedChunks = sink.GetCachedChunkUrls(Id);
+        var hasLoadedPackages = sink.GetProviderPackageCount(Id) > 0;
         var totalLoaded = 0;
+        var downloadedChunks = 0;
 
         foreach (var chunkUrl in chunkUrls)
         {
             ct.ThrowIfCancellationRequested();
+
+            if (hasLoadedPackages &&
+                chunkUrl.Contains("/sha256/", StringComparison.OrdinalIgnoreCase) &&
+                cachedChunks.Contains(chunkUrl))
+            {
+                _logger.LogInformation("Skipping unchanged SHA-256 chunk for {Provider}: {ChunkUrl}", DisplayName, chunkUrl);
+                continue;
+            }
+
             var chunkUri = new Uri(chunkUrl);
 
             using var chunkResponse = await _httpClient.GetAsync(chunkUri, HttpCompletionOption.ResponseHeadersRead, ct);
@@ -75,10 +87,20 @@ public sealed class ThunderstoreCompatibleProvider : IModProvider
                 await sink.UpsertPackageAsync(Id, summary, ct);
                 totalLoaded++;
             }
+
+            downloadedChunks++;
         }
 
-        await sink.CompleteProviderRefreshAsync(Id, totalLoaded, ct);
-        _logger.LogInformation("Completed {Provider} catalog refresh with {Count} packages", DisplayName, totalLoaded);
+        if (downloadedChunks > 0 || !hasLoadedPackages)
+        {
+            var finalCount = sink.GetProviderPackageCount(Id);
+            await sink.CompleteProviderRefreshAsync(Id, finalCount > 0 ? finalCount : totalLoaded, ct);
+            await sink.SaveCachedChunkUrlsAsync(Id, chunkUrls, ct);
+        }
+
+        _logger.LogInformation(
+            "Completed {Provider} catalog refresh ({Downloaded}/{Total} chunks downloaded, {Loaded} packages updated)",
+            DisplayName, downloadedChunks, chunkUrls.Count, totalLoaded);
     }
 
     public IAsyncEnumerable<ModSummary> SearchAsync(ModQuery query, CancellationToken ct = default)
@@ -106,10 +128,10 @@ public sealed class ThunderstoreCompatibleProvider : IModProvider
 
     private ModSummary MapToSummary(ThunderstorePackageDto dto)
     {
-        var versions = dto.Versions.Select(v => new ModVersion(
+        var versions = dto.Versions.Select((v, idx) => new ModVersion(
             v.VersionNumber,
-            v.Description,
-            v.Icon,
+            idx == 0 ? v.Description : null,
+            idx == 0 ? v.Icon : null,
             v.DownloadUrl,
             v.FileSize,
             v.DateCreated,

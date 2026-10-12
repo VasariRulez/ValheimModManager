@@ -182,4 +182,29 @@ public class MultiSourceGroupingTests : IDisposable
         var resolvedForHexium = catalog.FindByCanonicalId(new CanonicalModId("RandyKnapp", "EpicLoot"), preferredProvider: "hexium");
         Assert.Equal("hexium", resolvedForHexium?.Key.ProviderId);
     }
+
+    [Fact]
+    public void CatalogCache_SerializesCompactDependenciesAndReadsLegacyObjectFormat()
+    {
+        var dep = Dependency.Parse("ValheimModding-Jotunn-2.30.2");
+        var json = System.Text.Json.JsonSerializer.Serialize(dep);
+
+        // Should serialize as a compact string instead of a 4-field object
+        Assert.Equal("\"ValheimModding-Jotunn-2.30.2\"", json);
+
+        var roundTrip = System.Text.Json.JsonSerializer.Deserialize<Dependency>(json);
+        Assert.NotNull(roundTrip);
+        Assert.Equal("ValheimModding", roundTrip.Namespace);
+        Assert.Equal("Jotunn", roundTrip.Name);
+        Assert.Equal("2.30.2", roundTrip.VersionRequirement);
+
+        // Should also read legacy expanded object format seamlessly
+        const string legacyJson = """{"RawIdentifier":"denikson-BepInExPack_Valheim-5.4.2351","Namespace":"denikson","Name":"BepInExPack_Valheim","VersionRequirement":"5.4.2351"}""";
+        var fromLegacy = System.Text.Json.JsonSerializer.Deserialize<Dependency>(legacyJson);
+        Assert.NotNull(fromLegacy);
+        Assert.Equal("denikson-BepInExPack_Valheim-5.4.2351", fromLegacy.RawIdentifier);
+        Assert.Equal("denikson", fromLegacy.Namespace);
+        Assert.Equal("BepInExPack_Valheim", fromLegacy.Name);
+        Assert.Equal("5.4.2351", fromLegacy.VersionRequirement);
+    }
 }
