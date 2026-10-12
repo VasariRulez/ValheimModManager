@@ -672,6 +672,7 @@ public partial class MainViewModel : ViewModelBase
         else
         {
             ApplyCatalogSearch();
+            LoadInstalledMods();
             StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
             IsBusy = false;
         }
@@ -688,6 +689,7 @@ public partial class MainViewModel : ViewModelBase
         {
             await _catalogService.RefreshAllAsync();
             ApplyCatalogSearch();
+            LoadInstalledMods();
             StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
         }
         catch (Exception ex)
