@@ -7,90 +7,94 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%28Steam%20Deck%29-blue)](https://github.com/VasariRulez/ValheimModManager)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Valheim Mod Manager** è un mod manager moderno, ultra-performante e multipiattaforma per **Valheim**, sviluppato con **.NET 10** e **Avalonia UI 12**.
+> 🌐 **Language / Lingua**: **🇬🇧 English** | [**🇮🇹 Italiano**](README.it.md)
 
-Progettato per superare le limitazioni dei manager tradizionali, integra il supporto nativo multi-fonte (**Thunderstore** e **Hexium**), un'architettura a profili isolati, la condivisione istantanea tramite **Share Code (`vmm1-...`)**, l'interoperabilità con **r2modman**, l'esportazione per **Server Dedicati**, il lancio tramite **Steam con Overlay abilitato** e la piena compatibilità sia per sistemi desktop **Windows** che per **Steam Deck / Linux**.
+**Valheim Mod Manager** is a modern, blazing-fast, cross-platform mod manager for **Valheim**, built with **.NET 10** and **Avalonia UI 12**.
 
----
-
-## ✨ Funzionalità Principali
-
-### 🌐 Catalogo Multi-Fonte Unificato & Miniature con Cache
-- **Thunderstore & Hexium**: Consultazione e download integrati dai cataloghi ufficiali di Thunderstore e [Hexium](https://valheim.hexium.gg/).
-- **Raggruppamento Intelligente & Parità Versioni**: Riconosce quando la stessa mod è pubblicata su più store (tramite autore e nome canonico) e raggruppa le release in un'unica scheda, mostrando i badge di provenienza (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`) — entrambi affiancati in caso di parità di versione, oppure raggruppando le fonti meno recenti in un pill discreto (`+1 fonte precedente`).
-- **Anteprime Miniature (Thumbnail) Asincrone**: Caricamento non bloccante delle icone delle mod con caching a due livelli (RAM ad alte prestazioni + cache persistente su disco in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`) e fallback `📦`.
-- **Statistiche Complete su Scheda**: Numero totale di download, valutazioni della community e data di ultimo aggiornamento (`📅 gg/mm/aaaa`).
-
-### 🎯 Ricerca Ponderata per Rilevanza & Ordinamento Avanzato
-- **6 Criteri di Ordinamento**: Selettore dedicato per ordinare il catalogo per **🎯 Rilevanza**, **⬇ Download**, **🕒 Ultimo aggiornamento**, **★ Valutazione**, **🔤 Nome mod** o **👤 Autore**, con pulsante per invertire la direzione (`↓` / `↑`).
-- **Ricerca Multi-Campo a 5 Fasce di Rilevanza**: Digitando nella barra di ricerca (con debounce a 300ms), l'ordinamento passa automaticamente a *Rilevanza* classificando i risultati per: *Match esatto sul Nome > Prefisso sul Nome > Nome contiene > Autore contiene > Descrizione contiene*.
-- **Elenco Mod Installate Ordinato (`A → Z`) & Filtro Rapido**: Visualizzazione sempre ordinata alfabeticamente per nome della mod con ricerca reattiva (debounce 200ms) per nome o autore.
-
-### 🧩 Gestione BepInEx 5, Aggiornamenti Cross-Store & Installazione Manuale
-- **BepInEx Automatico**: Rilevamento, download, installazione e configurazione trasparente di BepInEx 5 per ogni profilo con verifica dei file Doorstop (`winhttp.dll` / `doorstop_config.ini`).
-- **Risoluzione Dipendenze Ricorsiva**: Risolve e installa automaticamente l'intero albero dei prerequisiti richiesti da ciascuna mod.
-- **Controllo Aggiornamenti Cross-Store**: Verifica la disponibilità di nuove versioni su **tutti gli store disponibili** (anche se una mod installata da Thunderstore riceve un aggiornamento più recente su Hexium o viceversa, segnalandolo sul badge es. `Aggiornamento v1.3.1 disp. (🔷 Hexium)`).
-- **Installazione Manuale (Drag & Drop)**: Supporta l'installazione di mod locali (es. scaricate da Nexus Mods) trascinando file `.zip` o `.dll` direttamente nella finestra dell'app o tramite il pulsante *➕ Installa da File...*, contrassegnandole con il badge *Manuale*.
-- **Toggle Attivazione/Disattivazione & Disinstallazione Pulita**: Abilita o disabilita istantaneamente le mod (`.dll` ↔ `.dll.disabled`) e rimuove in modo pulito file e cartelle residue in fase di disinstallazione.
-
-### 📂 Profili Isolati, Share Code (`vmm1-...`), r2modman & Server Dedicato
-- **Isolamento Totale**: Ogni profilo mantiene la propria cartella `BepInEx/plugins`, `patchers` e `config` indipendente, con accesso rapido alle cartelle su disco in un clic.
-- **Condivisione Rapida con Share Code (`vmm1-...`)**: Esporta e importa interi profili (inclusa la lista mod e tutti i file di configurazione `BepInEx/config/*.cfg`) tramite una singola stringa testuale compressa copiabile negli appunti.
-- **Esportazione/Importazione `.vmmprofile`**: Salvataggio e ripristino completo dei profili su file.
-- **Interoperabilità con r2modman**:
-  - Importazione diretta da archivi profilo esportati da r2modman (`.r2z`).
-  - Importazione online tramite codice di condivisione r2modman (UUID `018f...`).
-- **Esportazione Pacchetto Server Dedicato (`.zip`)**: Genera in un clic un archivio `.zip` preconfigurato contenente BepInEx, plugin e configurazioni del profilo attivo, pronto per essere estratto su un server dedicato Valheim.
-
-### 🎮 Avvio tramite Steam (Steam Overlay), Parametri Custom & Auto-Updater
-- **Avvio tramite Steam con Overlay Abilitato**: Avvia Valheim attraverso il client Steam (`-applaunch 892970`) iniettando automaticamente il profilo BepInEx attivo e preservando tutte le funzionalità di **Steam Overlay** (`Shift+Tab`, inviti amici, screenshot `F12`, Steam Input). Include menu contestuale (clic destro su *AVVIA VALHEIM*) per scegliere tra avvio con Steam o avvio diretto dell'eseguibile.
-- **Parametri di Avvio Personalizzati**: Supporto ad argomenti CLI personalizzati con pulsanti rapidi (`-console`, `-windowed`, `-popupwindow`, `-gfx-enable-native-jobs`).
-- **Rilevamento Automatico Steam & Process Guard**: Individua automaticamente Valheim su Windows (Registro + `libraryfolders.vdf`) e Linux / Steam Deck (nativo, Flatpak, microSD) e monitora il processo di gioco in esecuzione.
-- **Auto-Updater Integrato con Changelog Markdown**: Rileva nuove versioni dell'app su GitHub Releases, mostra le note di rilascio formattate con **Markdown nativo** e aggiorna/riavvia automaticamente l'applicazione.
-- **Interfaccia Bilingue (🇮🇹 Italiano / 🇬🇧 English)**: Localizzazione completa in tempo reale selezionabile dalla barra superiore.
+Designed to overcome the limitations of legacy mod managers, it features native multi-source catalog integration (**Thunderstore** and **Hexium**), isolated profile architecture, instant profile sharing via **Share Codes (`vmm1-...`)**, seamless **r2modman** interoperability, one-click **Dedicated Server Pack** export, **Steam Overlay** launch injection, and full compatibility across **Windows** desktops and **Steam Deck / Linux**.
 
 ---
 
-## 🏛️ Architettura della Soluzione
+## ✨ Key Features
 
-La soluzione è strutturata in progetti indipendenti e modulari:
+### 🌐 Unified Multi-Source Catalog & Cached Thumbnails
+- **Thunderstore & Hexium**: Browse and download directly from both official Thunderstore and [Hexium](https://valheim.hexium.gg/) repositories.
+- **Smart Grouping & Version Tie-Resolution**: Automatically groups identical mods across stores (by canonical author and name) into a single card, displaying clear provenance badges (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`)—side-by-side when stores tie on the latest version, or grouping older versions under a subtle secondary pill (`+1 older source`).
+- **Asynchronous Mod Thumbnails**: Non-blocking mod icon loading backed by a two-tier cache (high-speed in-memory RAM cache + persistent disk cache in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`) with a clean `📦` fallback placeholder.
+- **Comprehensive Card Stats**: Total downloads, community ratings, and last updated date (`📅 dd/MM/yyyy`) displayed right on each catalog card.
+
+### 🎯 Weighted Relevance Search & Advanced Sorting
+- **6 Sorting Criteria**: Sort the online catalog by **🎯 Relevance**, **⬇ Downloads**, **🕒 Last updated**, **★ Rating**, **🔤 Mod name**, or **👤 Author**, with a one-click direction toggle button (`↓` / `↑`).
+- **5-Tier Weighted Relevance Search**: Typing in the search bar (300ms debounce) automatically switches sorting to *Relevance*, ranking results across 5 transparent tiers: *Exact Name Match > Name Prefix > Name Contains > Author Contains > Description Contains*.
+- **Alphabetical Installed Mods (`A → Z`) & Instant Filter**: Installed mods are always kept in clean alphabetical order by name, with a responsive 200ms debounced search bar matching both mod name and author.
+
+### 🧩 BepInEx 5 Management, Cross-Store Updates & Manual Installer
+- **Automatic BepInEx 5 Setup**: Transparent detection, download, installation, and Doorstop hook verification (`winhttp.dll` / `doorstop_config.ini`) per profile.
+- **Recursive Dependency Resolution**: Automatically resolves and installs the full prerequisite tree for any selected mod.
+- **Cross-Store Update Detection**: Checks **all available stores** for newer versions of your installed mods (even if a mod installed from Thunderstore receives a newer release on Hexium or vice versa, highlighting the source on the badge e.g. `Update v1.3.1 avail. (🔷 Hexium)`).
+- **Manual Mod Installer (Drag & Drop)**: Install local mods (e.g. downloaded from Nexus Mods) simply by dragging & dropping `.zip` or `.dll` files into the window or via the *➕ Install from File...* button, tagged with a *Manual* badge.
+- **Instant Enable/Disable Toggle & Clean Uninstall**: Toggle mods on/off in place (`.dll` ↔ `.dll.disabled`) and cleanly remove mod files and empty directories upon uninstallation.
+
+### 📂 Isolated Profiles, Share Codes (`vmm1-...`), r2modman & Dedicated Server
+- **Complete Profile Isolation**: Every profile maintains its own independent `BepInEx/plugins`, `patchers`, and `config` folders, with one-click shortcuts to open profile directories in your system file manager.
+- **Instant Profile Share Codes (`vmm1-...`)**: Export and import complete profiles (including your modlist and all `BepInEx/config/*.cfg` files) as a single compressed text string ready to paste on Discord or chat.
+- **`.vmmprofile` Archive Export/Import**: Full file-based backup and restore for profiles.
+- **r2modman Interoperability**:
+  - Direct import from exported r2modman profile archives (`.r2z`).
+  - Online import via r2modman profile share codes (UUID `018f...`).
+- **Dedicated Server Pack Export (`.zip`)**: Generate a pre-configured `.zip` bundle containing BepInEx, plugins, and config files from the active profile, ready to extract onto a Valheim Dedicated Server.
+
+### 🎮 Launch via Steam (Steam Overlay), Custom Launch Args & Auto-Updater
+- **Launch via Steam with Overlay Enabled**: Starts Valheim through the Steam client (`-applaunch 892970`) while injecting Doorstop/BepInEx for the active profile—preserving full **Steam Overlay** functionality (`Shift+Tab`, friend invites, `F12` screenshots, Steam Input controllers). Includes a right-click context menu on *LAUNCH VALHEIM* to choose between Steam launch and direct executable launch.
+- **Custom Launch Arguments**: Configure custom CLI flags with quick-append preset buttons (`-console`, `-windowed`, `-popupwindow`, `-gfx-enable-native-jobs`).
+- **Automatic Steam Detection & Process Guard**: Automatically locates Valheim on Windows (Registry + `libraryfolders.vdf`) and Linux / Steam Deck (native, Flatpak, microSD) and monitors the running game process.
+- **Built-in Self-Updater with Native Markdown Viewer**: Automatically checks GitHub Releases for app updates, renders release notes with **native Markdown formatting**, and updates/restarts the app in one click.
+- **Bilingual UI (🇬🇧 English / 🇮🇹 Italiano)**: Real-time language switching from the top header bar.
+
+---
+
+## 🏛️ Solution Architecture
+
+The solution is organized into clean, modular projects:
 
 ```text
 c:\repo\ValheinModManager\
 ├── src\
-│   ├── ValheimModManager.Core\             # Dominio, Servizi (Catalog, Install, Profile, BepInEx, Update, Share, R2Modman)
-│   ├── ValheimModManager.Platform.Windows\ # Rilevamento Steam via Registry e monitoraggio processi Windows
-│   ├── ValheimModManager.Platform.Linux\   # Percorsi Steam Deck / Flatpak e processi Linux
-│   └── ValheimModManager.App\              # Applicazione Desktop Avalonia 12 (MVVM, Fluent Dark Theme, IT/EN)
+│   ├── ValheimModManager.Core\             # Domain & Services (Catalog, Install, Profile, BepInEx, Update, Share, R2Modman)
+│   ├── ValheimModManager.Platform.Windows\ # Windows Registry Steam locator & process monitor
+│   ├── ValheimModManager.Platform.Linux\   # Steam Deck / Flatpak locator & Linux process monitor
+│   └── ValheimModManager.App\              # Avalonia 12 Desktop App (MVVM, Fluent Dark Theme, EN/IT)
 ├── tests\
-│   └── ValheimModManager.Tests\            # 73 Test automatizzati (xUnit)
+│   └── ValheimModManager.Tests\            # 73 Automated Tests (xUnit)
 ├── scripts\
-│   ├── publish.ps1                         # Script di pubblicazione post-build (PowerShell)
-│   └── publish.sh                          # Script di pubblicazione post-build (Bash / CI)
+│   ├── publish.ps1                         # Post-build publishing script (PowerShell)
+│   └── publish.sh                          # Post-build publishing script (Bash / CI)
 ├── .github\workflows\
-│   └── release.yml                         # Pipeline CI/CD GitHub Actions su tag release
-├── CHANGELOG.md                            # Storico completo delle versioni (IT/EN)
-└── ValheimModManager.slnx                  # Solution file .NET 10
+│   └── release.yml                         # GitHub Actions CI/CD release pipeline
+├── CHANGELOG.md                            # Complete bilingual release history (IT/EN)
+├── README.md                               # English documentation
+├── README.it.md                            # Italian documentation
+└── ValheimModManager.slnx                  # .NET 10 Solution file
 ```
 
 ---
 
-## 🚀 Guida per lo Sviluppo (Quickstart)
+## 🚀 Development Quickstart
 
-### Prerequisiti
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (versione 10.0.100 o superiore).
+### Prerequisites
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (v10.0.100 or newer).
 
-### Compilazione & Esecuzione
+### Build & Run
 ```bash
-# Ripristino e compilazione della soluzione
+# Restore and build the solution
 dotnet build ValheimModManager.slnx
 
-# Avvio dell'applicazione desktop
+# Run the desktop application
 dotnet run --project src/ValheimModManager.App/ValheimModManager.App.csproj
 ```
 
-### Esecuzione dei Test Automatizzati
-La suite comprende **73 test unitari e di integrazione** (xUnit) per installazione pacchetti, comparazione SemVer, risoluzione dipendenze, raggruppamento e ordinamento multi-fonte, ricerca per rilevanza, aggiornamenti cross-store, Share Code `vmm1`, import r2modman, installazione manuale, avvio Steam e localizzazione:
+### Running Automated Tests
+The test suite includes **73 unit and integration tests** (xUnit) covering package installation, SemVer comparison, dependency resolution, multi-source grouping and sorting, weighted relevance search, cross-store update detection, `vmm1` Share Codes, r2modman import, manual mod installation, Steam launch arguments, and localization:
 
 ```bash
 dotnet test ValheimModManager.slnx
@@ -98,53 +102,53 @@ dotnet test ValheimModManager.slnx
 
 ---
 
-## 📦 Pubblicazione Post-Build & Packaging
+## 📦 Post-Build Publishing & Packaging
 
-Il repository include script dedicati per generare pacchetti distribuiti **Self-Contained**, **Single-File** e compilati con **ReadyToRun** (tempo di avvio istantaneo e nessun runtime .NET richiesto all'utente finale).
+The repository includes scripts to produce **Self-Contained**, **Single-File**, **ReadyToRun** binaries (instant startup with no .NET runtime installation required on user machines).
 
-### Da Windows (PowerShell)
+### From Windows (PowerShell)
 ```powershell
-# Pubblicazione completa per entrambi i target (win-x64 e linux-x64) con test preventivi:
+# Full publish for both targets (win-x64 and linux-x64) after running tests:
 .\scripts\publish.ps1
 
-# Pubblica solo per Windows:
+# Publish for Windows only:
 .\scripts\publish.ps1 -Runtime win-x64
 
-# Pubblica solo per Linux / Steam Deck saltando i test:
+# Publish for Linux / Steam Deck skipping tests:
 .\scripts\publish.ps1 -Runtime linux-x64 -SkipTests
 
-# Pulizia e pubblicazione con numero di versione personalizzato:
+# Clean and publish with a custom version string:
 .\scripts\publish.ps1 -Version "1.0.10" -Clean
 ```
 
-### Da Linux / Steam Deck / CI (Bash)
+### From Linux / Steam Deck / CI (Bash)
 ```bash
 chmod +x ./scripts/publish.sh
 
-# Pubblicazione completa:
+# Full publish:
 ./scripts/publish.sh
 
-# Solo target Linux:
+# Linux target only:
 ./scripts/publish.sh -r linux-x64
 ```
 
-### Output Generato
-I file vengono generati nella cartella `dist/` (esclusa da git):
-- `ValheimModManager-<version>-win-x64.zip` (eseguibile autosufficiente `ValheimModManager.exe`)
-- `ValheimModManager-<version>-linux-x64.tar.gz` (binario ELF autosufficiente `ValheimModManager`)
-- `SHA256SUMS.txt` (checksum crittografici SHA-256 di tutti gli archivi generati)
+### Generated Output
+Artifacts are written to the `dist/` directory (git-ignored):
+- `ValheimModManager-<version>-win-x64.zip` (self-contained `ValheimModManager.exe`)
+- `ValheimModManager-<version>-linux-x64.tar.gz` (self-contained ELF binary `ValheimModManager`)
+- `SHA256SUMS.txt` (SHA-256 checksums for all generated archives)
 
 ---
 
-## 🔄 CI/CD & Rilascio Automatico
+## 🔄 CI/CD & Automated Releases
 
-Il workflow GitHub Actions situato in [`.github/workflows/release.yml`](.github/workflows/release.yml) è configurato per:
-1. Avviarsi automaticamente al push di una tag di versione (es. `git tag v1.0.10 && git push origin v1.0.10`) o tramite esecuzione manuale da GitHub (*Run workflow*).
-2. Eseguire la compilazione e i 73 test in parallelo su runner Windows e Ubuntu.
-3. Estrarre automaticamente le note di rilascio della versione corrispondente da [`CHANGELOG.md`](CHANGELOG.md) e pubblicare la GitHub Release allegando gli archivi `.zip`, `.tar.gz` e `SHA256SUMS.txt`.
+The GitHub Actions workflow in [`.github/workflows/release.yml`](.github/workflows/release.yml) automatically:
+1. Triggers when a version tag is pushed (e.g. `git tag v1.0.10 && git push origin v1.0.10`) or via manual workflow dispatch.
+2. Runs the build and all 73 tests in parallel on Windows and Ubuntu runners.
+3. Extracts the matching release notes section from [`CHANGELOG.md`](CHANGELOG.md) and publishes the GitHub Release with `.zip`, `.tar.gz`, and `SHA256SUMS.txt` assets.
 
 ---
 
-## 📄 Licenza
+## 📄 License
 
-Distribuito con licenza MIT. Consulta il file [`LICENSE`](LICENSE) per ulteriori dettagli.
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
