@@ -87,6 +87,10 @@ public sealed record ItalianStrings : AppStrings
         CatalogSearchLabel = "Cerca mod:";
         CatalogSourceFilterLabel = "Sorgente:";
         CatalogSortByLabel = "Ordina per:";
+        RebuildCatalogCacheButton = "🧹 Svuota Cache e Riscarica Catalogo";
+        RebuildCatalogCacheTooltip = "Elimina la cache locale e riscarica da zero tutti i cataloghi online";
+        RefreshCatalogFastMenu = "🔄  Aggiorna Catalogo (Rapido)";
+        RefreshCatalogFullMenu = "🧹  Riscarica da zero (Svuota Cache)";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Impostazioni & Gioco";

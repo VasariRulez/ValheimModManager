@@ -87,6 +87,10 @@ public sealed record EnglishStrings : AppStrings
         CatalogSearchLabel = "Search mods:";
         CatalogSourceFilterLabel = "Source:";
         CatalogSortByLabel = "Sort by:";
+        RebuildCatalogCacheButton = "🧹 Clear Cache & Rebuild Catalog";
+        RebuildCatalogCacheTooltip = "Deletes local cache and re-downloads all online catalogs from scratch";
+        RefreshCatalogFastMenu = "🔄  Refresh Catalog (Fast Delta)";
+        RefreshCatalogFullMenu = "🧹  Rebuild from scratch (Clear Cache)";
 
         // Tab 3: Settings
         TabSettings = "⚙️  Settings & Game";

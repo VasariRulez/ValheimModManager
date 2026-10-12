@@ -94,6 +94,24 @@ public sealed class CatalogService : ICatalogSink
         }
     }
 
+    public void ClearCache()
+    {
+        _catalog.Clear();
+        if (!Directory.Exists(_cacheDirectory)) return;
+
+        foreach (var file in Directory.GetFiles(_cacheDirectory, "*.json"))
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete catalog cache file {File}", file);
+            }
+        }
+    }
+
     public async Task LoadFromLocalCacheAsync(CancellationToken ct = default)
     {
         if (!Directory.Exists(_cacheDirectory)) return;

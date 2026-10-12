@@ -708,6 +708,14 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public async Task RebuildCatalogCacheAsync()
+    {
+        if (IsBusy) return;
+        _catalogService.ClearCache();
+        await RefreshOnlineCatalogAsync();
+    }
+
+    [RelayCommand]
     public void ApplyCatalogSearch()
     {
         string? providerId = SelectedSourceFilter switch

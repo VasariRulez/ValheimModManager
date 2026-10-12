@@ -207,4 +207,51 @@ public class MultiSourceGroupingTests : IDisposable
         Assert.Equal("BepInExPack_Valheim", fromLegacy.Name);
         Assert.Equal("5.4.2351", fromLegacy.VersionRequirement);
     }
+
+    [Fact]
+    public async Task CatalogService_ClearCacheRemovesCacheAndChunkManifests()
+    {
+        var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"vmm_test_cache_{Guid.NewGuid():N}");
+        try
+        {
+            var catalog = new CatalogService([], tempDir);
+            var mod = new ModSummary(
+                Key: new ModKey("thunderstore", "Author-TestMod"),
+                CanonicalId: new CanonicalModId("Author", "TestMod"),
+                Name: "TestMod",
+                Owner: "Author",
+                PackageUrl: "",
+                Description: "Test",
+                IconUrl: "",
+                LatestVersionNumber: "1.0.0",
+                TotalDownloads: 100,
+                RatingScore: 5,
+                IsPinned: false,
+                IsDeprecated: false,
+                DateUpdated: DateTime.UtcNow,
+                Categories: [],
+                Versions: []
+            );
+
+            await catalog.UpsertPackageAsync("thunderstore", mod);
+            await catalog.CompleteProviderRefreshAsync("thunderstore", 1);
+            await catalog.SaveCachedChunkUrlsAsync("thunderstore", ["https://ccdn.thunderstore.io/live/blob-storage/sha256/abc.blob"]);
+
+            Assert.Equal(1, catalog.TotalPackageCount);
+            Assert.Single(catalog.GetCachedChunkUrls("thunderstore"));
+
+            catalog.ClearCache();
+
+            Assert.Equal(0, catalog.TotalPackageCount);
+            Assert.Empty(catalog.GetCachedChunkUrls("thunderstore"));
+            Assert.Empty(System.IO.Directory.GetFiles(tempDir, "*.json"));
+        }
+        finally
+        {
+            if (System.IO.Directory.Exists(tempDir))
+            {
+                System.IO.Directory.Delete(tempDir, recursive: true);
+            }
+        }
+    }
 }

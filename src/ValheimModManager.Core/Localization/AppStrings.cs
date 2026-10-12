@@ -83,6 +83,10 @@ public record AppStrings
     public string CatalogSearchLabel { get; init; } = "";
     public string CatalogSourceFilterLabel { get; init; } = "";
     public string CatalogSortByLabel { get; init; } = "";
+    public string RebuildCatalogCacheButton { get; init; } = "";
+    public string RebuildCatalogCacheTooltip { get; init; } = "";
+    public string RefreshCatalogFastMenu { get; init; } = "";
+    public string RefreshCatalogFullMenu { get; init; } = "";
 
     // Tab 3: Settings
     public string TabSettings { get; init; } = "";

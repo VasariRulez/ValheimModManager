@@ -245,7 +245,16 @@
                                     Content="{Binding Strings.RefreshCatalogButton}" 
                                     Command="{Binding RefreshOnlineCatalogCommand}"
                                     Background="#27272a"
-                                    VerticalAlignment="Bottom" />
+                                    VerticalAlignment="Bottom">
+                                <Button.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="{Binding Strings.RefreshCatalogFastMenu}"
+                                                  Command="{Binding RefreshOnlineCatalogCommand}" />
+                                        <MenuItem Header="{Binding Strings.RefreshCatalogFullMenu}"
+                                                  Command="{Binding RebuildCatalogCacheCommand}" />
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                            </Button>
                         </Grid>
 
                         <!-- Catalog Items List with Multi-Source Grouping -->
@@ -409,6 +418,14 @@
                                             <TextBlock Text="⏳ Nexus Mods" FontWeight="Bold" Foreground="#facc15" />
                                             <TextBlock Text="{Binding Strings.SourcesNexusStatus}" Foreground="#a1a1aa" />
                                         </StackPanel>
+
+                                        <Separator Background="#3f3f46" Margin="0,2" />
+
+                                        <Button Content="{Binding Strings.RebuildCatalogCacheButton}"
+                                                Command="{Binding RebuildCatalogCacheCommand}"
+                                                IsEnabled="{Binding !IsBusy}"
+                                                ToolTip.Tip="{Binding Strings.RebuildCatalogCacheTooltip}"
+                                                Background="#3f3f46" Foreground="#f4f4f5" Padding="12,7" FontSize="12" HorizontalAlignment="Left" />
                                     </StackPanel>
                                 </Border>
 
