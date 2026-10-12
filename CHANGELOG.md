@@ -3,6 +3,52 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.10] - 2026-10-12
+
+### 🇮🇹 Italiano
+
+#### Aggiunto
+- **Ordinamento Avanzato del Catalogo e Direzione (`↓` / `↑`)**:
+  - 6 criteri di ordinamento selezionabili nel catalogo online: **🎯 Rilevanza**, **⬇ Download**, **🕒 Ultimo aggiornamento**, **★ Valutazione**, **🔤 Nome mod** e **👤 Autore**.
+  - Pulsante dedicato per invertire in qualsiasi momento la direzione di ordinamento (Crescente `↑` / Decrescente `↓`) con impostazione automatica intelligente in base al criterio scelto.
+- **Ricerca Testuale Ponderata per Rilevanza**:
+  - Passaggio automatico a *🎯 Rilevanza* appena si inizia a digitare nella barra di ricerca (e ritorno automatico a *⬇ Download* quando la ricerca viene svuotata).
+  - Sistema di punteggio a 5 fasce trasparenti (Match esatto sul Nome > Prefisso sul Nome > Nome contiene > Autore contiene > Descrizione contiene) per mostrare sempre in cima le mod più pertinenti.
+- **Etichette Descrittive e Data di Aggiornamento sulle Schede**:
+  - Etichette bilingui sopra i controlli della barra di ricerca e filtri (*Cerca mod:*, *Sorgente:*, *Ordina per:*).
+  - Visualizzazione della data di ultimo aggiornamento (`📅 gg/mm/aaaa`) su ogni scheda del catalogo accanto a download e valutazioni.
+- **Rilevamento Aggiornamenti Cross-Store**:
+  - Il controllo aggiornamenti delle mod installate confronta ora le versioni disponibili su **tutti gli store** (Thunderstore, Hexium, ecc.), mantenendo la priorità sullo store originale a parità di versione.
+  - Se un aggiornamento più recente proviene da uno store diverso rispetto a quello di installazione, il badge nella schermata *Mod Installate* ne indica chiaramente la fonte (es. `Aggiornamento v1.3.1 disp. (🔷 Hexium)`).
+
+#### Corretto
+- **Ricaricamento Automatico Badge Aggiornamenti all'Avvio**: Risolto un problema per cui, al termine del caricamento iniziale del catalogo da cache o dopo un aggiornamento online, la schermata *Mod Installate* non mostrava subito i badge di aggiornamento finché non veniva effettuata una ricerca.
+- **Ricerca Mod Installate per Autore**: La barra di ricerca nella scheda *Mod Installate* filtra ora anche per nome dell'autore oltre che per nome della mod.
+
+---
+
+### 🇬🇧 English
+
+#### Added
+- **Advanced Catalog Sorting & Direction Toggle (`↓` / `↑`)**:
+  - 6 sorting criteria in the online catalog: **🎯 Relevance**, **⬇ Downloads**, **🕒 Last updated**, **★ Rating**, **🔤 Mod name**, and **👤 Author**.
+  - Dedicated direction toggle button (Ascending `↑` / Descending `↓`) with smart default direction based on the selected criterion.
+- **Weighted Relevance Text Search**:
+  - Automatic switch to *🎯 Relevance* as soon as the user starts typing in the search box (and automatic return to *⬇ Downloads* when cleared).
+  - 5-tier relevance scoring system (Exact Name Match > Name Prefix > Name Contains > Author Contains > Description Contains) ensuring the most relevant mods always appear at the top.
+- **Filter Bar Labels & Card Last-Updated Date**:
+  - Descriptive bilingual labels above search and filter controls (*Search mods:*, *Source:*, *Sort by:*).
+  - Last updated date (`📅 dd/MM/yyyy`) displayed on every catalog card next to downloads and ratings.
+- **Cross-Store Update Detection**:
+  - Update checks for installed mods now inspect **all available stores** (Thunderstore, Hexium, etc.) for the newest version, preferring the original store on version ties.
+  - When a newer version is found on a different store than the installed one, the update badge in *Installed Mods* explicitly shows the source (e.g. `Update v1.3.1 avail. (🔷 Hexium)`).
+
+#### Fixed
+- **Automatic Update Badge Refresh on Startup**: Fixed an issue where the *Installed Mods* tab did not immediately display available update badges after the catalog finished loading from cache or refreshing online until a search was triggered.
+- **Author Search in Installed Mods**: The search bar in *Installed Mods* now matches both mod name and author namespace.
+
+---
+
 ## [1.0.9] - 2026-10-09
 
 ### 🇮🇹 Italiano
