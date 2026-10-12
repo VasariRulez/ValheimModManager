@@ -22,6 +22,7 @@ Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
   - Se un aggiornamento più recente proviene da uno store diverso rispetto a quello di installazione, il badge nella schermata *Mod Installate* ne indica chiaramente la fonte (es. `Aggiornamento v1.3.1 disp. (🔷 Hexium)`).
 
 #### Corretto
+- **Ordinamento Alfabetico Mod Installate (`A → Z`)**: L'elenco nella scheda *Mod Installate* è ora sempre ordinato alfabeticamente per nome della mod (anziché per ordine cronologico di installazione), mantenendo la posizione stabile anche dopo l'aggiornamento di una mod.
 - **Ricaricamento Automatico Badge Aggiornamenti all'Avvio**: Risolto un problema per cui, al termine del caricamento iniziale del catalogo da cache o dopo un aggiornamento online, la schermata *Mod Installate* non mostrava subito i badge di aggiornamento finché non veniva effettuata una ricerca.
 - **Ricerca Mod Installate per Autore**: La barra di ricerca nella scheda *Mod Installate* filtra ora anche per nome dell'autore oltre che per nome della mod.
 
@@ -44,6 +45,7 @@ Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
   - When a newer version is found on a different store than the installed one, the update badge in *Installed Mods* explicitly shows the source (e.g. `Update v1.3.1 avail. (🔷 Hexium)`).
 
 #### Fixed
+- **Alphabetical Sorting of Installed Mods (`A → Z`)**: The *Installed Mods* list is now consistently sorted alphabetically by mod name (instead of raw installation order), keeping each mod in place even after updating.
 - **Automatic Update Badge Refresh on Startup**: Fixed an issue where the *Installed Mods* tab did not immediately display available update badges after the catalog finished loading from cache or refreshing online until a search was triggered.
 - **Author Search in Installed Mods**: The search bar in *Installed Mods* now matches both mod name and author namespace.
 

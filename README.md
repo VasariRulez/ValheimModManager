@@ -24,7 +24,7 @@ Progettato per superare le limitazioni dei manager tradizionali, integra il supp
 ### 🎯 Ricerca Ponderata per Rilevanza & Ordinamento Avanzato
 - **6 Criteri di Ordinamento**: Selettore dedicato per ordinare il catalogo per **🎯 Rilevanza**, **⬇ Download**, **🕒 Ultimo aggiornamento**, **★ Valutazione**, **🔤 Nome mod** o **👤 Autore**, con pulsante per invertire la direzione (`↓` / `↑`).
 - **Ricerca Multi-Campo a 5 Fasce di Rilevanza**: Digitando nella barra di ricerca (con debounce a 300ms), l'ordinamento passa automaticamente a *Rilevanza* classificando i risultati per: *Match esatto sul Nome > Prefisso sul Nome > Nome contiene > Autore contiene > Descrizione contiene*.
-- **Filtro Rapido Mod Installate**: Ricerca reattiva (debounce 200ms) per nome mod o autore anche nella scheda *Mod Installate*.
+- **Elenco Mod Installate Ordinato (`A → Z`) & Filtro Rapido**: Visualizzazione sempre ordinata alfabeticamente per nome della mod con ricerca reattiva (debounce 200ms) per nome o autore.
 
 ### 🧩 Gestione BepInEx 5, Aggiornamenti Cross-Store & Installazione Manuale
 - **BepInEx Automatico**: Rilevamento, download, installazione e configurazione trasparente di BepInEx 5 per ogni profilo con verifica dei file Doorstop (`winhttp.dll` / `doorstop_config.ini`).

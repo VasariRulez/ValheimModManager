@@ -638,7 +638,11 @@ public partial class MainViewModel : ViewModelBase
         var updateMap = updateResults.ToDictionary(r => r.InstalledMod.Key, r => r);
 
         InstalledMods.Clear();
-        foreach (var mod in profile.Mods)
+        var sortedMods = profile.Mods
+            .OrderBy(m => m.CanonicalId.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(m => m.CanonicalId.Namespace, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var mod in sortedMods)
         {
             if (!string.IsNullOrWhiteSpace(InstalledSearchText))
             {
