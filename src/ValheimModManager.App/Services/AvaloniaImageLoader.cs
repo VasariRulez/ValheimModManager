@@ -16,29 +16,11 @@ public sealed class AvaloniaImageLoader
     private const int MaxMemoryCacheItems = 1000;
     private readonly ConcurrentDictionary<string, Bitmap> _memoryCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _lruOrder = new();
-    private readonly SemaphoreSlim _decodeThrottle = new(4, 4);
     private readonly ImageCacheService _imageCacheService;
 
     public AvaloniaImageLoader(ImageCacheService? imageCacheService = null)
     {
         _imageCacheService = imageCacheService ?? ImageCacheService.Instance;
-        _imageCacheService.ImageOptimizer ??= OptimizeImage;
-    }
-
-    public static byte[] OptimizeImage(byte[] rawBytes)
-    {
-        try
-        {
-            using var inMs = new MemoryStream(rawBytes);
-            using var bmp = Bitmap.DecodeToWidth(inMs, 96, BitmapInterpolationMode.LowQuality);
-            using var outMs = new MemoryStream();
-            bmp.Save(outMs, new PngBitmapEncoderOptions());
-            return outMs.ToArray();
-        }
-        catch
-        {
-            return rawBytes;
-        }
     }
 
     public async Task<Bitmap?> LoadImageAsync(string? url, CancellationToken ct = default)
@@ -54,30 +36,22 @@ public sealed class AvaloniaImageLoader
             return cachedBitmap;
         }
 
-        // 2. Controllo o download asincrono dei byte
-        var bytes = await _imageCacheService.GetImageBytesAsync(url, ct);
+        // 2. Controllo o download asincrono dei byte (off-thread)
+        var bytes = await _imageCacheService.GetImageBytesAsync(url, ct).ConfigureAwait(false);
         if (bytes == null || bytes.Length == 0 || ct.IsCancellationRequested)
         {
             return null;
         }
 
-        // Ricontrollo cache in memoria RAM prima del semaforo
+        // 3. Ricontrollo cache in memoria RAM prima della decodifica
         if (_memoryCache.TryGetValue(url, out cachedBitmap))
         {
             return cachedBitmap;
         }
 
-        // 3. Decodifica Bitmap controllata con semaforo per non saturare la CPU
-        await _decodeThrottle.WaitAsync(ct);
+        // 4. Decodifica Bitmap a 96px in background (non blocca la UI)
         try
         {
-            if (ct.IsCancellationRequested) return null;
-
-            if (_memoryCache.TryGetValue(url, out var alreadyCached))
-            {
-                return alreadyCached;
-            }
-
             return await Task.Run(() =>
             {
                 if (ct.IsCancellationRequested) return null;
@@ -104,15 +78,11 @@ public sealed class AvaloniaImageLoader
                 }
 
                 return _memoryCache.TryGetValue(url, out var existing) ? existing : bitmap;
-            }, ct);
+            }, ct).ConfigureAwait(false);
         }
         catch
         {
             return null;
-        }
-        finally
-        {
-            _decodeThrottle.Release();
         }
     }
 

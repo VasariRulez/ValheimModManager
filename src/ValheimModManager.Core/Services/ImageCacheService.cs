@@ -52,7 +52,7 @@ public sealed class ImageCacheService
         {
             try
             {
-                return await File.ReadAllBytesAsync(localFile, ct);
+                return await File.ReadAllBytesAsync(localFile, ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -61,31 +61,31 @@ public sealed class ImageCacheService
         }
 
         // 2. Download asincrono controllato da semaforo
-        await _throttle.WaitAsync(ct);
+        await _throttle.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             // Ricontrollo in caso un altro task l'abbia scaricata nel frattempo
             if (File.Exists(localFile))
             {
-                return await File.ReadAllBytesAsync(localFile, ct);
+                return await File.ReadAllBytesAsync(localFile, ct).ConfigureAwait(false);
             }
 
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             request.Headers.UserAgent.ParseAdd("ValheimModManager/1.0");
 
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct);
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 return null;
             }
 
-            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
             if (bytes == null || bytes.Length == 0)
             {
                 return null;
             }
 
-            // Ottimizzazione immagine opzionale (es. ridimensionamento a 96px)
+            // Ottimizzazione immagine opzionale (es. hook esterno)
             if (ImageOptimizer != null)
             {
                 try
@@ -106,7 +106,7 @@ public sealed class ImageCacheService
             try
             {
                 var tempFile = localFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
-                await File.WriteAllBytesAsync(tempFile, bytes, ct);
+                await File.WriteAllBytesAsync(tempFile, bytes, ct).ConfigureAwait(false);
                 File.Move(tempFile, localFile, overwrite: true);
             }
             catch (Exception ex)

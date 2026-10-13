@@ -74,16 +74,18 @@ public partial class CatalogModItemViewModel : ObservableObject
     {
         if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl) || ct.IsCancellationRequested) return;
 
-        // Rilascia immediatamente il thread UI per consentire il rendering istantaneo della pagina
-        await Task.Yield();
-        if (ct.IsCancellationRequested) return;
-
         try
         {
-            var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct);
+            var bmp = await Task.Run(() => AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct), ct).ConfigureAwait(false);
             if (bmp != null && !ct.IsCancellationRequested)
             {
-                Thumbnail = bmp;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (!ct.IsCancellationRequested)
+                    {
+                        Thumbnail = bmp;
+                    }
+                }, Avalonia.Threading.DispatcherPriority.Background);
             }
         }
         catch (System.OperationCanceledException)
