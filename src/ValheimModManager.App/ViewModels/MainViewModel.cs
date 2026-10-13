@@ -761,7 +761,6 @@ public partial class MainViewModel : ViewModelBase
     public void ClearIconCache()
     {
         _catalogThumbnailsCts?.Cancel();
-        _catalogThumbnailsCts?.Dispose();
         _catalogThumbnailsCts = new CancellationTokenSource();
         var ct = _catalogThumbnailsCts.Token;
 
@@ -822,7 +821,6 @@ public partial class MainViewModel : ViewModelBase
 
         // Annulla i task in corso di caricamento icone per la pagina o ricerca precedente
         _catalogThumbnailsCts?.Cancel();
-        _catalogThumbnailsCts?.Dispose();
         _catalogThumbnailsCts = new CancellationTokenSource();
         var ct = _catalogThumbnailsCts.Token;
 

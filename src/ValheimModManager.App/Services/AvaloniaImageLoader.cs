@@ -13,7 +13,7 @@ public sealed class AvaloniaImageLoader
     private static readonly Lazy<AvaloniaImageLoader> _instance = new(() => new AvaloniaImageLoader());
     public static AvaloniaImageLoader Instance => _instance.Value;
 
-    private const int MaxMemoryCacheItems = 250;
+    private const int MaxMemoryCacheItems = 1000;
     private readonly ConcurrentDictionary<string, Bitmap> _memoryCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _lruOrder = new();
     private readonly ImageCacheService _imageCacheService;
@@ -67,12 +67,16 @@ public sealed class AvaloniaImageLoader
             {
                 if (ct.IsCancellationRequested) return null;
 
+                if (_memoryCache.TryGetValue(url, out var alreadyCached))
+                {
+                    return alreadyCached;
+                }
+
                 using var ms = new MemoryStream(bytes);
                 var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.MediumQuality);
 
                 if (ct.IsCancellationRequested)
                 {
-                    bitmap.Dispose();
                     return null;
                 }
 
@@ -81,14 +85,15 @@ public sealed class AvaloniaImageLoader
                     _lruOrder.Enqueue(url);
                     while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
                     {
-                        if (_memoryCache.TryRemove(oldUrl, out var evicted))
+                        if (_memoryCache.TryRemove(oldUrl, out _))
                         {
-                            evicted.Dispose();
                             break;
                         }
                     }
+                    return bitmap;
                 }
-                return bitmap;
+
+                return _memoryCache.TryGetValue(url, out var existing) ? existing : bitmap;
             }, ct);
         }
         catch
@@ -99,10 +104,6 @@ public sealed class AvaloniaImageLoader
 
     public int ClearCache()
     {
-        foreach (var kvp in _memoryCache)
-        {
-            kvp.Value.Dispose();
-        }
         _memoryCache.Clear();
         _lruOrder.Clear();
         return _imageCacheService.ClearCache();

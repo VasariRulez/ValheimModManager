@@ -85,6 +85,10 @@ public partial class CatalogModItemViewModel : ObservableObject
         {
             // Ignora cancellazione
         }
+        catch (System.Exception)
+        {
+            // Fallimento silenzioso per immagini corrotte o errori IO transitori
+        }
     }
 
     public void DetachThumbnail()
