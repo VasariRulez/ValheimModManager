@@ -193,7 +193,7 @@ public class MultiSourceGroupingTests : IDisposable
         Assert.Equal("\"ValheimModding-Jotunn-2.30.2\"", json);
 
         var roundTrip = System.Text.Json.JsonSerializer.Deserialize<Dependency>(json);
-        Assert.NotNull(roundTrip);
+        Assert.False(string.IsNullOrEmpty(roundTrip.RawIdentifier));
         Assert.Equal("ValheimModding", roundTrip.Namespace);
         Assert.Equal("Jotunn", roundTrip.Name);
         Assert.Equal("2.30.2", roundTrip.VersionRequirement);
@@ -201,7 +201,7 @@ public class MultiSourceGroupingTests : IDisposable
         // Should also read legacy expanded object format seamlessly
         const string legacyJson = """{"RawIdentifier":"denikson-BepInExPack_Valheim-5.4.2351","Namespace":"denikson","Name":"BepInExPack_Valheim","VersionRequirement":"5.4.2351"}""";
         var fromLegacy = System.Text.Json.JsonSerializer.Deserialize<Dependency>(legacyJson);
-        Assert.NotNull(fromLegacy);
+        Assert.False(string.IsNullOrEmpty(fromLegacy.RawIdentifier));
         Assert.Equal("denikson-BepInExPack_Valheim-5.4.2351", fromLegacy.RawIdentifier);
         Assert.Equal("denikson", fromLegacy.Namespace);
         Assert.Equal("BepInExPack_Valheim", fromLegacy.Name);

@@ -164,6 +164,9 @@ public sealed class CatalogService : ICatalogSink
                 _logger.LogWarning(ex, "Failed to load catalog cache from {File}", file);
             }
         }
+
+        DependencyJsonConverter.ClearPool();
+        GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
     }
 
     public async Task RefreshAllAsync(CancellationToken ct = default)

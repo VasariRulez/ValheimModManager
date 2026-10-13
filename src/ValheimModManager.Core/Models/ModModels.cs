@@ -6,44 +6,74 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 [JsonConverter(typeof(DependencyJsonConverter))]
-public sealed record Dependency(
-    string RawIdentifier,
-    string? Namespace,
-    string? Name,
-    string? VersionRequirement
-)
+public readonly record struct Dependency(string RawIdentifier)
 {
-    public static Dependency Parse(string raw)
+    public Dependency(string rawIdentifier, string? ns, string? name, string? versionRequirement)
+        : this(rawIdentifier)
     {
-        // Thunderstore format: Author-ModName-1.2.3
-        var parts = raw.Split('-');
-        if (parts.Length >= 3)
-        {
-            var ns = parts[0];
-            var ver = parts[^1];
-            var name = string.Join('-', parts[1..^1]);
-            return new Dependency(raw, ns, name, ver);
-        }
-        return new Dependency(raw, null, raw, null);
     }
+
+    public string? Namespace
+    {
+        get
+        {
+            var span = RawIdentifier.AsSpan();
+            var idx = span.IndexOf('-');
+            return idx > 0 ? span[..idx].ToString() : null;
+        }
+    }
+
+    public string Name
+    {
+        get
+        {
+            var span = RawIdentifier.AsSpan();
+            var first = span.IndexOf('-');
+            var last = span.LastIndexOf('-');
+            if (first > 0 && last > first)
+            {
+                return span.Slice(first + 1, last - first - 1).ToString();
+            }
+            return RawIdentifier;
+        }
+    }
+
+    public string? VersionRequirement
+    {
+        get
+        {
+            var span = RawIdentifier.AsSpan();
+            var last = span.LastIndexOf('-');
+            return last > 0 && last < span.Length - 1 ? span[(last + 1)..].ToString() : null;
+        }
+    }
+
+    public static Dependency Parse(string raw) => new(DependencyJsonConverter.Intern(raw));
 }
 
 public sealed class DependencyJsonConverter : JsonConverter<Dependency>
 {
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> StringPool = new(StringComparer.Ordinal);
+
+    public static string Intern(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return string.Empty;
+        return StringPool.GetOrAdd(s, s);
+    }
+
+    public static void ClearPool() => StringPool.Clear();
+
     public override Dependency Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
         {
-            return Dependency.Parse(reader.GetString() ?? string.Empty);
+            var s = reader.GetString();
+            return new Dependency(Intern(s));
         }
 
         if (reader.TokenType == JsonTokenType.StartObject)
         {
             string? raw = null;
-            string? ns = null;
-            string? name = null;
-            string? ver = null;
-
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
@@ -52,19 +82,10 @@ public sealed class DependencyJsonConverter : JsonConverter<Dependency>
                     reader.Read();
                     var val = reader.TokenType == JsonTokenType.String ? reader.GetString() : null;
                     if (string.Equals(prop, "RawIdentifier", StringComparison.OrdinalIgnoreCase)) raw = val;
-                    else if (string.Equals(prop, "Namespace", StringComparison.OrdinalIgnoreCase)) ns = val;
-                    else if (string.Equals(prop, "Name", StringComparison.OrdinalIgnoreCase)) name = val;
-                    else if (string.Equals(prop, "VersionRequirement", StringComparison.OrdinalIgnoreCase)) ver = val;
                 }
             }
 
-            if (!string.IsNullOrEmpty(raw))
-            {
-                return ns != null || name != null || ver != null
-                    ? new Dependency(raw, ns, name, ver)
-                    : Dependency.Parse(raw);
-            }
-            return new Dependency(string.Empty, ns, name, ver);
+            return new Dependency(Intern(raw));
         }
 
         throw new JsonException($"Unexpected token {reader.TokenType} when parsing Dependency.");

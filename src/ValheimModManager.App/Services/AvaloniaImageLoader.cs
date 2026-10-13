@@ -13,7 +13,9 @@ public sealed class AvaloniaImageLoader
     private static readonly Lazy<AvaloniaImageLoader> _instance = new(() => new AvaloniaImageLoader());
     public static AvaloniaImageLoader Instance => _instance.Value;
 
+    private const int MaxMemoryCacheItems = 250;
     private readonly ConcurrentDictionary<string, Bitmap> _memoryCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentQueue<string> _lruOrder = new();
     private readonly ImageCacheService _imageCacheService;
 
     public AvaloniaImageLoader(ImageCacheService? imageCacheService = null)
@@ -48,7 +50,17 @@ public sealed class AvaloniaImageLoader
             {
                 using var ms = new MemoryStream(bytes);
                 var bitmap = new Bitmap(ms);
-                _memoryCache.TryAdd(url, bitmap);
+                if (_memoryCache.TryAdd(url, bitmap))
+                {
+                    _lruOrder.Enqueue(url);
+                    while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
+                    {
+                        if (_memoryCache.TryRemove(oldUrl, out _))
+                        {
+                            break;
+                        }
+                    }
+                }
                 return bitmap;
             }, ct);
         }
@@ -61,6 +73,7 @@ public sealed class AvaloniaImageLoader
     public int ClearCache()
     {
         _memoryCache.Clear();
+        _lruOrder.Clear();
         return _imageCacheService.ClearCache();
     }
 }
