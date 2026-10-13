@@ -43,6 +43,7 @@ public partial class MainViewModel : ViewModelBase
     private CancellationTokenSource? _catalogSearchCts;
     private CancellationTokenSource? _installedSearchCts;
     private CancellationTokenSource? _catalogThumbnailsCts;
+    private CancellationTokenSource? _catalogPageChangeCts;
 
     [ObservableProperty]
     private string _currentAppVersion = "1.0.4";
@@ -807,41 +808,71 @@ public partial class MainViewModel : ViewModelBase
         TotalCatalogPages = Math.Max(1, (int)Math.Ceiling((double)TotalCatalogResults / CatalogPageSize));
         CurrentCatalogPage = 1;
 
-        LoadCatalogPage(scrollToTop: true);
+        ScheduleCatalogPageLoad(immediate: true, scrollToTop: true);
     }
 
-    private void LoadCatalogPage(bool scrollToTop = true)
+    private void LoadCatalogPage(bool scrollToTop = true) =>
+        ScheduleCatalogPageLoad(immediate: true, scrollToTop);
+
+    private void ScheduleCatalogPageLoad(bool immediate = false, bool scrollToTop = true)
     {
         if (CurrentCatalogPage < 1) CurrentCatalogPage = 1;
-        if (CurrentCatalogPage > TotalCatalogPages) CurrentCatalogPage = TotalCatalogPages;
-
-        var pageItems = _filteredCatalogResults
-            .Skip((CurrentCatalogPage - 1) * CatalogPageSize)
-            .Take(CatalogPageSize);
-
-        // Annulla i task in corso di caricamento icone per la pagina o ricerca precedente
-        _catalogThumbnailsCts?.Cancel();
-        _catalogThumbnailsCts = new CancellationTokenSource();
-        var ct = _catalogThumbnailsCts.Token;
-
-        var newItems = pageItems.Select(mod => new CatalogModItemViewModel(mod)).ToList();
-
-        CatalogMods.Clear();
-        foreach (var vm in newItems)
-        {
-            CatalogMods.Add(vm);
-            _ = vm.LoadThumbnailAsync(ct);
-        }
+        if (TotalCatalogPages > 0 && CurrentCatalogPage > TotalCatalogPages) CurrentCatalogPage = TotalCatalogPages;
 
         OnPropertyChanged(nameof(CanGoPreviousCatalogPage));
         OnPropertyChanged(nameof(CanGoNextCatalogPage));
         OnPropertyChanged(nameof(CatalogPaginationInfoText));
         OnPropertyChanged(nameof(CatalogPageIndicatorText));
 
-        if (scrollToTop)
+        _catalogPageChangeCts?.Cancel();
+        _catalogPageChangeCts = new CancellationTokenSource();
+        var token = _catalogPageChangeCts.Token;
+
+        var targetPage = CurrentCatalogPage;
+
+        _ = Task.Run(async () =>
         {
-            OnCatalogPageChanged?.Invoke();
-        }
+            try
+            {
+                if (!immediate)
+                {
+                    await Task.Delay(80, token);
+                }
+
+                if (token.IsCancellationRequested) return;
+
+                var pageItems = _filteredCatalogResults
+                    .Skip((targetPage - 1) * CatalogPageSize)
+                    .Take(CatalogPageSize)
+                    .ToList();
+
+                var newVms = pageItems.Select(mod => new CatalogModItemViewModel(mod)).ToList();
+
+                if (token.IsCancellationRequested) return;
+
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (token.IsCancellationRequested) return;
+
+                    _catalogThumbnailsCts?.Cancel();
+                    _catalogThumbnailsCts = new CancellationTokenSource();
+                    var ct = _catalogThumbnailsCts.Token;
+
+                    CatalogMods.Clear();
+                    foreach (var vm in newVms)
+                    {
+                        CatalogMods.Add(vm);
+                        _ = vm.LoadThumbnailAsync(ct);
+                    }
+
+                    if (scrollToTop)
+                    {
+                        OnCatalogPageChanged?.Invoke();
+                    }
+                });
+            }
+            catch (OperationCanceledException) { }
+        });
     }
 
     [RelayCommand]
@@ -849,7 +880,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentCatalogPage <= 1) return;
         CurrentCatalogPage = 1;
-        LoadCatalogPage(scrollToTop: true);
+        ScheduleCatalogPageLoad(immediate: false, scrollToTop: true);
     }
 
     [RelayCommand]
@@ -857,7 +888,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentCatalogPage <= 1) return;
         CurrentCatalogPage--;
-        LoadCatalogPage(scrollToTop: true);
+        ScheduleCatalogPageLoad(immediate: false, scrollToTop: true);
     }
 
     [RelayCommand]
@@ -865,7 +896,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentCatalogPage >= TotalCatalogPages) return;
         CurrentCatalogPage++;
-        LoadCatalogPage(scrollToTop: true);
+        ScheduleCatalogPageLoad(immediate: false, scrollToTop: true);
     }
 
     [RelayCommand]
@@ -873,7 +904,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (CurrentCatalogPage >= TotalCatalogPages) return;
         CurrentCatalogPage = TotalCatalogPages;
-        LoadCatalogPage(scrollToTop: true);
+        ScheduleCatalogPageLoad(immediate: false, scrollToTop: true);
     }
 
     [RelayCommand]

@@ -23,7 +23,7 @@ public partial class CatalogModItemViewModel : ObservableObject
     private string _selectedVersion;
 
     [ObservableProperty]
-    private ObservableCollection<string> _availableVersions = [];
+    private IReadOnlyList<string> _availableVersions = [];
 
     [ObservableProperty]
     private bool _isInstalling;
@@ -139,17 +139,17 @@ public partial class CatalogModItemViewModel : ObservableObject
 
     private void RefreshVersionsList()
     {
-        AvailableVersions.Clear();
-        if (SelectedSource?.Summary?.Versions != null)
+        if (SelectedSource?.Summary?.Versions != null && SelectedSource.Summary.Versions.Count > 0)
         {
-            foreach (var v in SelectedSource.Summary.Versions)
-            {
-                AvailableVersions.Add(v.VersionNumber);
-            }
+            AvailableVersions = SelectedSource.Summary.Versions.Select(v => v.VersionNumber).ToList();
         }
-        if (AvailableVersions.Count == 0 && SelectedSource != null)
+        else if (SelectedSource != null)
         {
-            AvailableVersions.Add(SelectedSource.LatestVersion);
+            AvailableVersions = [SelectedSource.LatestVersion];
+        }
+        else
+        {
+            AvailableVersions = [];
         }
     }
 }

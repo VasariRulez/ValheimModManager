@@ -34,7 +34,7 @@ public partial class MainWindow : Window
             };
             vm.OnCatalogPageChanged = () =>
             {
-                CatalogScrollViewer?.ScrollToHome();
+                CatalogListBox?.ScrollIntoView(0);
             };
         }
     }
