@@ -21,6 +21,12 @@ public sealed class CatalogService : ICatalogSink
 
     // In-memory catalog storage: ProviderId -> Key -> ModSummary
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ModSummary>> _catalog = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<GroupedModSummary>? _cachedGroupedCatalog;
+
+    private void InvalidateGroupedCache()
+    {
+        _cachedGroupedCatalog = null;
+    }
 
     public CatalogService(
         IEnumerable<IModProvider> providers,
@@ -38,6 +44,7 @@ public sealed class CatalogService : ICatalogSink
 
     public Task UpsertPackageAsync(string providerId, ModSummary package, CancellationToken ct = default)
     {
+        InvalidateGroupedCache();
         var providerDict = _catalog.GetOrAdd(providerId, _ => new ConcurrentDictionary<string, ModSummary>(StringComparer.OrdinalIgnoreCase));
         providerDict[package.Key.ExternalId] = package;
         return Task.CompletedTask;
@@ -78,6 +85,7 @@ public sealed class CatalogService : ICatalogSink
 
     public async Task CompleteProviderRefreshAsync(string providerId, int totalCount, CancellationToken ct = default)
     {
+        InvalidateGroupedCache();
         _logger.LogInformation("Saving local catalog cache for {ProviderId} ({TotalCount} packages)", providerId, totalCount);
         if (_catalog.TryGetValue(providerId, out var dict))
         {
@@ -97,6 +105,7 @@ public sealed class CatalogService : ICatalogSink
     public void ClearCache()
     {
         _catalog.Clear();
+        InvalidateGroupedCache();
         if (!Directory.Exists(_cacheDirectory)) return;
 
         foreach (var file in Directory.GetFiles(_cacheDirectory, "*.json"))
@@ -166,6 +175,7 @@ public sealed class CatalogService : ICatalogSink
         }
 
         DependencyJsonConverter.ClearPool();
+        InvalidateGroupedCache();
         GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
     }
 
@@ -186,6 +196,7 @@ public sealed class CatalogService : ICatalogSink
             });
 
         await Task.WhenAll(tasks);
+        InvalidateGroupedCache();
     }
 
     public IReadOnlyList<ModSummary> Search(ModQuery query)
@@ -245,44 +256,24 @@ public sealed class CatalogService : ICatalogSink
         return deduplicated;
     }
 
-    public IReadOnlyList<GroupedModSummary> SearchGrouped(ModQuery query)
+    private IReadOnlyList<GroupedModSummary> GetOrCreateGroupedCatalog()
     {
-        IEnumerable<ModSummary> allMods;
+        var cached = _cachedGroupedCatalog;
+        if (cached != null) return cached;
 
-        if (!string.IsNullOrWhiteSpace(query.ProviderId) && _catalog.TryGetValue(query.ProviderId, out var dict))
+        lock (_catalog)
         {
-            allMods = dict.Values;
+            if (_cachedGroupedCatalog != null) return _cachedGroupedCatalog;
+            var allMods = _catalog.Values.SelectMany(d => d.Values);
+            var grouped = GroupMods(allMods);
+            _cachedGroupedCatalog = grouped;
+            return grouped;
         }
-        else
-        {
-            allMods = _catalog.Values.SelectMany(d => d.Values);
-        }
+    }
 
-        if (!query.IncludeDeprecated)
-        {
-            allMods = allMods.Where(m => !m.IsDeprecated);
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.SearchText))
-        {
-            var search = query.SearchText.Trim();
-            allMods = allMods.Where(m =>
-                m.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                m.Owner.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Author))
-        {
-            allMods = allMods.Where(m => m.Owner.Equals(query.Author, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Category))
-        {
-            allMods = allMods.Where(m => m.Categories.Any(c => c.Equals(query.Category, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        var grouped = allMods
+    private static List<GroupedModSummary> GroupMods(IEnumerable<ModSummary> mods)
+    {
+        return mods
             .GroupBy(m => m.CanonicalId)
             .Select(g =>
             {
@@ -337,44 +328,87 @@ public sealed class CatalogService : ICatalogSink
                     AvailableSources: sources,
                     DateUpdatedOverall: summaries.Max(s => s.DateUpdated)
                 );
-            });
+            })
+            .ToList();
+    }
+
+    public IReadOnlyList<GroupedModSummary> SearchGrouped(ModQuery query)
+    {
+        IEnumerable<GroupedModSummary> items;
+
+        if (string.IsNullOrWhiteSpace(query.ProviderId))
+        {
+            items = GetOrCreateGroupedCatalog();
+        }
+        else if (_catalog.TryGetValue(query.ProviderId, out var dict))
+        {
+            items = GroupMods(dict.Values);
+        }
+        else
+        {
+            items = [];
+        }
+
+        if (!query.IncludeDeprecated)
+        {
+            items = items.Where(m => !m.IsDeprecated);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.SearchText))
+        {
+            var search = query.SearchText.Trim();
+            items = items.Where(m =>
+                m.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                m.Owner.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                m.Description.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Author))
+        {
+            items = items.Where(m => m.Owner.Equals(query.Author, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Category))
+        {
+            items = items.Where(m => m.Categories.Any(c => c.Equals(query.Category, StringComparison.OrdinalIgnoreCase)));
+        }
 
         var sorted = (query.SortBy, query.SortDescending) switch
         {
-            (ModSortBy.Relevance, true) => grouped
+            (ModSortBy.Relevance, true) => items
                 .OrderByDescending(m => GetRelevanceScore(m.Name, m.Owner, query.SearchText))
                 .ThenByDescending(m => m.TotalDownloadsOverall),
-            (ModSortBy.Relevance, false) => grouped
+            (ModSortBy.Relevance, false) => items
                 .OrderBy(m => GetRelevanceScore(m.Name, m.Owner, query.SearchText))
                 .ThenBy(m => m.TotalDownloadsOverall),
             (ModSortBy.Downloads, true) => string.IsNullOrWhiteSpace(query.SearchText)
-                ? grouped.OrderByDescending(m => m.IsPinned).ThenByDescending(m => m.TotalDownloadsOverall)
-                : grouped.OrderByDescending(m => m.TotalDownloadsOverall),
-            (ModSortBy.Downloads, false) => grouped
+                ? items.OrderByDescending(m => m.IsPinned).ThenByDescending(m => m.TotalDownloadsOverall)
+                : items.OrderByDescending(m => m.TotalDownloadsOverall),
+            (ModSortBy.Downloads, false) => items
                 .OrderBy(m => m.TotalDownloadsOverall),
-            (ModSortBy.LastUpdated, true) => grouped
+            (ModSortBy.LastUpdated, true) => items
                 .OrderByDescending(m => m.DateUpdatedOverall)
                 .ThenByDescending(m => m.TotalDownloadsOverall),
-            (ModSortBy.LastUpdated, false) => grouped
+            (ModSortBy.LastUpdated, false) => items
                 .OrderBy(m => m.DateUpdatedOverall)
                 .ThenBy(m => m.TotalDownloadsOverall),
-            (ModSortBy.Rating, true) => grouped
+            (ModSortBy.Rating, true) => items
                 .OrderByDescending(m => m.HighestRatingOverall)
                 .ThenByDescending(m => m.TotalDownloadsOverall),
-            (ModSortBy.Rating, false) => grouped
+            (ModSortBy.Rating, false) => items
                 .OrderBy(m => m.HighestRatingOverall)
                 .ThenBy(m => m.TotalDownloadsOverall),
-            (ModSortBy.Name, false) => grouped
+            (ModSortBy.Name, false) => items
                 .OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
-            (ModSortBy.Name, true) => grouped
+            (ModSortBy.Name, true) => items
                 .OrderByDescending(m => m.Name, StringComparer.OrdinalIgnoreCase),
-            (ModSortBy.Author, false) => grouped
+            (ModSortBy.Author, false) => items
                 .OrderBy(m => m.Owner, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
-            (ModSortBy.Author, true) => grouped
+            (ModSortBy.Author, true) => items
                 .OrderByDescending(m => m.Owner, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(m => m.Name, StringComparer.OrdinalIgnoreCase),
-            _ => grouped
+            _ => items
                 .OrderByDescending(m => m.IsPinned)
                 .ThenByDescending(m => m.TotalDownloadsOverall)
         };

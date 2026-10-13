@@ -235,4 +235,63 @@ public class CatalogServiceTests : IDisposable
         var byRatingDesc = catalog.SearchGrouped(new ModQuery(SortBy: ModSortBy.Rating, SortDescending: true));
         Assert.Equal("AlphaMod", byRatingDesc[0].Name);
     }
+
+    [Fact]
+    public async Task CatalogService_SearchGrouped_UsesCachedGroupedCatalogAndInvalidatesOnUpsert()
+    {
+        var catalog = new CatalogService([], _cacheDir);
+
+        var mod1 = new ModSummary(
+            Key: new ModKey("thunderstore", "Dev-ModOne"),
+            CanonicalId: new CanonicalModId("Dev", "ModOne"),
+            Name: "ModOne",
+            Owner: "Dev",
+            PackageUrl: "",
+            Description: "First mod",
+            IconUrl: "",
+            LatestVersionNumber: "1.0.0",
+            TotalDownloads: 100,
+            RatingScore: 10,
+            IsPinned: false,
+            IsDeprecated: false,
+            DateUpdated: DateTime.UtcNow,
+            Categories: ["Utility"],
+            Versions: []
+        );
+
+        await catalog.UpsertPackageAsync("thunderstore", mod1);
+
+        // First search builds the cache
+        var results1 = catalog.SearchGrouped(new ModQuery(SearchText: "ModOne"));
+        Assert.Single(results1);
+        Assert.Equal("ModOne", results1[0].Name);
+
+        // Subsequent search uses the pre-grouped cached catalog
+        var results2 = catalog.SearchGrouped(new ModQuery(SearchText: "NonExistent"));
+        Assert.Empty(results2);
+
+        // Upsert invalidates the cache
+        var mod2 = new ModSummary(
+            Key: new ModKey("thunderstore", "Dev-ModTwo"),
+            CanonicalId: new CanonicalModId("Dev", "ModTwo"),
+            Name: "ModTwo",
+            Owner: "Dev",
+            PackageUrl: "",
+            Description: "Second mod",
+            IconUrl: "",
+            LatestVersionNumber: "1.0.0",
+            TotalDownloads: 200,
+            RatingScore: 20,
+            IsPinned: false,
+            IsDeprecated: false,
+            DateUpdated: DateTime.UtcNow,
+            Categories: ["Utility"],
+            Versions: []
+        );
+
+        await catalog.UpsertPackageAsync("thunderstore", mod2);
+
+        var results3 = catalog.SearchGrouped(new ModQuery());
+        Assert.Equal(2, results3.Count);
+    }
 }

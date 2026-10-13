@@ -68,17 +68,28 @@ public partial class CatalogModItemViewModel : ObservableObject
         _selectedSource = grouped.AvailableSources[0];
         _selectedVersion = _selectedSource.LatestVersion;
         RefreshVersionsList();
-        _ = LoadThumbnailAsync();
     }
 
-    public async Task LoadThumbnailAsync()
+    public async Task LoadThumbnailAsync(System.Threading.CancellationToken ct = default)
     {
-        if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl)) return;
-        var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl);
-        if (bmp != null)
+        if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl) || ct.IsCancellationRequested) return;
+        try
         {
-            Thumbnail = bmp;
+            var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct);
+            if (bmp != null && !ct.IsCancellationRequested)
+            {
+                Thumbnail = bmp;
+            }
         }
+        catch (System.OperationCanceledException)
+        {
+            // Ignora cancellazione
+        }
+    }
+
+    public void DetachThumbnail()
+    {
+        Thumbnail = null;
     }
 
     public CatalogModItemViewModel(ModSummary singleSummary)

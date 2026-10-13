@@ -34,6 +34,8 @@ public sealed class ImageCacheService
         Directory.CreateDirectory(_cacheDirectory);
     }
 
+    public Func<byte[], byte[]>? ImageOptimizer { get; set; }
+
     public string CacheDirectory => _cacheDirectory;
 
     public async Task<byte[]?> GetImageBytesAsync(string? url, CancellationToken ct = default)
@@ -81,6 +83,23 @@ public sealed class ImageCacheService
             if (bytes == null || bytes.Length == 0)
             {
                 return null;
+            }
+
+            // Ottimizzazione immagine opzionale (es. ridimensionamento a 96px)
+            if (ImageOptimizer != null)
+            {
+                try
+                {
+                    var optimized = ImageOptimizer(bytes);
+                    if (optimized != null && optimized.Length > 0)
+                    {
+                        bytes = optimized;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed optimizing image for {Url}", url);
+                }
             }
 
             // Scrittura asincrona nella cache su disco

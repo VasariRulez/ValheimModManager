@@ -21,11 +21,28 @@ public sealed class AvaloniaImageLoader
     public AvaloniaImageLoader(ImageCacheService? imageCacheService = null)
     {
         _imageCacheService = imageCacheService ?? ImageCacheService.Instance;
+        _imageCacheService.ImageOptimizer ??= OptimizeImage;
+    }
+
+    public static byte[] OptimizeImage(byte[] rawBytes)
+    {
+        try
+        {
+            using var inMs = new MemoryStream(rawBytes);
+            using var bmp = Bitmap.DecodeToWidth(inMs, 96, BitmapInterpolationMode.MediumQuality);
+            using var outMs = new MemoryStream();
+            bmp.Save(outMs, new PngBitmapEncoderOptions());
+            return outMs.ToArray();
+        }
+        catch
+        {
+            return rawBytes;
+        }
     }
 
     public async Task<Bitmap?> LoadImageAsync(string? url, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(url) || ct.IsCancellationRequested)
         {
             return null;
         }
@@ -38,25 +55,35 @@ public sealed class AvaloniaImageLoader
 
         // 2. Controllo o download asincrono dei byte
         var bytes = await _imageCacheService.GetImageBytesAsync(url, ct);
-        if (bytes == null || bytes.Length == 0)
+        if (bytes == null || bytes.Length == 0 || ct.IsCancellationRequested)
         {
             return null;
         }
 
-        // 3. Decodifica Bitmap in background (non blocca la UI)
+        // 3. Decodifica Bitmap a 96px in background (non blocca la UI)
         try
         {
             return await Task.Run(() =>
             {
+                if (ct.IsCancellationRequested) return null;
+
                 using var ms = new MemoryStream(bytes);
-                var bitmap = new Bitmap(ms);
+                var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.MediumQuality);
+
+                if (ct.IsCancellationRequested)
+                {
+                    bitmap.Dispose();
+                    return null;
+                }
+
                 if (_memoryCache.TryAdd(url, bitmap))
                 {
                     _lruOrder.Enqueue(url);
                     while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
                     {
-                        if (_memoryCache.TryRemove(oldUrl, out _))
+                        if (_memoryCache.TryRemove(oldUrl, out var evicted))
                         {
+                            evicted.Dispose();
                             break;
                         }
                     }
@@ -72,6 +99,10 @@ public sealed class AvaloniaImageLoader
 
     public int ClearCache()
     {
+        foreach (var kvp in _memoryCache)
+        {
+            kvp.Value.Dispose();
+        }
         _memoryCache.Clear();
         _lruOrder.Clear();
         return _imageCacheService.ClearCache();

@@ -42,6 +42,7 @@ public partial class MainViewModel : ViewModelBase
 
     private CancellationTokenSource? _catalogSearchCts;
     private CancellationTokenSource? _installedSearchCts;
+    private CancellationTokenSource? _catalogThumbnailsCts;
 
     [ObservableProperty]
     private string _currentAppVersion = "1.0.4";
@@ -759,11 +760,16 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ClearIconCache()
     {
+        _catalogThumbnailsCts?.Cancel();
+        _catalogThumbnailsCts?.Dispose();
+        _catalogThumbnailsCts = new CancellationTokenSource();
+        var ct = _catalogThumbnailsCts.Token;
+
         var deleted = ValheimModManager.App.Services.AvaloniaImageLoader.Instance.ClearCache();
         foreach (var mod in CatalogMods)
         {
-            mod.Thumbnail = null;
-            _ = mod.LoadThumbnailAsync();
+            mod.DetachThumbnail();
+            _ = mod.LoadThumbnailAsync(ct);
         }
         StatusMessage = string.Format(Strings.StatusIconCacheCleared, deleted);
     }
@@ -814,10 +820,23 @@ public partial class MainViewModel : ViewModelBase
             .Skip((CurrentCatalogPage - 1) * CatalogPageSize)
             .Take(CatalogPageSize);
 
+        // Annulla i task in corso di caricamento icone per la pagina o ricerca precedente
+        _catalogThumbnailsCts?.Cancel();
+        _catalogThumbnailsCts?.Dispose();
+        _catalogThumbnailsCts = new CancellationTokenSource();
+        var ct = _catalogThumbnailsCts.Token;
+
+        foreach (var old in CatalogMods)
+        {
+            old.DetachThumbnail();
+        }
         CatalogMods.Clear();
+
         foreach (var mod in pageItems)
         {
-            CatalogMods.Add(new CatalogModItemViewModel(mod));
+            var vm = new CatalogModItemViewModel(mod);
+            CatalogMods.Add(vm);
+            _ = vm.LoadThumbnailAsync(ct);
         }
 
         OnPropertyChanged(nameof(CanGoPreviousCatalogPage));

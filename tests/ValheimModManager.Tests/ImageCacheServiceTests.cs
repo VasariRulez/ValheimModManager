@@ -81,6 +81,31 @@ public class ImageCacheServiceTests : IDisposable
         Assert.Equal(dummyBytes, diskBytes);
     }
 
+    [Fact]
+    public async Task GetImageBytesAsync_WithImageOptimizer_AppliesOptimizationBeforeSavingToDisk()
+    {
+        var rawBytes = new byte[] { 10, 20, 30, 40, 50 };
+        var optimizedBytes = new byte[] { 99, 98, 97 };
+        var handler = new MockHttpMessageHandler(HttpStatusCode.OK, rawBytes);
+        using var client = new HttpClient(handler);
+
+        var service = new ImageCacheService(httpClient: client, cacheDirectory: _tempCacheDir)
+        {
+            ImageOptimizer = bytes => optimizedBytes
+        };
+        const string testUrl = "https://cdn.thunderstore.io/unoptimized_icon.png";
+
+        var result = await service.GetImageBytesAsync(testUrl);
+
+        Assert.NotNull(result);
+        Assert.Equal(optimizedBytes, result);
+
+        var localPath = service.GetLocalCacheFilePath(testUrl);
+        Assert.True(File.Exists(localPath));
+        var diskBytes = await File.ReadAllBytesAsync(localPath);
+        Assert.Equal(optimizedBytes, diskBytes);
+    }
+
     private class MockHttpMessageHandler : HttpMessageHandler
     {
         private readonly HttpStatusCode _statusCode;
