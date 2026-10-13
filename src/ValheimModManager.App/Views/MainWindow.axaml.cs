@@ -39,6 +39,22 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnCatalogCardAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Control { DataContext: CatalogModItemViewModel vm })
+        {
+            vm.EnsureThumbnailLoaded();
+        }
+    }
+
+    private void OnCatalogCardDataContextChanged(object? sender, EventArgs e)
+    {
+        if (sender is Control c && c.IsLoaded && c.DataContext is CatalogModItemViewModel vm)
+        {
+            vm.EnsureThumbnailLoaded();
+        }
+    }
+
     private async void OnBrowseGameFolderClicked(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel vm) return;

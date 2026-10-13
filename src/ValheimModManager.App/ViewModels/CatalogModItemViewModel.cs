@@ -70,36 +70,53 @@ public partial class CatalogModItemViewModel : ObservableObject
         RefreshVersionsList();
     }
 
-    public async Task LoadThumbnailAsync(System.Threading.CancellationToken ct = default)
-    {
-        if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl) || ct.IsCancellationRequested) return;
+    private System.Threading.CancellationTokenSource? _thumbnailCts;
+    private bool _isLoadingThumbnail;
 
-        try
+    public void EnsureThumbnailLoaded()
+    {
+        if (Thumbnail != null || _isLoadingThumbnail || string.IsNullOrWhiteSpace(IconUrl)) return;
+
+        _isLoadingThumbnail = true;
+        _thumbnailCts?.Cancel();
+        _thumbnailCts = new System.Threading.CancellationTokenSource();
+        var ct = _thumbnailCts.Token;
+
+        _ = Task.Run(async () =>
         {
-            var bmp = await Task.Run(() => AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct), ct).ConfigureAwait(false);
-            if (bmp != null && !ct.IsCancellationRequested)
+            try
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct).ConfigureAwait(false);
+                if (bmp != null && !ct.IsCancellationRequested)
                 {
-                    if (!ct.IsCancellationRequested)
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        Thumbnail = bmp;
-                    }
-                }, Avalonia.Threading.DispatcherPriority.Background);
+                        if (!ct.IsCancellationRequested)
+                        {
+                            Thumbnail = bmp;
+                        }
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                }
             }
-        }
-        catch (System.OperationCanceledException)
-        {
-            // Ignora cancellazione
-        }
-        catch (System.Exception)
-        {
-            // Fallimento silenzioso per immagini corrotte o errori IO transitori
-        }
+            catch (System.OperationCanceledException) { }
+            catch (System.Exception) { }
+            finally
+            {
+                _isLoadingThumbnail = false;
+            }
+        }, ct);
+    }
+
+    public Task LoadThumbnailAsync(System.Threading.CancellationToken ct = default)
+    {
+        EnsureThumbnailLoaded();
+        return Task.CompletedTask;
     }
 
     public void DetachThumbnail()
     {
+        _thumbnailCts?.Cancel();
+        _isLoadingThumbnail = false;
         Thumbnail = null;
     }
 

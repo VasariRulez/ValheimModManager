@@ -769,7 +769,6 @@ public partial class MainViewModel : ViewModelBase
         foreach (var mod in CatalogMods)
         {
             mod.DetachThumbnail();
-            _ = mod.LoadThumbnailAsync(ct);
         }
         StatusMessage = string.Format(Strings.StatusIconCacheCleared, deleted);
     }
@@ -856,13 +855,11 @@ public partial class MainViewModel : ViewModelBase
 
                     _catalogThumbnailsCts?.Cancel();
                     _catalogThumbnailsCts = new CancellationTokenSource();
-                    var ct = _catalogThumbnailsCts.Token;
 
                     CatalogMods.Clear();
                     foreach (var vm in newVms)
                     {
                         CatalogMods.Add(vm);
-                        _ = vm.LoadThumbnailAsync(ct);
                     }
 
                     if (scrollToTop)

@@ -49,36 +49,33 @@ public sealed class AvaloniaImageLoader
             return cachedBitmap;
         }
 
-        // 4. Decodifica Bitmap a 96px in background (non blocca la UI)
+        // 4. Decodifica Bitmap a 96px in memoria (off-thread)
         try
         {
-            return await Task.Run(() =>
+            if (ct.IsCancellationRequested) return null;
+
+            using var ms = new MemoryStream(bytes);
+            var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.LowQuality);
+
+            if (ct.IsCancellationRequested)
             {
-                if (ct.IsCancellationRequested) return null;
+                return null;
+            }
 
-                using var ms = new MemoryStream(bytes);
-                var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.LowQuality);
-
-                if (ct.IsCancellationRequested)
+            if (_memoryCache.TryAdd(url, bitmap))
+            {
+                _lruOrder.Enqueue(url);
+                while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
                 {
-                    return null;
-                }
-
-                if (_memoryCache.TryAdd(url, bitmap))
-                {
-                    _lruOrder.Enqueue(url);
-                    while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
+                    if (_memoryCache.TryRemove(oldUrl, out _))
                     {
-                        if (_memoryCache.TryRemove(oldUrl, out _))
-                        {
-                            break;
-                        }
+                        break;
                     }
-                    return bitmap;
                 }
+                return bitmap;
+            }
 
-                return _memoryCache.TryGetValue(url, out var existing) ? existing : bitmap;
-            }, ct).ConfigureAwait(false);
+            return _memoryCache.TryGetValue(url, out var existing) ? existing : bitmap;
         }
         catch
         {
