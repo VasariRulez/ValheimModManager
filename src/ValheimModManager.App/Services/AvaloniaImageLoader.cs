@@ -16,6 +16,7 @@ public sealed class AvaloniaImageLoader
     private const int MaxMemoryCacheItems = 1000;
     private readonly ConcurrentDictionary<string, Bitmap> _memoryCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _lruOrder = new();
+    private readonly SemaphoreSlim _decodeThrottle = new(4, 4);
     private readonly ImageCacheService _imageCacheService;
 
     public AvaloniaImageLoader(ImageCacheService? imageCacheService = null)
@@ -29,7 +30,7 @@ public sealed class AvaloniaImageLoader
         try
         {
             using var inMs = new MemoryStream(rawBytes);
-            using var bmp = Bitmap.DecodeToWidth(inMs, 96, BitmapInterpolationMode.MediumQuality);
+            using var bmp = Bitmap.DecodeToWidth(inMs, 96, BitmapInterpolationMode.LowQuality);
             using var outMs = new MemoryStream();
             bmp.Save(outMs, new PngBitmapEncoderOptions());
             return outMs.ToArray();
@@ -60,20 +61,29 @@ public sealed class AvaloniaImageLoader
             return null;
         }
 
-        // 3. Decodifica Bitmap a 96px in background (non blocca la UI)
+        // Ricontrollo cache in memoria RAM prima del semaforo
+        if (_memoryCache.TryGetValue(url, out cachedBitmap))
+        {
+            return cachedBitmap;
+        }
+
+        // 3. Decodifica Bitmap controllata con semaforo per non saturare la CPU
+        await _decodeThrottle.WaitAsync(ct);
         try
         {
+            if (ct.IsCancellationRequested) return null;
+
+            if (_memoryCache.TryGetValue(url, out var alreadyCached))
+            {
+                return alreadyCached;
+            }
+
             return await Task.Run(() =>
             {
                 if (ct.IsCancellationRequested) return null;
 
-                if (_memoryCache.TryGetValue(url, out var alreadyCached))
-                {
-                    return alreadyCached;
-                }
-
                 using var ms = new MemoryStream(bytes);
-                var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.MediumQuality);
+                var bitmap = Bitmap.DecodeToWidth(ms, 96, BitmapInterpolationMode.LowQuality);
 
                 if (ct.IsCancellationRequested)
                 {
@@ -99,6 +109,10 @@ public sealed class AvaloniaImageLoader
         catch
         {
             return null;
+        }
+        finally
+        {
+            _decodeThrottle.Release();
         }
     }
 

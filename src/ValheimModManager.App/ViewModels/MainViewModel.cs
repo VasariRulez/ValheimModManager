@@ -824,15 +824,11 @@ public partial class MainViewModel : ViewModelBase
         _catalogThumbnailsCts = new CancellationTokenSource();
         var ct = _catalogThumbnailsCts.Token;
 
-        foreach (var old in CatalogMods)
-        {
-            old.DetachThumbnail();
-        }
-        CatalogMods.Clear();
+        var newItems = pageItems.Select(mod => new CatalogModItemViewModel(mod)).ToList();
 
-        foreach (var mod in pageItems)
+        CatalogMods.Clear();
+        foreach (var vm in newItems)
         {
-            var vm = new CatalogModItemViewModel(mod);
             CatalogMods.Add(vm);
             _ = vm.LoadThumbnailAsync(ct);
         }

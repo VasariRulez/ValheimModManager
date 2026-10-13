@@ -73,6 +73,11 @@ public partial class CatalogModItemViewModel : ObservableObject
     public async Task LoadThumbnailAsync(System.Threading.CancellationToken ct = default)
     {
         if (Thumbnail != null || string.IsNullOrWhiteSpace(IconUrl) || ct.IsCancellationRequested) return;
+
+        // Rilascia immediatamente il thread UI per consentire il rendering istantaneo della pagina
+        await Task.Yield();
+        if (ct.IsCancellationRequested) return;
+
         try
         {
             var bmp = await AvaloniaImageLoader.Instance.LoadImageAsync(IconUrl, ct);
