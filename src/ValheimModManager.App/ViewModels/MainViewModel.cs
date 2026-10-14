@@ -20,6 +20,7 @@ using ValheimModManager.Core.Providers.Thunderstore;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Platform.Windows;
 using ValheimModManager.Platform.Linux;
+using ValheimModManager.App.Services;
 
 public partial class MainViewModel : ViewModelBase
 {
@@ -722,6 +723,7 @@ public partial class MainViewModel : ViewModelBase
             LoadInstalledMods();
             StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
             IsBusy = false;
+            MemoryOptimizationService.CompactAndTrimMemory();
         }
     }
 
@@ -738,6 +740,7 @@ public partial class MainViewModel : ViewModelBase
             ApplyCatalogSearch();
             LoadInstalledMods();
             StatusMessage = string.Format(Strings.StatusCatalogReady, _catalogService.TotalPackageCount);
+            MemoryOptimizationService.CompactAndTrimMemory();
         }
         catch (Exception ex)
         {
@@ -866,6 +869,19 @@ public partial class MainViewModel : ViewModelBase
                     {
                         OnCatalogPageChanged?.Invoke();
                     }
+                });
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(500, token);
+                        if (!token.IsCancellationRequested)
+                        {
+                            MemoryOptimizationService.CompactAndTrimMemory();
+                        }
+                    }
+                    catch (OperationCanceledException) { }
                 });
             }
             catch (OperationCanceledException) { }

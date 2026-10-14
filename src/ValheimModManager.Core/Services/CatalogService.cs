@@ -277,8 +277,74 @@ public sealed class CatalogService : ICatalogSink
             .GroupBy(m => m.CanonicalId)
             .Select(g =>
             {
-                var summaries = g.ToList();
+                ModSummary? first = null;
+                List<ModSummary>? multiple = null;
 
+                foreach (var item in g)
+                {
+                    if (first == null)
+                    {
+                        first = item;
+                    }
+                    else if (multiple == null)
+                    {
+                        multiple = new List<ModSummary>(4) { first, item };
+                    }
+                    else
+                    {
+                        multiple.Add(item);
+                    }
+                }
+
+                if (first == null)
+                {
+                    return null!;
+                }
+
+                // Caso comune (>95% dei mod): unica sorgente/provider
+                if (multiple == null)
+                {
+                    var s = first;
+                    var displayName = s.Key.ProviderId.Equals("hexium", StringComparison.OrdinalIgnoreCase)
+                        ? "Hexium"
+                        : s.Key.ProviderId.Equals("thunderstore", StringComparison.OrdinalIgnoreCase)
+                            ? "Thunderstore"
+                            : s.Key.ProviderId;
+
+                    var singleSource = new ModSourceRelease[]
+                    {
+                        new(
+                            ProviderId: s.Key.ProviderId,
+                            DisplayName: displayName,
+                            Summary: s,
+                            LatestVersion: s.LatestVersionNumber,
+                            IsNewestOverall: true
+                        )
+                    };
+
+                    IReadOnlyList<string> categories = s.Categories.Count == 0
+                        ? Array.Empty<string>()
+                        : s.Categories;
+
+                    return new GroupedModSummary(
+                        CanonicalId: g.Key,
+                        Name: s.Name,
+                        Owner: s.Owner,
+                        Description: s.Description,
+                        IconUrl: s.IconUrl,
+                        HighestVersionOverall: s.LatestVersionNumber,
+                        TotalDownloadsOverall: s.TotalDownloads,
+                        HighestRatingOverall: s.RatingScore,
+                        IsPinned: s.IsPinned,
+                        IsDeprecated: s.IsDeprecated,
+                        Categories: categories,
+                        AvailableSources: singleSource,
+                        DateUpdatedOverall: s.DateUpdated
+                    );
+                }
+
+                // Caso multi-sorgente (es. Thunderstore + Hexium)
+                var summaries = multiple;
                 string highestVersion = "0.0.0";
                 foreach (var s in summaries)
                 {
@@ -329,6 +395,7 @@ public sealed class CatalogService : ICatalogSink
                     DateUpdatedOverall: summaries.Max(s => s.DateUpdated)
                 );
             })
+            .Where(x => x != null)
             .ToList();
     }
 

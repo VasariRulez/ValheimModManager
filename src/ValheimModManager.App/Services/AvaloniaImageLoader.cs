@@ -13,7 +13,7 @@ public sealed class AvaloniaImageLoader
     private static readonly Lazy<AvaloniaImageLoader> _instance = new(() => new AvaloniaImageLoader());
     public static AvaloniaImageLoader Instance => _instance.Value;
 
-    private const int MaxMemoryCacheItems = 1000;
+    private const int MaxMemoryCacheItems = 120;
     private readonly ConcurrentDictionary<string, Bitmap> _memoryCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _lruOrder = new();
     private readonly ImageCacheService _imageCacheService;
@@ -84,10 +84,7 @@ public sealed class AvaloniaImageLoader
                 _lruOrder.Enqueue(url);
                 while (_memoryCache.Count > MaxMemoryCacheItems && _lruOrder.TryDequeue(out var oldUrl))
                 {
-                    if (_memoryCache.TryRemove(oldUrl, out _))
-                    {
-                        break;
-                    }
+                    _memoryCache.TryRemove(oldUrl, out _);
                 }
                 return bitmap;
             }
