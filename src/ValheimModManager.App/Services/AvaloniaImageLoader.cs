@@ -21,6 +21,23 @@ public sealed class AvaloniaImageLoader
     public AvaloniaImageLoader(ImageCacheService? imageCacheService = null)
     {
         _imageCacheService = imageCacheService ?? ImageCacheService.Instance;
+        _imageCacheService.ImageOptimizer ??= OptimizeImage;
+    }
+
+    public static byte[] OptimizeImage(byte[] rawBytes)
+    {
+        try
+        {
+            using var inMs = new MemoryStream(rawBytes);
+            using var bmp = Bitmap.DecodeToWidth(inMs, 96, BitmapInterpolationMode.LowQuality);
+            using var outMs = new MemoryStream();
+            bmp.Save(outMs, new PngBitmapEncoderOptions());
+            return outMs.ToArray();
+        }
+        catch
+        {
+            return rawBytes;
+        }
     }
 
     public async Task<Bitmap?> LoadImageAsync(string? url, CancellationToken ct = default)
