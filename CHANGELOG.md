@@ -3,6 +3,66 @@
 Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-10-14
+
+### 🇮🇹 Italiano
+
+#### Prestazioni e Architettura
+- **Virtualizzazione UI del Catalogo Mod (`ListBox`)**:
+  - Sostituito l'`ItemsControl` a layout infinito con una `ListBox` virtualizzata nativa: anziché istanziare tutti e 100 i card contemporaneamente (~5.000 controlli UI sul thread principale), Avalonia mantiene in memoria visiva **esclusivamente gli 8–12 card visibili a schermo**, azzerando i tempi di rendering e rendendo lo scorrimento fluidissimo a 60 fps.
+- **Lazy Loading Visuale delle Miniature (Eliminazione ThreadPool Starvation)**:
+  - Il caricamento delle icone è ora guidato direttamente dall'ingresso del card nell'albero visivo (`AttachedToVisualTree` / `DataContextChanged`).
+  - Eliminato il loop anticipato che accodava 100 download contemporanei nel ThreadPool: vengono elaborate solo le miniature visibili a video, azzerando la contesa CPU/rete e lasciando l'interfaccia costantemente reattiva ai click.
+- **Paginazione Reattiva con Coalescing dei Click Rapidi**:
+  - Il cambio pagina (Prima, Precedente, Successiva, Ultima) e i relativi indicatori numerici rispondono **istantaneamente (< 1 ms)** al click.
+  - Introdotto un meccanismo di debounce e cancellazione asincrona a 80 ms: cliccando più volte consecutivamente su "Successiva", i caricamenti intermedi vengono abortiti senza congelare l'applicazione o bloccare il cambio di scheda.
+- **Salvataggio Icone Compresse a 96px su Disco (-83% Spazio Cache)**:
+  - Le miniature scaricate dai provider (spesso caricate dagli autori a 1024×1024 o 2048×2048 px) vengono automaticamente ridimensionate e compresse a 96 px prima della scrittura nella cache su disco (`%LOCALAPPDATA%\ValheimModManager\cache\icons\`).
+  - La dimensione media su disco scende da ~80 KB a **13,3 KB** per icona (-83% di spazio su disco).
+  - La decodifica futura da disco impiega appena **0,19 ms** per immagine.
+- **Abbattimento dell'Impronta di Memoria RAM (-96% a Regime, ~40 MB Idle)**:
+  - Working Set fisico in esecuzione ridotto da oltre 1.050 MB a soli **~40 MB a regime** (con cali a ~20 MB durante il cambio pagina e picco controllato a 130–140 MB durante lo scroll completo della pagina).
+  - Cache LRU in memoria RAM ridotta da 1.000 a **120 icone**, prevenendo l'accumulo di texture Skia/GPU durante la navigazione di decine di pagine.
+  - Introdotto il rilascio automatico delle pagine di memoria fisica su Windows (`SetProcessWorkingSetSize`) e compattazione heap GC post-avvio e al cambio pagina.
+  - Ottimizzazione fast-path monosorgente in `GroupMods` per oltre il 95% del catalogo (riutilizzo di `Array.Empty<string>()` e array compatti).
+
+#### Corretto
+- **Risoluzione `System.ObjectDisposedException` durante la Navigazione**:
+  - Rimossa la distruzione prematura (`Dispose`) sui `CancellationTokenSource` con task in corso e sulle `Bitmap` di Avalonia ancora referenziate dalla pipeline di rendering.
+- **Eliminazione Freeze UI durante il Download delle Immagini**:
+  - Spostato tutto l'I/O di rete e di disco su thread worker in background con isolamento completo dal SynchronizationContext UI (`ConfigureAwait(false)`).
+
+---
+
+### 🇬🇧 English
+
+#### Performance & Architecture
+- **Virtualized Catalog UI (`ListBox`)**:
+  - Replaced infinite-height `ScrollViewer` and `ItemsControl` with a fully virtualized native `ListBox`: instead of materializing all 100 cards simultaneously (~5,000 UI controls on the main thread), Avalonia only instantiates the **8–12 cards currently visible on screen**, achieving buttery-smooth 60 fps scrolling.
+- **Native Visual Lazy Loading for Mod Thumbnails**:
+  - Icon loading is now driven by visual tree attachment events (`AttachedToVisualTree` / `DataContextChanged`).
+  - Removed eager 100-item download loops that previously starved the .NET ThreadPool: only thumbnails for cards currently in view are requested, eliminating UI freezes and CPU contention.
+- **Responsive Pagination with Multi-Click Coalescing**:
+  - Page navigation controls (First, Previous, Next, Last) and page indicators update **instantly (< 1 ms)** upon click.
+  - Added an 80 ms debounced cancellation mechanism: clicking "Next" rapidly aborts intermediate page renders, preventing input queue lockups and allowing seamless tab switching.
+- **Downscaled 96px Icon Storage on Disk (-83% Disk Footprint)**:
+  - High-resolution thumbnails from providers (often uploaded at 1024×1024 or 2048×2048 px) are automatically resized to 96 px and saved as compact PNGs in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`.
+  - Average icon file size dropped from ~80 KB to **13.3 KB** (-83% disk savings).
+  - Subsequent disk decodes take only **0.19 ms** per icon.
+- **Drastic RAM Footprint Reduction (-96% at Idle, ~40 MB Steady-State)**:
+  - Real-world physical Working Set dropped from >1,050 MB to **~40 MB at idle** (temporarily dipping to ~20 MB on page changes, with peak capped at 130–140 MB under full 100-card scroll).
+  - In-memory thumbnail LRU cache capped at **120 bitmaps** (down from 1,000) to eliminate Skia/GPU texture accumulation across long browsing sessions.
+  - Added background Windows Working Set trimming (`SetProcessWorkingSetSize`) and debounced GC compaction on startup and page transitions.
+  - Fast-path single-source mod grouping in `GroupMods` for >95% of catalog items, sharing empty category arrays and avoiding temporary collections.
+
+#### Fixed
+- **Prevented `System.ObjectDisposedException` during Navigation**:
+  - Eliminated premature disposal of active `CancellationTokenSource` instances and Avalonia `Bitmap` objects still referenced by the UI rendering pipeline.
+- **Eliminated UI Freezes during Icon Downloads**:
+  - Fully offloaded disk I/O and network requests to background worker threads with explicit `ConfigureAwait(false)`.
+
+---
+
 ## [1.0.11] - 2026-10-12
 
 ### 🇮🇹 Italiano

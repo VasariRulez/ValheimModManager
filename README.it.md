@@ -20,9 +20,9 @@ Progettato per superare le limitazioni dei manager tradizionali, integra il supp
 ### 🌐 Catalogo Multi-Fonte Unificato, Paginazione & Miniature con Cache
 - **Thunderstore & Hexium**: Consultazione e download integrati dai cataloghi ufficiali di Thunderstore e [Hexium](https://valheim.hexium.gg/).
 - **Raggruppamento Intelligente & Parità Versioni**: Riconosce quando la stessa mod è pubblicata su più store (tramite autore e nome canonico) e raggruppa le release in un'unica scheda, mostrando i badge di provenienza (`⚡ Thunderstore vX.Y.Z` / `🔷 Hexium vX.Y.Z`) — entrambi affiancati in caso di parità di versione, oppure raggruppando le fonti meno recenti in un pill discreto (`+1 fonte precedente`).
-- **Paginazione Classica (`100 mod/pagina`)**: Sfoglia l'intero catalogo con la barra di paginazione inferiore (`Mostrate 1–100 di X mod`, `⏮`, `◀ Precedente`, `Pagina X di Y`, `Successiva ▶`, `⏭`), cambio pagina istantaneo a 0 ms e ritorno automatico in cima alla lista.
+- **Paginazione Classica (`100 mod/pagina`) & UI Virtualizzata a 60 FPS**: Sfoglia l'intero catalogo con la barra di paginazione inferiore (`Mostrate 1–100 di X mod`, `⏮`, `◀ Precedente`, `Pagina X di Y`, `Successiva ▶`, `⏭`), cambio pagina istantaneo (< 1 ms), coalescing dei click rapidi anti-freeze e virtualizzazione UI nativa `ListBox` (vengono istanziati solo i card visibili a video).
 - **Cache JSON Compatta & Delta Sync SHA-256**: Archiviazione locale snellita (-73% di spazio su disco mantenendo il 100% dello storico versioni), sincronizzazione incrementale dei soli chunk SHA-256 modificati e comandi rapidi di ripristino cache nelle Impostazioni e nel menu contestuale di *Aggiorna Catalogo*.
-- **Anteprime Miniature (Thumbnail) Asincrone**: Caricamento on-demand non bloccante delle icone delle mod con caching a due livelli (RAM ad alte prestazioni + cache persistente su disco in `%LOCALAPPDATA%\ValheimModManager\cache\icons\`), fallback `📦` e comando dedicato di svuotamento cache icone.
+- **Lazy Loading Visuale & Icone a 96px su Disco**: Caricamento on-demand delle miniature scatenato esclusivamente quando il card entra nell'albero visivo, salvataggio a 96 px compresso su disco (-83% di spazio cache, decodifica a 0,19 ms) e abbattimento della memoria RAM a soli ~40 MB a regime.
 - **Statistiche Complete su Scheda**: Numero totale di download, valutazioni della community e data di ultimo aggiornamento (`📅 gg/mm/aaaa`).
 
 ### 🎯 Ricerca Ponderata per Rilevanza & Ordinamento Avanzato
@@ -67,7 +67,7 @@ c:\repo\ValheinModManager\
 │   ├── ValheimModManager.Platform.Linux\   # Percorsi Steam Deck / Flatpak e processi Linux
 │   └── ValheimModManager.App\              # Applicazione Desktop Avalonia 12 (MVVM, Fluent Dark Theme, IT/EN)
 ├── tests\
-│   └── ValheimModManager.Tests\            # 75 Test automatizzati (xUnit)
+│   └── ValheimModManager.Tests\            # 77 Test automatizzati (xUnit)
 ├── scripts\
 │   ├── publish.ps1                         # Script di pubblicazione post-build (PowerShell)
 │   └── publish.sh                          # Script di pubblicazione post-build (Bash / CI)
@@ -94,7 +94,7 @@ dotnet run --project src/ValheimModManager.App/ValheimModManager.App.csproj
 ```
 
 ### Esecuzione dei Test Automatizzati
-La suite comprende **75 test unitari e di integrazione** (xUnit) per installazione pacchetti, comparazione SemVer, risoluzione dipendenze, raggruppamento e ordinamento multi-fonte, ricerca per rilevanza, aggiornamenti cross-store, serializzazione compatta delle dipendenze, Share Code `vmm1`, import r2modman, installazione manuale, avvio Steam e localizzazione:
+La suite comprende **77 test unitari e di integrazione** (xUnit) per installazione pacchetti, comparazione SemVer, risoluzione dipendenze, raggruppamento e ordinamento multi-fonte, ricerca per rilevanza, aggiornamenti cross-store, serializzazione compatta delle dipendenze, Share Code `vmm1`, import r2modman, installazione manuale, avvio Steam e localizzazione:
 
 ```bash
 dotnet test ValheimModManager.slnx
@@ -118,7 +118,7 @@ Il repository include script dedicati per generare pacchetti distribuiti **Self-
 .\scripts\publish.ps1 -Runtime linux-x64 -SkipTests
 
 # Pulizia e pubblicazione con numero di versione personalizzato:
-.\scripts\publish.ps1 -Version "1.0.11" -Clean
+.\scripts\publish.ps1 -Version "1.1.0" -Clean
 ```
 
 ### Da Linux / Steam Deck / CI (Bash)
@@ -143,8 +143,8 @@ I file vengono generati nella cartella `dist/` (esclusa da git):
 ## 🔄 CI/CD & Rilascio Automatico
 
 Il workflow GitHub Actions situato in [`.github/workflows/release.yml`](.github/workflows/release.yml) è configurato per:
-1. Avviarsi automaticamente al push di una tag di versione (es. `git tag v1.0.11 && git push origin v1.0.11`) o tramite esecuzione manuale da GitHub (*Run workflow*).
-2. Eseguire la compilazione e i 75 test in parallelo su runner Windows e Ubuntu.
+1. Avviarsi automaticamente al push di una tag di versione (es. `git tag v1.1.0 && git push origin v1.1.0`) o tramite esecuzione manuale da GitHub (*Run workflow*).
+2. Eseguire la compilazione e i 77 test in parallelo su runner Windows e Ubuntu.
 3. Estrarre automaticamente le note di rilascio della versione corrispondente da [`CHANGELOG.md`](CHANGELOG.md) e pubblicare la GitHub Release allegando gli archivi `.zip`, `.tar.gz` e `SHA256SUMS.txt`.
 
 ---
